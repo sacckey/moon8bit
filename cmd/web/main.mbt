@@ -2,6 +2,9 @@
 let config : @lib.EngineConfig = @lib.default_engine_config()
 
 ///|
+let display_scale : Int = config.scale * 2
+
+///|
 let initial_bundle : @lib.AssetBundle = @lib.load_sample_assets()
 
 ///|
@@ -98,7 +101,7 @@ fn on_apply() -> Unit {
 
 ///|
 fn main {
-  web_init_canvas(config.width, config.height, config.scale)
+  web_init_canvas(config.width, config.height, display_scale)
 
   web_set_editor_text(@lib.sample_assets_dsl())
   web_bind_apply(on_apply)

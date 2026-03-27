@@ -95,6 +95,32 @@ fn bird_rect(game : BirdLikeGame) -> Rect {
 }
 
 ///|
+fn draw_ground_from_tilemap(
+  frame : Frame,
+  tilemap : Tilemap,
+  terrain_offset : Int,
+  ground_y : Int,
+  screen_width : Int,
+  rows : Int,
+) -> Unit {
+  if tilemap.width <= 0 || tilemap.height <= 0 {
+    return
+  }
+
+  for row in 0..<rows {
+    let tile_y = row % tilemap.height
+    for x in 0..<screen_width {
+      let tile_x = (x + terrain_offset) % tilemap.width
+      let color = match tile_at(tilemap, tile_x, tile_y) {
+        Some(v) => v
+        None => 3
+      }
+      frame.set_pixel(x, ground_y + row, color)
+    }
+  }
+}
+
+///|
 fn is_collision(game : BirdLikeGame, config : EngineConfig) -> Bool {
   let ground_y = config.height - 2
   let bird = bird_rect(game)
@@ -197,7 +223,8 @@ pub impl Game for BirdLikeGame with update(self, ctx) {
 ///|
 pub impl Game for BirdLikeGame with draw(self, ctx) {
   let frame = Frame::new(ctx.config.width, ctx.config.height, fill=0)
-  let ground_y = ctx.config.height - 2
+  let ground_rows = if ctx.config.height >= 2 { 2 } else { ctx.config.height }
+  let ground_y = ctx.config.height - ground_rows
 
   for x in 0..<ctx.config.width {
     if (x + self.terrain_offset) % 7 == 0 {
@@ -208,7 +235,18 @@ pub impl Game for BirdLikeGame with draw(self, ctx) {
     }
   }
 
-  frame.draw_rect(0, ground_y, ctx.config.width, 2, 3)
+  match find_tilemap(self.bundle, "ground") {
+    Some(tilemap) =>
+      draw_ground_from_tilemap(
+        frame,
+        tilemap,
+        self.terrain_offset,
+        ground_y,
+        ctx.config.width,
+        ground_rows,
+      )
+    None => frame.draw_rect(0, ground_y, ctx.config.width, ground_rows, 3)
+  }
 
   frame.draw_rect(self.pipe_x, 0, self.pipe_width, self.pipe_gap_y, 2)
   let bottom_y = self.pipe_gap_y + self.gap_height

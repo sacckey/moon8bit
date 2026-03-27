@@ -59,3 +59,19 @@ test "bird-like demo runs and renders" {
   assert_true(state.score() >= 0)
   assert_true(frames[23].length() > 0)
 }
+
+///|
+test "bird-like draw reflects ground tilemap colors" {
+  let dsl = ["tilemap ground 1 2", "4", "6", "end"].join("\n")
+  let bundle = match parse_assets_dsl(dsl) {
+    Ok(v) => v
+    Err(_) => panic()
+  }
+
+  let config = default_engine_config()
+  let state = engine_init(new_bird_like_game(bundle), config)
+  let (_, frame) = engine_step(state, config, input_none, 0)
+
+  assert_eq(frame.get_pixel(0, config.height - 2), Some(4))
+  assert_eq(frame.get_pixel(0, config.height - 1), Some(6))
+}
