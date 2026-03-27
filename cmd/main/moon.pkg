@@ -6,4 +6,8 @@ import {
 
 options(
   "is-main": true,
+  targets: {
+    "io_js.mbt": [ "js" ],
+    "io_nonjs.mbt": [ "wasm", "wasm-gc", "native", "llvm" ],
+  },
 )

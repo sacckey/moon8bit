@@ -42,6 +42,12 @@ Convert DSL text to JSON:
 moon run cmd/main -- assets "sprite hero 2 1\\n11\\nend"
 ```
 
+Convert DSL file to JSON file (`--target js`):
+
+```bash
+moon run cmd/main --target js -- assets-file assets.dsl assets.json
+```
+
 Print built-in sample DSL:
 
 ```bash
