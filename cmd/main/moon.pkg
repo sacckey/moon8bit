@@ -1,0 +1,7 @@
+// import {
+//   "sacckey/moon8bit" @lib,
+// }
+
+options(
+  "is-main": true,
+)
