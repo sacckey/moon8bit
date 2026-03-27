@@ -36,6 +36,18 @@ moon test
 moon run cmd/main -- demo 60
 ```
 
+Run browser demo (Canvas 2D):
+
+```bash
+moon build --target js cmd/web
+python3 -m http.server 8000
+# open http://localhost:8000/cmd/web/index.html
+```
+
+Controls:
+- `Space` / `ArrowUp`: flap
+- `R`: reset
+
 Convert DSL text to JSON:
 
 ```bash

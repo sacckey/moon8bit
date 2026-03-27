@@ -17,6 +17,11 @@ pub struct InputState {
 pub let input_none : InputState = InputState::{ flap: false, reset: false }
 
 ///|
+pub fn input_state(flap : Bool, reset : Bool) -> InputState {
+  InputState::{ flap, reset }
+}
+
+///|
 pub struct RuntimeContext {
   config : EngineConfig
   input : InputState

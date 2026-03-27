@@ -22,6 +22,8 @@ pub fn find_tilemap(AssetBundle, String) -> Tilemap?
 
 pub let input_none : InputState
 
+pub fn input_state(Bool, Bool) -> InputState
+
 pub fn load_sample_assets() -> AssetBundle
 
 pub fn new_bird_like_game(AssetBundle) -> BirdLikeGame

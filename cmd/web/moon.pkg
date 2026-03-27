@@ -1,0 +1,12 @@
+import {
+  "sacckey/moon8bit" @lib,
+  "moonbitlang/core/ref",
+}
+
+options(
+  "is-main": true,
+  targets: {
+    "web_js.mbt": [ "js" ],
+    "web_stub.mbt": [ "wasm", "wasm-gc", "native", "llvm" ],
+  },
+)
