@@ -1,12 +1,22 @@
 ///|
 extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #| (width, height, scale) => {
+  #|   let root = document.getElementById("moon8bit-root");
+  #|   if (!root) {
+  #|     root = document.createElement("div");
+  #|     root.id = "moon8bit-root";
+  #|     root.style.display = "grid";
+  #|     root.style.gap = "8px";
+  #|     root.style.justifyItems = "center";
+  #|     document.body.appendChild(root);
+  #|   }
+  #|
   #|   const id = "moon8bit-canvas";
   #|   let canvas = document.getElementById(id);
   #|   if (!canvas) {
   #|     canvas = document.createElement("canvas");
   #|     canvas.id = id;
-  #|     document.body.appendChild(canvas);
+  #|     root.appendChild(canvas);
   #|   }
   #|   canvas.width = width;
   #|   canvas.height = height;
@@ -27,6 +37,76 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   globalThis.addEventListener("keyup", (e) => {
   #|     globalThis.__moon8bit_keys.delete(e.code);
   #|   });
+  #|
+  #|   let editor = document.getElementById("moon8bit-editor");
+  #|   if (!editor) {
+  #|     editor = document.createElement("div");
+  #|     editor.id = "moon8bit-editor";
+  #|     editor.style.display = "grid";
+  #|     editor.style.gap = "6px";
+  #|     editor.style.width = `${width * scale}px`;
+  #|     root.appendChild(editor);
+  #|   }
+  #|
+  #|   let textarea = document.getElementById("moon8bit-dsl-input");
+  #|   if (!textarea) {
+  #|     textarea = document.createElement("textarea");
+  #|     textarea.id = "moon8bit-dsl-input";
+  #|     textarea.style.width = "100%";
+  #|     textarea.style.height = "160px";
+  #|     textarea.style.background = "#0f1720";
+  #|     textarea.style.color = "#d9e2ec";
+  #|     textarea.style.border = "1px solid #334e68";
+  #|     textarea.style.padding = "8px";
+  #|     textarea.style.fontFamily = "ui-monospace, SFMono-Regular, Menlo, monospace";
+  #|     textarea.style.fontSize = "12px";
+  #|     textarea.spellcheck = false;
+  #|     editor.appendChild(textarea);
+  #|   }
+  #|
+  #|   let controls = document.getElementById("moon8bit-editor-controls");
+  #|   if (!controls) {
+  #|     controls = document.createElement("div");
+  #|     controls.id = "moon8bit-editor-controls";
+  #|     controls.style.display = "flex";
+  #|     controls.style.gap = "8px";
+  #|     controls.style.alignItems = "center";
+  #|     editor.appendChild(controls);
+  #|   }
+  #|
+  #|   let button = document.getElementById("moon8bit-apply-btn");
+  #|   if (!button) {
+  #|     button = document.createElement("button");
+  #|     button.id = "moon8bit-apply-btn";
+  #|     button.textContent = "Apply DSL";
+  #|     button.style.padding = "6px 10px";
+  #|     button.style.background = "#274060";
+  #|     button.style.color = "#f6f7eb";
+  #|     button.style.border = "1px solid #486581";
+  #|     button.style.cursor = "pointer";
+  #|     controls.appendChild(button);
+  #|   }
+  #|
+  #|   let hint = document.getElementById("moon8bit-editor-hint");
+  #|   if (!hint) {
+  #|     hint = document.createElement("span");
+  #|     hint.id = "moon8bit-editor-hint";
+  #|     hint.textContent = "Ctrl/Cmd+Enter to apply";
+  #|     hint.style.fontFamily = "monospace";
+  #|     hint.style.fontSize = "12px";
+  #|     hint.style.opacity = "0.8";
+  #|     controls.appendChild(hint);
+  #|   }
+  #|
+  #|   let feedback = document.getElementById("moon8bit-editor-feedback");
+  #|   if (!feedback) {
+  #|     feedback = document.createElement("div");
+  #|     feedback.id = "moon8bit-editor-feedback";
+  #|     feedback.style.fontFamily = "monospace";
+  #|     feedback.style.fontSize = "12px";
+  #|     feedback.style.color = "#9fb3c8";
+  #|     editor.appendChild(feedback);
+  #|   }
   #| }
 
 ///|
@@ -68,9 +148,64 @@ extern "js" fn web_set_status(text : String) -> Unit =
   #|     el.style.marginTop = "8px";
   #|     el.style.fontFamily = "monospace";
   #|     el.style.color = "#d9e2ec";
-  #|     document.body.appendChild(el);
+  #|     const root = document.getElementById("moon8bit-root");
+  #|     if (root) {
+  #|       root.appendChild(el);
+  #|     } else {
+  #|       document.body.appendChild(el);
+  #|     }
   #|   }
   #|   el.textContent = text;
+  #| }
+
+///|
+extern "js" fn web_get_editor_text() -> String =
+  #| () => {
+  #|   const input = document.getElementById("moon8bit-dsl-input");
+  #|   return input ? input.value : "";
+  #| }
+
+///|
+extern "js" fn web_set_editor_text(text : String) -> Unit =
+  #| (text) => {
+  #|   const input = document.getElementById("moon8bit-dsl-input");
+  #|   if (input) {
+  #|     input.value = text;
+  #|   }
+  #| }
+
+///|
+extern "js" fn web_set_editor_feedback(text : String, is_error : Bool) -> Unit =
+  #| (text, is_error) => {
+  #|   const el = document.getElementById("moon8bit-editor-feedback");
+  #|   if (!el) return;
+  #|   el.textContent = text;
+  #|   el.style.color = is_error ? "#ef6f6c" : "#7bd389";
+  #| }
+
+///|
+extern "js" fn web_bind_apply(cb : () -> Unit) -> Unit =
+  #| (cb) => {
+  #|   globalThis.__moon8bit_apply_cb = cb;
+  #|   if (globalThis.__moon8bit_apply_bound) {
+  #|     return;
+  #|   }
+  #|   const button = document.getElementById("moon8bit-apply-btn");
+  #|   const input = document.getElementById("moon8bit-dsl-input");
+  #|   if (!button || !input) return;
+  #|   const run = () => {
+  #|     if (globalThis.__moon8bit_apply_cb) {
+  #|       globalThis.__moon8bit_apply_cb();
+  #|     }
+  #|   };
+  #|   button.addEventListener("click", run);
+  #|   input.addEventListener("keydown", (e) => {
+  #|     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+  #|       e.preventDefault();
+  #|       run();
+  #|     }
+  #|   });
+  #|   globalThis.__moon8bit_apply_bound = true;
   #| }
 
 ///|

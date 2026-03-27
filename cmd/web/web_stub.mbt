@@ -31,6 +31,27 @@ fn web_set_status(text : String) -> Unit {
 }
 
 ///|
+fn web_get_editor_text() -> String {
+  ""
+}
+
+///|
+fn web_set_editor_text(text : String) -> Unit {
+  ignore(text)
+}
+
+///|
+fn web_set_editor_feedback(text : String, is_error : Bool) -> Unit {
+  ignore(text)
+  ignore(is_error)
+}
+
+///|
+fn web_bind_apply(cb : () -> Unit) -> Unit {
+  cb()
+}
+
+///|
 fn web_start_loop(cb : () -> Unit, fps : Int) -> Unit {
   ignore(fps)
   cb()

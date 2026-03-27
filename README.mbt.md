@@ -47,6 +47,7 @@ python3 -m http.server 8000
 Controls:
 - `Space` / `ArrowUp`: flap
 - `R`: reset
+- edit DSL in the textarea and click `Apply DSL` (or `Ctrl/Cmd + Enter`)
 
 Convert DSL text to JSON:
 

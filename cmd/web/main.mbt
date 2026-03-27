@@ -2,8 +2,11 @@
 let config : @lib.EngineConfig = @lib.default_engine_config()
 
 ///|
+let initial_bundle : @lib.AssetBundle = @lib.load_sample_assets()
+
+///|
 let initial_game : @lib.BirdLikeGame = @lib.engine_init(
-  @lib.new_bird_like_game(@lib.load_sample_assets()),
+  @lib.new_bird_like_game(initial_bundle),
   config,
 )
 
@@ -14,9 +17,13 @@ let state_ref : Ref[@lib.BirdLikeGame] = @ref.new(initial_game)
 let frame_ref : Ref[Int] = @ref.new(0)
 
 ///|
+let palette_ref : Ref[@lib.Palette] = @ref.new(initial_bundle.palette)
+
+///|
 fn palette_color(index : Int) -> String {
-  if index >= 0 && index < config.palette.colors.length() {
-    config.palette.colors[index]
+  let palette = palette_ref.val
+  if index >= 0 && index < palette.colors.length() {
+    palette.colors[index]
   } else {
     "#101820"
   }
@@ -64,8 +71,38 @@ fn tick() -> Unit {
 }
 
 ///|
+fn apply_dsl_text(dsl_text : String) -> Unit {
+  let bundle = match @lib.parse_assets_dsl(dsl_text) {
+    Ok(parsed) => parsed
+    Err(err) => {
+      web_set_editor_feedback(
+        "Parse error at line \{err.line}: \{err.message}",
+        true,
+      )
+      return
+    }
+  }
+
+  state_ref.val = @lib.engine_init(@lib.new_bird_like_game(bundle), config)
+  palette_ref.val = bundle.palette
+  frame_ref.val = 0
+
+  web_set_editor_feedback("Applied DSL successfully", false)
+  tick()
+}
+
+///|
+fn on_apply() -> Unit {
+  apply_dsl_text(web_get_editor_text())
+}
+
+///|
 fn main {
   web_init_canvas(config.width, config.height, config.scale)
-  tick()
+
+  web_set_editor_text(@lib.sample_assets_dsl())
+  web_bind_apply(on_apply)
+  on_apply()
+
   web_start_loop(tick, config.fps)
 }
