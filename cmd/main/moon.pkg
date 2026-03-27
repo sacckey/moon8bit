@@ -1,6 +1,8 @@
-// import {
-//   "sacckey/moon8bit" @lib,
-// }
+import {
+  "sacckey/moon8bit" @lib,
+  "moonbitlang/core/env",
+  "moonbitlang/core/strconv",
+}
 
 options(
   "is-main": true,
