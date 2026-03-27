@@ -100,6 +100,9 @@ tilemap ground 8 2
 end
 ```
 
+- `ground` is used for the scrolling floor band.
+- `bg` is used for the scrolling background layer.
+
 ## Engine Model
 
 - `init`: create/reset game state.

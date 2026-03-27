@@ -13,8 +13,10 @@ pub fn sample_assets_dsl() -> String {
   [
     "# moon8bit asset DSL v1", "palette dawn", "color 0 #0f1a20", "color 1 #274060",
     "color 2 #2e8b57", "color 3 #f2aa4c", "color 4 #e94f37", "color 5 #8f6f4f", "color 6 #f6f7eb",
-    "end", "", "sprite bird 5 3", ".666.", "64646", ".666.", "end", "", "tilemap ground 8 2",
-    "5 5 5 5 5 5 5 5", "3 3 3 3 3 3 3 3", "end",
+    "end", "", "sprite bird 5 3", ".666.", "64646", ".666.", "end", "", "tilemap bg 8 6",
+    "0 0 0 0 0 0 0 0", "0 0 1 0 0 1 0 0", "0 0 0 0 0 0 0 0", "0 0 0 0 0 0 0 0", "0 0 0 0 0 0 0 0",
+    "1 0 0 1 0 0 1 0", "end", "", "tilemap ground 8 2", "5 5 5 5 5 5 5 5", "3 3 3 3 3 3 3 3",
+    "end",
   ].join("\n")
 }
 
@@ -95,27 +97,27 @@ fn bird_rect(game : BirdLikeGame) -> Rect {
 }
 
 ///|
-fn draw_ground_from_tilemap(
+fn draw_scrolling_tilemap_rows(
   frame : Frame,
   tilemap : Tilemap,
-  terrain_offset : Int,
-  ground_y : Int,
+  scroll_x : Int,
+  start_y : Int,
   screen_width : Int,
   rows : Int,
 ) -> Unit {
-  if tilemap.width <= 0 || tilemap.height <= 0 {
+  if tilemap.width <= 0 || tilemap.height <= 0 || rows <= 0 {
     return
   }
 
   for row in 0..<rows {
     let tile_y = row % tilemap.height
     for x in 0..<screen_width {
-      let tile_x = (x + terrain_offset) % tilemap.width
+      let tile_x = (x + scroll_x) % tilemap.width
       let color = match tile_at(tilemap, tile_x, tile_y) {
         Some(v) => v
         None => 3
       }
-      frame.set_pixel(x, ground_y + row, color)
+      frame.set_pixel(x, start_y + row, color)
     }
   }
 }
@@ -225,19 +227,32 @@ pub impl Game for BirdLikeGame with draw(self, ctx) {
   let frame = Frame::new(ctx.config.width, ctx.config.height, fill=0)
   let ground_rows = if ctx.config.height >= 2 { 2 } else { ctx.config.height }
   let ground_y = ctx.config.height - ground_rows
+  let background_rows = if ground_y > 0 { ground_y } else { 0 }
 
-  for x in 0..<ctx.config.width {
-    if (x + self.terrain_offset) % 7 == 0 {
-      frame.set_pixel(x, 1, 1)
-    }
-    if (x + self.terrain_offset) % 11 == 0 {
-      frame.set_pixel(x, 3, 1)
-    }
+  match find_tilemap(self.bundle, "bg") {
+    Some(tilemap) =>
+      draw_scrolling_tilemap_rows(
+        frame,
+        tilemap,
+        self.terrain_offset / 2,
+        0,
+        ctx.config.width,
+        background_rows,
+      )
+    None =>
+      for x in 0..<ctx.config.width {
+        if (x + self.terrain_offset) % 7 == 0 {
+          frame.set_pixel(x, 1, 1)
+        }
+        if (x + self.terrain_offset) % 11 == 0 {
+          frame.set_pixel(x, 3, 1)
+        }
+      }
   }
 
   match find_tilemap(self.bundle, "ground") {
     Some(tilemap) =>
-      draw_ground_from_tilemap(
+      draw_scrolling_tilemap_rows(
         frame,
         tilemap,
         self.terrain_offset,

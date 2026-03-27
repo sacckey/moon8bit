@@ -8,7 +8,7 @@ test "parse sample DSL" {
   assert_eq(bundle.palette.name, "dawn")
   assert_eq(bundle.palette.colors.length(), 7)
   assert_eq(bundle.sprites.length(), 1)
-  assert_eq(bundle.tilemaps.length(), 1)
+  assert_eq(bundle.tilemaps.length(), 2)
 
   let bird = match find_sprite(bundle, "bird") {
     Some(v) => v
@@ -16,6 +16,9 @@ test "parse sample DSL" {
   }
   assert_eq(bird.width, 5)
   assert_eq(bird.height, 3)
+
+  assert_true(find_tilemap(bundle, "bg") is Some(_))
+  assert_true(find_tilemap(bundle, "ground") is Some(_))
 }
 
 ///|
@@ -74,4 +77,22 @@ test "bird-like draw reflects ground tilemap colors" {
 
   assert_eq(frame.get_pixel(0, config.height - 2), Some(4))
   assert_eq(frame.get_pixel(0, config.height - 1), Some(6))
+}
+
+///|
+test "bird-like draw reflects bg tilemap colors" {
+  let dsl = [
+    "tilemap bg 1 1", "4", "end", "", "tilemap ground 1 2", "3", "3", "end",
+  ].join("\n")
+
+  let bundle = match parse_assets_dsl(dsl) {
+    Ok(v) => v
+    Err(_) => panic()
+  }
+
+  let config = default_engine_config()
+  let state = engine_init(new_bird_like_game(bundle), config)
+  let (_, frame) = engine_step(state, config, input_none, 0)
+
+  assert_eq(frame.get_pixel(0, 0), Some(4))
 }
