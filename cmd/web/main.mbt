@@ -68,8 +68,12 @@ fn tick() -> Unit {
   frame_ref.val = frame_index + 1
 
   draw_frame(rendered)
+  let hit_tag = match next.last_hit_tag() {
+    Some(v) => v
+    None => "-"
+  }
   web_set_status(
-    "moon8bit canvas demo  score=\{next.score()}  frame=\{frame_ref.val}  reset=R",
+    "moon8bit canvas demo  score=\{next.score()}  frame=\{frame_ref.val}  hit=\{hit_tag}  reset=R",
   )
 }
 

@@ -58,3 +58,23 @@ test "collider API ignores empty collider boxes" {
   assert_true(!collider_hits_any(bird, [empty, solid]))
   assert_eq(collider_first_hit(bird, [empty, solid]), None)
 }
+
+///|
+test "engine step records pipe collision hit tag" {
+  let config = default_engine_config()
+  let state = engine_init(new_bird_like_game(load_sample_assets()), config)
+
+  state.bird_x = 8
+  state.bird_y = 4
+  state.bird_vy = 0
+  state.pipe_x = 10
+  state.pipe_width = 5
+  state.pipe_gap_y = 8
+  state.gap_height = 11
+  state.is_over = false
+  state.last_hit_tag = None
+
+  let (next, _) = engine_step(state, config, input_none, 0)
+  assert_true(next.is_over())
+  assert_eq(next.last_hit_tag(), Some("pipe_top"))
+}

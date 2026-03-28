@@ -51,6 +51,7 @@ Controls:
 - edit DSL in the textarea and click `Apply DSL` (or `Ctrl/Cmd + Enter`)
 - `Export DSL`: download current editor text as `moon8bit_assets.dsl`
 - `Import DSL`: load a local `.dsl`/`.txt` file into the editor and apply it
+- status line shows `hit=<tag>` after collisions (`ground`, `ceiling`, `pipe_top`, `pipe_bottom`)
 
 Convert DSL text to JSON:
 

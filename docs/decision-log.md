@@ -40,3 +40,8 @@ Use one short entry per decision to prevent direction drift.
 - Decision: Record collision hit tags (`ground`, `ceiling`, `pipe_*`) in game state.
 - Why: Keep collision outcomes explainable and allow game-side branching based on collision type.
 - Impact: Integration tests can verify both game-over and collision cause, improving debugging and reproducibility.
+
+- Date: 2026-03-28
+- Decision: Surface `last_hit_tag` in web status UI and add a pipe-hit runtime test.
+- Why: Make collision outcomes visible during demo play and prevent regressions in tag wiring.
+- Impact: Better UX explainability and stronger confidence in collision behavior changes.
