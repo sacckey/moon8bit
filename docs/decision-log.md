@@ -45,3 +45,8 @@ Use one short entry per decision to prevent direction drift.
 - Decision: Surface `last_hit_tag` in web status UI and add a pipe-hit runtime test.
 - Why: Make collision outcomes visible during demo play and prevent regressions in tag wiring.
 - Impact: Better UX explainability and stronger confidence in collision behavior changes.
+
+- Date: 2026-03-28
+- Decision: Rework submission draft to explicitly map SCC evaluation axes and add evaluator quickstart to README.
+- Why: Reduce reviewer friction and make value proposition/scoring alignment obvious.
+- Impact: Stronger explainability and faster project evaluation during screening.

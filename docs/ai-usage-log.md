@@ -31,3 +31,5 @@
   - `docs/decision-log.md`
   - `docs/handoff.md`
 - Updated README with a daily start/end routine for AI-assisted work.
+- Refined submission draft text to align directly with SCC evaluation axes.
+- Added evaluator quickstart steps in README for faster reproduction.

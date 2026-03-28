@@ -37,6 +37,22 @@ moon test
 moon run cmd/main -- demo 60
 ```
 
+## Evaluator Quickstart (3-5 min)
+
+```bash
+moon check
+moon test
+moon build --target js cmd/web
+python3 -m http.server 8000
+# open http://localhost:8000/cmd/web/index.html
+```
+
+Then in browser:
+
+1. Press `Space` to flap.
+2. Edit a tile value in DSL and click `Apply DSL`.
+3. Confirm the scene changes and status line updates (`score`, `frame`, `hit`).
+
 Run browser demo (Canvas 2D):
 
 ```bash
