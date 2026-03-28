@@ -35,7 +35,7 @@ python3 -m http.server 8000
 
 Open:
 
-- `http://localhost:8000/cmd/web/index.html`
+- `http://localhost:8000/demo/`
 
 Expected:
 
@@ -52,4 +52,3 @@ Expected:
 - [ ] Ensure latest docs match actual implementation.
 - [ ] Ensure commit history is clean and understandable.
 - [ ] Submit with final application text and demo link.
-

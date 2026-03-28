@@ -55,3 +55,8 @@ Use one short entry per decision to prevent direction drift.
 - Decision: Add dedicated submission checklist/demo script and switch handoff to concrete session data.
 - Why: Minimize last-week execution risk and make Monday restart frictionless.
 - Impact: Clear pre-submit gate and stable handoff workflow.
+
+- Date: 2026-03-28
+- Decision: Use root-based GitHub Pages with `demo/` as the published web demo path.
+- Why: `docs/` is reserved for project documents, so demo assets should be isolated without changing docs usage.
+- Impact: Added root `index.html`, `demo/index.html`, and bundle sync script for Pages-ready deployment.

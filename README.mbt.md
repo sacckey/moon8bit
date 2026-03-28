@@ -44,7 +44,7 @@ moon check
 moon test
 moon build --target js cmd/web
 python3 -m http.server 8000
-# open http://localhost:8000/cmd/web/index.html
+# open http://localhost:8000/demo/
 ```
 
 Then in browser:
@@ -59,6 +59,18 @@ Run browser demo (Canvas 2D):
 moon build --target js cmd/web
 python3 -m http.server 8000
 # open http://localhost:8000/cmd/web/index.html
+```
+
+Update GitHub Pages demo bundle (`demo/web.js`):
+
+```bash
+./scripts/update_demo_bundle.sh
+```
+
+GitHub Pages path (if Pages serves from root):
+
+```text
+https://<github-user>.github.io/<repo>/demo/
 ```
 
 Controls:

@@ -34,3 +34,4 @@
 - Refined submission draft text to align directly with SCC evaluation axes.
 - Added evaluator quickstart steps in README for faster reproduction.
 - Added submission-ready operational docs (`submission-checklist`, `demo-script`) and concrete handoff notes.
+- Prepared GitHub Pages publishing layout (`root index + demo/ path`) and bundle sync script.

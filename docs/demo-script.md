@@ -7,7 +7,7 @@ Show that moon8bit supports fast AI-friendly iteration:
 
 ## Recording Setup
 
-- Open `http://localhost:8000/cmd/web/index.html`
+- Open `http://localhost:8000/demo/`
 - Keep browser zoom at 100%
 - Show canvas, DSL editor, and status line in one frame
 
@@ -36,4 +36,3 @@ Show that moon8bit supports fast AI-friendly iteration:
 - "Assets are text-first DSL, so iteration is diffable and AI-friendly."
 - "Apply is immediate in browser; import/export keeps local persistence."
 - "Collision outcomes are explainable through tagged hits."
-
