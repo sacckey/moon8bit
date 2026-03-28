@@ -23,3 +23,11 @@
 
 ## Notes
 - AI output was used as implementation accelerator, but interface shape and tradeoffs were human-curated.
+
+## 2026-03-28 Update
+- Added a context harness process to reduce long-session drift:
+  - `docs/north-star.md`
+  - `docs/session-brief.md`
+  - `docs/decision-log.md`
+  - `docs/handoff.md`
+- Updated README with a daily start/end routine for AI-assisted work.

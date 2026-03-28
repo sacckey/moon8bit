@@ -117,6 +117,22 @@ This structure makes generated game code easy for AI to produce and refactor.
 - Line-numbered parser errors are easy to feed back into iterative AI loops.
 - Deterministic game loop makes AI-generated tests stable.
 
+## Context Harness (Anti-Drift)
+
+To avoid goal drift across daily AI-assisted sessions, keep these docs updated:
+
+- `docs/north-star.md`: project mission, scope, and non-goals.
+- `docs/session-brief.md`: session start checklist (today focus and out-of-scope).
+- `docs/decision-log.md`: short architecture/product decisions with reasons.
+- `docs/handoff.md`: session end `Done / Next / Risks`.
+- `docs/ai-usage-log.md`: retrospective log of AI usage.
+
+Recommended routine:
+
+1. Start session by reading `north-star` and writing `session-brief`.
+2. During work, append major decisions to `decision-log`.
+3. End session by writing `handoff` and updating `ai-usage-log`.
+
 ## Validation
 
 This repository currently includes:
