@@ -37,8 +37,8 @@ pub fn load_sample_assets() -> AssetBundle {
 pub struct DriftbirdGame {
   bundle : AssetBundle
   mut bird_x : Int
-  mut bird_y : Int
-  mut bird_vy : Int
+  mut bird_y : Double
+  mut bird_vy : Double
   mut pipe_x : Int
   mut pipe_gap_y : Int
   mut pipe_width : Int
@@ -53,7 +53,11 @@ pub struct DriftbirdGame {
 } derive(Eq, Show)
 
 ///|
-fn clamp(value : Int, min_value : Int, max_value : Int) -> Int {
+fn clamp_double(
+  value : Double,
+  min_value : Double,
+  max_value : Double,
+) -> Double {
   if value < min_value {
     min_value
   } else if value > max_value {
@@ -61,6 +65,22 @@ fn clamp(value : Int, min_value : Int, max_value : Int) -> Int {
   } else {
     value
   }
+}
+
+///|
+fn floor_to_int(value : Double) -> Int {
+  let truncated = value.to_int()
+  let truncated_double = Double::from_int(truncated)
+  if value < truncated_double {
+    truncated - 1
+  } else {
+    truncated
+  }
+}
+
+///|
+fn bird_y_px(game : DriftbirdGame) -> Int {
+  floor_to_int(game.bird_y)
 }
 
 ///|
@@ -84,8 +104,8 @@ fn reset_driftbird(
   config : EngineConfig,
 ) -> DriftbirdGame {
   game.bird_x = 8
-  game.bird_y = config.height / 2
-  game.bird_vy = 0
+  game.bird_y = Double::from_int(config.height / 2)
+  game.bird_vy = 0.0
   game.pipe_width = 5
   game.gap_height = 11
   game.pipe_x = config.width + 4
@@ -102,7 +122,7 @@ fn reset_driftbird(
 
 ///|
 fn bird_rect(game : DriftbirdGame) -> Rect {
-  Rect::{ x: game.bird_x, y: game.bird_y, w: 5, h: 3 }
+  Rect::{ x: game.bird_x, y: bird_y_px(game), w: 5, h: 3 }
 }
 
 ///|
@@ -163,11 +183,12 @@ fn pipe_colliders(
 fn detect_collision_tag(game : DriftbirdGame, config : EngineConfig) -> String? {
   let ground_y = config.height - 2
   let bird = bird_rect(game)
+  let bird_top = bird_y_px(game)
 
-  if game.bird_y < 0 {
+  if game.bird_y < 0.0 {
     return Some("ceiling")
   }
-  if game.bird_y + bird.h > ground_y {
+  if bird_top + bird.h > ground_y {
     return Some("ground")
   }
 
@@ -184,8 +205,8 @@ pub fn new_driftbird_game(bundle : AssetBundle) -> DriftbirdGame {
   DriftbirdGame::{
     bundle,
     bird_x: 8,
-    bird_y: 0,
-    bird_vy: 0,
+    bird_y: 0.0,
+    bird_vy: 0.0,
     pipe_x: 0,
     pipe_gap_y: 0,
     pipe_width: 0,
@@ -222,11 +243,29 @@ pub fn DriftbirdGame::last_hit_tag(self : DriftbirdGame) -> String? {
 
 ///|
 fn step_running(game : DriftbirdGame, ctx : RuntimeContext) -> DriftbirdGame {
+  let flap_impulse : Double = -2.5
+  let gravity_up : Double = 0.42
+  let gravity_base_down : Double = 0.16
+  let gravity_down_gain : Double = 0.04
+  let gravity_down_max : Double = 0.28
+  let min_vy : Double = -2.35
+  let max_vy : Double = 4.8
+
   if ctx.input.flap {
-    game.bird_vy = -3
+    game.bird_vy = flap_impulse
   }
 
-  game.bird_vy = clamp(game.bird_vy + 1, -4, 3)
+  // Keep apex transition smooth: falling gravity ramps up with current down speed.
+  let g = if game.bird_vy < 0.0 {
+    gravity_up
+  } else {
+    clamp_double(
+      gravity_base_down + game.bird_vy * gravity_down_gain,
+      gravity_base_down,
+      gravity_down_max,
+    )
+  }
+  game.bird_vy = clamp_double(game.bird_vy + g, min_vy, max_vy)
   game.bird_y += game.bird_vy
 
   game.pipe_x -= 1
@@ -336,7 +375,7 @@ pub impl Game for DriftbirdGame with draw(self, ctx) {
     Some(found) => found
     None => default_bird_sprite()
   }
-  frame.blit(sprite, self.bird_x, self.bird_y)
+  frame.blit(sprite, self.bird_x, bird_y_px(self))
 
   if !self.is_started {
     frame.draw_rect(0, 0, ctx.config.width, 1, 6)

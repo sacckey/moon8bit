@@ -1914,6 +1914,12 @@ function _M0IP311moonbitlang4core5int645Int64P311moonbitlang4core7builtin7Compar
 function _M0MP311moonbitlang4core5int645Int647to__int(self) {
   return _M0MP311moonbitlang4core7builtin7MyInt647to__int(self);
 }
+function _M0MP311moonbitlang4core6double6Double7to__int(self) {
+  return self !== self ? 0 : self >= 2147483647 ? 2147483647 : self <= -2147483648 ? -2147483648 : self | 0;
+}
+function _M0MP311moonbitlang4core6double6Double9from__int(i) {
+  return i + 0;
+}
 function _M0IP311moonbitlang4core7builtin13SourceLocReprP311moonbitlang4core7builtin4Show6output(self, logger) {
   const pkg = self.pkg;
   const _data = _M0MP311moonbitlang4core6string10StringView4data(pkg);
@@ -3180,8 +3186,16 @@ function _M0FP27sacckey8moon8bit12engine__stepGRP27sacckey8moon8bit13DriftbirdGa
   const rendered = _M0IP27sacckey8moon8bit13DriftbirdGameP27sacckey8moon8bit4Game4draw(next, context);
   return { _0: next, _1: rendered };
 }
-function _M0FP27sacckey8moon8bit5clamp(value, min_value, max_value) {
+function _M0FP27sacckey8moon8bit13clamp__double(value, min_value, max_value) {
   return value < min_value ? min_value : value > max_value ? max_value : value;
+}
+function _M0FP27sacckey8moon8bit14floor__to__int(value) {
+  const truncated = _M0MP311moonbitlang4core6double6Double7to__int(value);
+  const truncated_double = _M0MP311moonbitlang4core6double6Double9from__int(truncated);
+  return value < truncated_double ? truncated - 1 | 0 : truncated;
+}
+function _M0FP27sacckey8moon8bit11bird__y__px(game) {
+  return _M0FP27sacckey8moon8bit14floor__to__int(game.bird_y);
 }
 function _M0FP27sacckey8moon8bit12next__gap__y(seed, config, gap_height) {
   const ground_y = config.height - 2 | 0;
@@ -3203,7 +3217,7 @@ function _M0FP27sacckey8moon8bit16reset__driftbird(game, config) {
   if (2 === 0) {
     $panic();
   }
-  game.bird_y = config.height / 2 | 0;
+  game.bird_y = _M0MP311moonbitlang4core6double6Double9from__int(config.height / 2 | 0);
   game.bird_vy = 0;
   game.pipe_width = 5;
   game.gap_height = 11;
@@ -3219,7 +3233,7 @@ function _M0FP27sacckey8moon8bit16reset__driftbird(game, config) {
   return game;
 }
 function _M0FP27sacckey8moon8bit10bird__rect(game) {
-  return { x: game.bird_x, y: game.bird_y, w: 5, h: 3 };
+  return { x: game.bird_x, y: _M0FP27sacckey8moon8bit11bird__y__px(game), w: 5, h: 3 };
 }
 function _M0FP27sacckey8moon8bit8tile__at(tilemap, x, y) {
   if (x < 0 || (x >= tilemap.width || (y < 0 || y >= tilemap.height))) {
@@ -3240,22 +3254,22 @@ function _M0FP27sacckey8moon8bit30draw__scrolling__tilemap__rows(frame, tilemap,
   if (tilemap.width <= 0 || (tilemap.height <= 0 || rows <= 0)) {
     return undefined;
   }
-  const _start306 = 0;
-  const _end307 = rows;
-  let _tmp = _start306;
+  const _start315 = 0;
+  const _end316 = rows;
+  let _tmp = _start315;
   while (true) {
     const row = _tmp;
-    if (row < _end307) {
+    if (row < _end316) {
       if (tilemap.height === 0) {
         $panic();
       }
       const tile_y = row % tilemap.height | 0;
-      const _start312 = 0;
-      const _end313 = screen_width;
-      let _tmp$2 = _start312;
+      const _start321 = 0;
+      const _end322 = screen_width;
+      let _tmp$2 = _start321;
       while (true) {
         const x = _tmp$2;
-        if (x < _end313) {
+        if (x < _end322) {
           if (tilemap.width === 0) {
             $panic();
           }
@@ -3332,10 +3346,11 @@ function _M0FP27sacckey8moon8bit20collider__first__hit(target, others) {
 function _M0FP27sacckey8moon8bit22detect__collision__tag(game, config) {
   const ground_y = config.height - 2 | 0;
   const bird = _M0FP27sacckey8moon8bit10bird__rect(game);
+  const bird_top = _M0FP27sacckey8moon8bit11bird__y__px(game);
   if (game.bird_y < 0) {
     return "ceiling";
   }
-  if ((game.bird_y + bird.h | 0) > ground_y) {
+  if ((bird_top + bird.h | 0) > ground_y) {
     return "ground";
   }
   const bird_collider = _M0FP27sacckey8moon8bit8collider("bird", bird);
@@ -3367,11 +3382,19 @@ function _M0MP27sacckey8moon8bit13DriftbirdGame14last__hit__tag(self) {
   return self.last_hit_tag;
 }
 function _M0FP27sacckey8moon8bit13step__running(game, ctx) {
+  const flap_impulse = -2.5;
+  const gravity_up = 0.42;
+  const gravity_base_down = 0.16;
+  const gravity_down_gain = 0.04;
+  const gravity_down_max = 0.28;
+  const min_vy = -2.35;
+  const max_vy = 4.8;
   if (ctx.input.flap) {
-    game.bird_vy = -3;
+    game.bird_vy = flap_impulse;
   }
-  game.bird_vy = _M0FP27sacckey8moon8bit5clamp(game.bird_vy + 1 | 0, -4, 3);
-  game.bird_y = game.bird_y + game.bird_vy | 0;
+  const g = game.bird_vy < 0 ? gravity_up : _M0FP27sacckey8moon8bit13clamp__double(gravity_base_down + game.bird_vy * gravity_down_gain, gravity_base_down, gravity_down_max);
+  game.bird_vy = _M0FP27sacckey8moon8bit13clamp__double(game.bird_vy + g, min_vy, max_vy);
+  game.bird_y = game.bird_y + game.bird_vy;
   game.pipe_x = game.pipe_x - 1 | 0;
   if (!game.pipe_scored && (game.pipe_x + game.pipe_width | 0) < game.bird_x) {
     game.score = game.score + 1 | 0;
@@ -3605,7 +3628,7 @@ function _M0IP27sacckey8moon8bit13DriftbirdGameP27sacckey8moon8bit4Game4draw(sel
     const _found = _Some;
     sprite = _found;
   }
-  _M0MP27sacckey8moon8bit5Frame4blit(frame, sprite, self.bird_x, self.bird_y);
+  _M0MP27sacckey8moon8bit5Frame4blit(frame, sprite, self.bird_x, _M0FP27sacckey8moon8bit11bird__y__px(self));
   if (!self.is_started) {
     _M0MP27sacckey8moon8bit5Frame10draw__rect(frame, 0, 0, ctx.config.width, 1, 6);
   } else {

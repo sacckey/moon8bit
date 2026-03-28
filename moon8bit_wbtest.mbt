@@ -66,8 +66,8 @@ test "engine step records pipe collision hit tag" {
 
   state.is_started = true
   state.bird_x = 8
-  state.bird_y = 4
-  state.bird_vy = 0
+  state.bird_y = 4.0
+  state.bird_vy = 0.0
   state.pipe_x = 10
   state.pipe_width = 5
   state.pipe_gap_y = 8
@@ -89,8 +89,8 @@ test "engine step increments score when passing a pipe" {
   state.is_over = false
   state.score = 0
   state.bird_x = 20
-  state.bird_y = 20
-  state.bird_vy = 0
+  state.bird_y = 20.0
+  state.bird_vy = 0.0
   state.pipe_x = 10
   state.pipe_width = 5
   state.pipe_gap_y = 0

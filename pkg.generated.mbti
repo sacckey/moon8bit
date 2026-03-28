@@ -89,8 +89,8 @@ pub impl Show for Collider
 pub struct DriftbirdGame {
   bundle : AssetBundle
   mut bird_x : Int
-  mut bird_y : Int
-  mut bird_vy : Int
+  mut bird_y : Double
+  mut bird_vy : Double
   mut pipe_x : Int
   mut pipe_gap_y : Int
   mut pipe_width : Int
