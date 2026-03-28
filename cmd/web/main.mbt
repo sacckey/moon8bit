@@ -100,11 +100,26 @@ fn on_apply() -> Unit {
 }
 
 ///|
+fn on_export() -> Unit {
+  let current = web_get_editor_text()
+  web_download_text("moon8bit_assets.dsl", current)
+  web_set_editor_feedback("Exported DSL as moon8bit_assets.dsl", false)
+}
+
+///|
+fn on_import(dsl_text : String) -> Unit {
+  web_set_editor_text(dsl_text)
+  apply_dsl_text(dsl_text)
+}
+
+///|
 fn main {
   web_init_canvas(config.width, config.height, display_scale)
 
   web_set_editor_text(@lib.sample_assets_dsl())
   web_bind_apply(on_apply)
+  web_bind_export(on_export)
+  web_bind_import(on_import)
   on_apply()
 
   web_start_loop(tick, config.fps)

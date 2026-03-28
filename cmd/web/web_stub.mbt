@@ -52,6 +52,22 @@ fn web_bind_apply(cb : () -> Unit) -> Unit {
 }
 
 ///|
+fn web_bind_export(cb : () -> Unit) -> Unit {
+  ignore(cb)
+}
+
+///|
+fn web_bind_import(cb : (String) -> Unit) -> Unit {
+  ignore(cb)
+}
+
+///|
+fn web_download_text(filename : String, text : String) -> Unit {
+  ignore(filename)
+  ignore(text)
+}
+
+///|
 fn web_start_loop(cb : () -> Unit, fps : Int) -> Unit {
   ignore(fps)
   cb()

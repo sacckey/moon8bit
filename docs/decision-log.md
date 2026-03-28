@@ -26,3 +26,7 @@ Use one short entry per decision to prevent direction drift.
 - Why: Lowest operational overhead and fastest iteration for solo development.
 - Impact: Persistence features (`Export/Import`) are planned as next UX step.
 
+- Date: 2026-03-28
+- Decision: Implement browser-level `Export/Import` for DSL persistence before direct file-write integration.
+- Why: Reliable cross-environment UX with lower implementation risk for v1 timeline.
+- Impact: Users can keep edited assets between sessions without server-side components.

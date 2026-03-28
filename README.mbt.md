@@ -48,6 +48,8 @@ Controls:
 - `Space` / `ArrowUp`: flap
 - `R`: reset
 - edit DSL in the textarea and click `Apply DSL` (or `Ctrl/Cmd + Enter`)
+- `Export DSL`: download current editor text as `moon8bit_assets.dsl`
+- `Import DSL`: load a local `.dsl`/`.txt` file into the editor and apply it
 
 Convert DSL text to JSON:
 

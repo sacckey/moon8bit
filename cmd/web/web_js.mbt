@@ -69,6 +69,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     controls = document.createElement("div");
   #|     controls.id = "moon8bit-editor-controls";
   #|     controls.style.display = "flex";
+  #|     controls.style.flexWrap = "wrap";
   #|     controls.style.gap = "8px";
   #|     controls.style.alignItems = "center";
   #|     editor.appendChild(controls);
@@ -87,11 +88,47 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     controls.appendChild(button);
   #|   }
   #|
+  #|   let exportButton = document.getElementById("moon8bit-export-btn");
+  #|   if (!exportButton) {
+  #|     exportButton = document.createElement("button");
+  #|     exportButton.id = "moon8bit-export-btn";
+  #|     exportButton.textContent = "Export DSL";
+  #|     exportButton.style.padding = "6px 10px";
+  #|     exportButton.style.background = "#486581";
+  #|     exportButton.style.color = "#f6f7eb";
+  #|     exportButton.style.border = "1px solid #627d98";
+  #|     exportButton.style.cursor = "pointer";
+  #|     controls.appendChild(exportButton);
+  #|   }
+  #|
+  #|   let importButton = document.getElementById("moon8bit-import-btn");
+  #|   if (!importButton) {
+  #|     importButton = document.createElement("button");
+  #|     importButton.id = "moon8bit-import-btn";
+  #|     importButton.textContent = "Import DSL";
+  #|     importButton.style.padding = "6px 10px";
+  #|     importButton.style.background = "#486581";
+  #|     importButton.style.color = "#f6f7eb";
+  #|     importButton.style.border = "1px solid #627d98";
+  #|     importButton.style.cursor = "pointer";
+  #|     controls.appendChild(importButton);
+  #|   }
+  #|
+  #|   let importInput = document.getElementById("moon8bit-import-input");
+  #|   if (!importInput) {
+  #|     importInput = document.createElement("input");
+  #|     importInput.id = "moon8bit-import-input";
+  #|     importInput.type = "file";
+  #|     importInput.accept = ".dsl,.txt,text/plain";
+  #|     importInput.style.display = "none";
+  #|     controls.appendChild(importInput);
+  #|   }
+  #|
   #|   let hint = document.getElementById("moon8bit-editor-hint");
   #|   if (!hint) {
   #|     hint = document.createElement("span");
   #|     hint.id = "moon8bit-editor-hint";
-  #|     hint.textContent = "Ctrl/Cmd+Enter to apply";
+  #|     hint.textContent = "Ctrl/Cmd+Enter applies current DSL";
   #|     hint.style.fontFamily = "monospace";
   #|     hint.style.fontSize = "12px";
   #|     hint.style.opacity = "0.8";
@@ -206,6 +243,67 @@ extern "js" fn web_bind_apply(cb : () -> Unit) -> Unit =
   #|     }
   #|   });
   #|   globalThis.__moon8bit_apply_bound = true;
+  #| }
+
+///|
+extern "js" fn web_bind_export(cb : () -> Unit) -> Unit =
+  #| (cb) => {
+  #|   globalThis.__moon8bit_export_cb = cb;
+  #|   if (globalThis.__moon8bit_export_bound) {
+  #|     return;
+  #|   }
+  #|   const button = document.getElementById("moon8bit-export-btn");
+  #|   if (!button) return;
+  #|   button.addEventListener("click", () => {
+  #|     if (globalThis.__moon8bit_export_cb) {
+  #|       globalThis.__moon8bit_export_cb();
+  #|     }
+  #|   });
+  #|   globalThis.__moon8bit_export_bound = true;
+  #| }
+
+///|
+extern "js" fn web_bind_import(cb : (String) -> Unit) -> Unit =
+  #| (cb) => {
+  #|   globalThis.__moon8bit_import_cb = cb;
+  #|   if (globalThis.__moon8bit_import_bound) {
+  #|     return;
+  #|   }
+  #|   const button = document.getElementById("moon8bit-import-btn");
+  #|   const input = document.getElementById("moon8bit-import-input");
+  #|   if (!button || !input) return;
+  #|
+  #|   button.addEventListener("click", () => input.click());
+  #|   input.addEventListener("change", async () => {
+  #|     const file = input.files && input.files[0];
+  #|     if (!file) return;
+  #|     try {
+  #|       const text = await file.text();
+  #|       if (globalThis.__moon8bit_import_cb) {
+  #|         globalThis.__moon8bit_import_cb(text);
+  #|       }
+  #|     } catch (error) {
+  #|       console.error("moon8bit import failed", error);
+  #|     } finally {
+  #|       input.value = "";
+  #|     }
+  #|   });
+  #|   globalThis.__moon8bit_import_bound = true;
+  #| }
+
+///|
+extern "js" fn web_download_text(filename : String, text : String) -> Unit =
+  #| (filename, text) => {
+  #|   const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  #|   const url = URL.createObjectURL(blob);
+  #|   const link = document.createElement("a");
+  #|   link.href = url;
+  #|   link.download = filename;
+  #|   link.style.display = "none";
+  #|   document.body.appendChild(link);
+  #|   link.click();
+  #|   document.body.removeChild(link);
+  #|   URL.revokeObjectURL(url);
   #| }
 
 ///|
