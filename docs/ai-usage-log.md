@@ -33,3 +33,4 @@
 - Updated README with a daily start/end routine for AI-assisted work.
 - Refined submission draft text to align directly with SCC evaluation axes.
 - Added evaluator quickstart steps in README for faster reproduction.
+- Added submission-ready operational docs (`submission-checklist`, `demo-script`) and concrete handoff notes.

@@ -50,3 +50,8 @@ Use one short entry per decision to prevent direction drift.
 - Decision: Rework submission draft to explicitly map SCC evaluation axes and add evaluator quickstart to README.
 - Why: Reduce reviewer friction and make value proposition/scoring alignment obvious.
 - Impact: Stronger explainability and faster project evaluation during screening.
+
+- Date: 2026-03-28
+- Decision: Add dedicated submission checklist/demo script and switch handoff to concrete session data.
+- Why: Minimize last-week execution risk and make Monday restart frictionless.
+- Impact: Clear pre-submit gate and stable handoff workflow.

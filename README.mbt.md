@@ -159,6 +159,12 @@ Recommended routine:
 2. During work, append major decisions to `decision-log`.
 3. End session by writing `handoff` and updating `ai-usage-log`.
 
+## Submission Prep
+
+- `docs/submission-checklist.md`: final pre-submit checklist.
+- `docs/demo-script.md`: 30-45 second demo recording flow.
+- `docs/application-draft.md`: current submission description draft.
+
 ## Validation
 
 This repository currently includes:

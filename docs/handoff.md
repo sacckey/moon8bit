@@ -1,31 +1,39 @@
-# Handoff Template
-
-Write this at the end of each session so the next session can resume without relying on long chat context.
+# Handoff
 
 ## Session End Summary
 
-- Date:
-- Commit(s):
+- Date: 2026-03-28
+- Commit(s): pending manual commit
 
 ## Done Today
 
-1. 
-2. 
+1. Finalized submission-facing docs:
+   - `docs/application-draft.md` (300+ words, SCC-axis mapping)
+   - `README.mbt.md` evaluator quickstart
+2. Improved explainability and validation:
+   - collision hit tag surfaced in web status (`hit=<tag>`)
+   - runtime test for `pipe_top` collision tag
+3. Added submission prep assets:
+   - `docs/submission-checklist.md`
+   - `docs/demo-script.md`
 
 ## Current State
 
-- Build/Test status:
-- Demo status:
+- Build/Test status: pass (`moon check`, `moon test`, `moon build --target js cmd/web`)
+- Demo status: playable web demo with live apply + import/export + collision tag feedback
 - Known limitations:
+  - No direct browser-to-local file overwrite; import/export workflow is used
+  - WebGPU backend is not included in v1
 
 ## Next 1-2 Tasks
 
-1. 
-2. 
+1. Record 30-45s demo GIF/video following `docs/demo-script.md`.
+2. Final pass on submission form text and links using `docs/submission-checklist.md`.
 
 ## Risks / Open Questions
 
-- 
+- Ensure final demo media clearly shows both DSL apply and collision tag (`hit=<tag>`).
+- Keep remaining changes to docs/bugfix only until submission.
 
 ## Quick Restart Commands
 
@@ -35,4 +43,3 @@ moon test
 moon build --target js cmd/web
 python3 -m http.server 8000
 ```
-
