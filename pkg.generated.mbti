@@ -8,6 +8,16 @@ pub fn asset_bundle_to_json_string(AssetBundle) -> String
 
 pub fn assets_cli_output(String) -> String
 
+pub fn collider(String, Rect) -> Collider
+
+pub fn collider_box(String, Int, Int, Int, Int) -> Collider
+
+pub fn collider_first_hit(Collider, Array[Collider]) -> Collider?
+
+pub fn collider_hits_any(Collider, Array[Collider]) -> Bool
+
+pub fn collider_intersects(Collider, Collider) -> Bool
+
 pub fn default_engine_config() -> EngineConfig
 
 pub fn demo_snapshot(Int) -> String
@@ -88,6 +98,13 @@ pub fn BirdLikeGame::score(Self) -> Int
 pub impl Eq for BirdLikeGame
 pub impl Show for BirdLikeGame
 pub impl Game for BirdLikeGame
+
+pub struct Collider {
+  tag : String
+  rect : Rect
+}
+pub impl Eq for Collider
+pub impl Show for Collider
 
 pub struct DslError {
   line : Int

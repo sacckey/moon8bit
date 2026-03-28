@@ -123,6 +123,34 @@ fn draw_scrolling_tilemap_rows(
 }
 
 ///|
+fn pipe_colliders(
+  game : BirdLikeGame,
+  config : EngineConfig,
+) -> Array[Collider] {
+  let ground_y = config.height - 2
+  let colliders : Array[Collider] = []
+  colliders.push(
+    collider_box("pipe_top", game.pipe_x, 0, game.pipe_width, game.pipe_gap_y),
+  )
+
+  let bottom_y = game.pipe_gap_y + game.gap_height
+  let bottom_h = ground_y - bottom_y
+  if bottom_h > 0 {
+    colliders.push(
+      collider_box(
+        "pipe_bottom",
+        game.pipe_x,
+        bottom_y,
+        game.pipe_width,
+        bottom_h,
+      ),
+    )
+  }
+
+  colliders
+}
+
+///|
 fn is_collision(game : BirdLikeGame, config : EngineConfig) -> Bool {
   let ground_y = config.height - 2
   let bird = bird_rect(game)
@@ -131,28 +159,9 @@ fn is_collision(game : BirdLikeGame, config : EngineConfig) -> Bool {
     return true
   }
 
-  let top_pipe = Rect::{
-    x: game.pipe_x,
-    y: 0,
-    w: game.pipe_width,
-    h: game.pipe_gap_y,
-  }
-
-  let bottom_y = game.pipe_gap_y + game.gap_height
-  let bottom_h = ground_y - bottom_y
-  let bottom_pipe = Rect::{
-    x: game.pipe_x,
-    y: bottom_y,
-    w: game.pipe_width,
-    h: if bottom_h > 0 {
-      bottom_h
-    } else {
-      0
-    },
-  }
-
-  rect_intersects(bird, top_pipe) ||
-  (bottom_pipe.h > 0 && rect_intersects(bird, bottom_pipe))
+  let bird_collider = collider("bird", bird)
+  let obstacles = pipe_colliders(game, config)
+  collider_hits_any(bird_collider, obstacles)
 }
 
 ///|

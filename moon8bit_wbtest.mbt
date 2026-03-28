@@ -31,3 +31,30 @@ test "rect intersection basics" {
   assert_true(rect_intersects(a, b))
   assert_true(!rect_intersects(a, c))
 }
+
+///|
+test "collider API detects hits against multiple obstacles" {
+  let bird = collider_box("bird", 5, 5, 3, 3)
+  let obstacles = [
+    collider_box("pipe_top", 0, 0, 3, 3),
+    collider_box("pipe_bottom", 6, 6, 4, 4),
+  ]
+
+  assert_true(collider_hits_any(bird, obstacles))
+  let hit = match collider_first_hit(bird, obstacles) {
+    Some(v) => v
+    None => panic()
+  }
+  assert_eq(hit.tag, "pipe_bottom")
+}
+
+///|
+test "collider API ignores empty collider boxes" {
+  let bird = collider_box("bird", 5, 5, 3, 3)
+  let empty = collider_box("pipe", 6, 6, 0, 4)
+  let solid = collider_box("pipe", 20, 20, 4, 4)
+
+  assert_true(!collider_intersects(bird, empty))
+  assert_true(!collider_hits_any(bird, [empty, solid]))
+  assert_eq(collider_first_hit(bird, [empty, solid]), None)
+}

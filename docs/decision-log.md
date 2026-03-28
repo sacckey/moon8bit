@@ -30,3 +30,8 @@ Use one short entry per decision to prevent direction drift.
 - Decision: Implement browser-level `Export/Import` for DSL persistence before direct file-write integration.
 - Why: Reliable cross-environment UX with lower implementation risk for v1 timeline.
 - Impact: Users can keep edited assets between sessions without server-side components.
+
+- Date: 2026-03-28
+- Decision: Introduce engine-level `Collider` API and route bird-like collision checks through it.
+- Why: Remove game-specific ad-hoc collision logic and provide reusable overlap primitives.
+- Impact: Future games can share one collision detection path while keeping collision response in game code.

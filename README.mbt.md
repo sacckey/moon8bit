@@ -23,6 +23,7 @@ Implemented in this repository:
   - bird-like side scroller
   - flap/reset input
   - collision detection and scrolling obstacles
+  - engine-level `Collider` API usage for overlap detection
 - CLI:
   - `demo`
   - `sample-dsl`

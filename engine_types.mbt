@@ -38,6 +38,12 @@ pub struct Rect {
 } derive(Eq, Show)
 
 ///|
+pub struct Collider {
+  tag : String
+  rect : Rect
+} derive(Eq, Show)
+
+///|
 pub fn default_engine_config() -> EngineConfig {
   EngineConfig::{
     width: 64,
@@ -56,4 +62,52 @@ pub fn rect_intersects(a : Rect, b : Rect) -> Bool {
   let b_bottom = b.y + b.h
 
   a.x < b_right && a_right > b.x && a.y < b_bottom && a_bottom > b.y
+}
+
+///|
+pub fn collider(tag : String, rect : Rect) -> Collider {
+  Collider::{ tag, rect }
+}
+
+///|
+pub fn collider_box(
+  tag : String,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+) -> Collider {
+  collider(tag, Rect::{ x, y, w, h })
+}
+
+///|
+pub fn collider_intersects(a : Collider, b : Collider) -> Bool {
+  if a.rect.w <= 0 || a.rect.h <= 0 || b.rect.w <= 0 || b.rect.h <= 0 {
+    false
+  } else {
+    rect_intersects(a.rect, b.rect)
+  }
+}
+
+///|
+pub fn collider_hits_any(target : Collider, others : Array[Collider]) -> Bool {
+  for other in others {
+    if collider_intersects(target, other) {
+      return true
+    }
+  }
+  false
+}
+
+///|
+pub fn collider_first_hit(
+  target : Collider,
+  others : Array[Collider],
+) -> Collider? {
+  for other in others {
+    if collider_intersects(target, other) {
+      return Some(other)
+    }
+  }
+  None
 }
