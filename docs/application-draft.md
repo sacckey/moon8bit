@@ -10,7 +10,7 @@ Current implementation includes five integrated parts:
 2. DSL v1 (`palette`, `sprite`, `tilemap`, `end`) with strict validation and clear parser errors.
 3. CLI flow for demo execution and DSL conversion (`demo`, `sample-dsl`, `assets`).
 4. Web Canvas demo with live DSL editing plus local `Import DSL` / `Export DSL`.
-5. A bird-like side-scroller sample covering input, scrolling, collision, and rendering.
+5. A driftbird side-scroller sample covering input, scrolling, collision, and rendering.
 
 This design maps directly to the SCC evaluation axes:
 

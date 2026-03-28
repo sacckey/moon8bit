@@ -34,7 +34,7 @@ pub fn load_sample_assets() -> AssetBundle {
 }
 
 ///|
-pub struct BirdLikeGame {
+pub struct DriftbirdGame {
   bundle : AssetBundle
   mut bird_x : Int
   mut bird_y : Int
@@ -46,8 +46,10 @@ pub struct BirdLikeGame {
   mut score : Int
   mut tick : Int
   mut terrain_offset : Int
+  mut is_started : Bool
   mut is_over : Bool
   mut last_hit_tag : String?
+  mut pipe_scored : Bool
 } derive(Eq, Show)
 
 ///|
@@ -77,7 +79,10 @@ fn next_gap_y(seed : Int, config : EngineConfig, gap_height : Int) -> Int {
 }
 
 ///|
-fn reset_bird_like(game : BirdLikeGame, config : EngineConfig) -> BirdLikeGame {
+fn reset_driftbird(
+  game : DriftbirdGame,
+  config : EngineConfig,
+) -> DriftbirdGame {
   game.bird_x = 8
   game.bird_y = config.height / 2
   game.bird_vy = 0
@@ -88,13 +93,15 @@ fn reset_bird_like(game : BirdLikeGame, config : EngineConfig) -> BirdLikeGame {
   game.score = 0
   game.tick = 0
   game.terrain_offset = 0
+  game.is_started = false
   game.is_over = false
   game.last_hit_tag = None
+  game.pipe_scored = false
   game
 }
 
 ///|
-fn bird_rect(game : BirdLikeGame) -> Rect {
+fn bird_rect(game : DriftbirdGame) -> Rect {
   Rect::{ x: game.bird_x, y: game.bird_y, w: 5, h: 3 }
 }
 
@@ -126,7 +133,7 @@ fn draw_scrolling_tilemap_rows(
 
 ///|
 fn pipe_colliders(
-  game : BirdLikeGame,
+  game : DriftbirdGame,
   config : EngineConfig,
 ) -> Array[Collider] {
   let ground_y = config.height - 2
@@ -153,7 +160,7 @@ fn pipe_colliders(
 }
 
 ///|
-fn detect_collision_tag(game : BirdLikeGame, config : EngineConfig) -> String? {
+fn detect_collision_tag(game : DriftbirdGame, config : EngineConfig) -> String? {
   let ground_y = config.height - 2
   let bird = bird_rect(game)
 
@@ -173,8 +180,8 @@ fn detect_collision_tag(game : BirdLikeGame, config : EngineConfig) -> String? {
 }
 
 ///|
-pub fn new_bird_like_game(bundle : AssetBundle) -> BirdLikeGame {
-  BirdLikeGame::{
+pub fn new_driftbird_game(bundle : AssetBundle) -> DriftbirdGame {
+  DriftbirdGame::{
     bundle,
     bird_x: 8,
     bird_y: 0,
@@ -186,77 +193,99 @@ pub fn new_bird_like_game(bundle : AssetBundle) -> BirdLikeGame {
     score: 0,
     tick: 0,
     terrain_offset: 0,
+    is_started: false,
     is_over: false,
     last_hit_tag: None,
+    pipe_scored: false,
   }
 }
 
 ///|
-pub fn BirdLikeGame::score(self : BirdLikeGame) -> Int {
+pub fn DriftbirdGame::score(self : DriftbirdGame) -> Int {
   self.score
 }
 
 ///|
-pub fn BirdLikeGame::is_over(self : BirdLikeGame) -> Bool {
+pub fn DriftbirdGame::is_over(self : DriftbirdGame) -> Bool {
   self.is_over
 }
 
 ///|
-pub fn BirdLikeGame::last_hit_tag(self : BirdLikeGame) -> String? {
+pub fn DriftbirdGame::is_started(self : DriftbirdGame) -> Bool {
+  self.is_started
+}
+
+///|
+pub fn DriftbirdGame::last_hit_tag(self : DriftbirdGame) -> String? {
   self.last_hit_tag
 }
 
 ///|
-pub impl Game for BirdLikeGame with init(self, ctx) {
-  reset_bird_like(self, ctx.config)
-}
-
-///|
-pub impl Game for BirdLikeGame with update(self, ctx) {
-  if ctx.input.reset {
-    return reset_bird_like(self, ctx.config)
-  }
-
-  if self.is_over {
-    return self
-  }
-
+fn step_running(game : DriftbirdGame, ctx : RuntimeContext) -> DriftbirdGame {
   if ctx.input.flap {
-    self.bird_vy = -3
+    game.bird_vy = -3
   }
 
-  self.bird_vy = clamp(self.bird_vy + 1, -4, 3)
-  self.bird_y += self.bird_vy
+  game.bird_vy = clamp(game.bird_vy + 1, -4, 3)
+  game.bird_y += game.bird_vy
 
-  self.pipe_x -= 1
-  if self.pipe_x + self.pipe_width < 0 {
-    self.pipe_x = ctx.config.width + 6
-    self.score += 1
-    self.pipe_gap_y = next_gap_y(self.tick + 97, ctx.config, self.gap_height)
+  game.pipe_x -= 1
+  if !game.pipe_scored && game.pipe_x + game.pipe_width < game.bird_x {
+    game.score += 1
+    game.pipe_scored = true
+  }
+  if game.pipe_x + game.pipe_width < 0 {
+    game.pipe_x = ctx.config.width + 6
+    game.pipe_gap_y = next_gap_y(game.tick + 97, ctx.config, game.gap_height)
+    game.pipe_scored = false
   }
 
-  self.terrain_offset = (self.terrain_offset + 1) % ctx.config.width
-  self.tick += 1
+  game.terrain_offset = (game.terrain_offset + 1) % ctx.config.width
+  game.tick += 1
 
-  match detect_collision_tag(self, ctx.config) {
+  match detect_collision_tag(game, ctx.config) {
     Some(tag) => {
-      self.last_hit_tag = Some(tag)
-      match tag {
-        "pipe_top" => self.is_over = true
-        "pipe_bottom" => self.is_over = true
-        "ground" => self.is_over = true
-        "ceiling" => self.is_over = true
-        _ => self.is_over = true
-      }
+      game.last_hit_tag = Some(tag)
+      game.is_over = true
     }
     None => ()
   }
 
-  self
+  game
 }
 
 ///|
-pub impl Game for BirdLikeGame with draw(self, ctx) {
+pub impl Game for DriftbirdGame with init(self, ctx) {
+  reset_driftbird(self, ctx.config)
+}
+
+///|
+pub impl Game for DriftbirdGame with update(self, ctx) {
+  if ctx.input.reset {
+    return reset_driftbird(self, ctx.config)
+  }
+
+  if self.is_over {
+    if !ctx.input.flap {
+      return self
+    }
+    let restarted = reset_driftbird(self, ctx.config)
+    restarted.is_started = true
+    return step_running(restarted, ctx)
+  }
+
+  if !self.is_started {
+    if !ctx.input.flap {
+      return self
+    }
+    self.is_started = true
+  }
+
+  step_running(self, ctx)
+}
+
+///|
+pub impl Game for DriftbirdGame with draw(self, ctx) {
   let frame = Frame::new(ctx.config.width, ctx.config.height, fill=0)
   let ground_rows = if ctx.config.height >= 2 { 2 } else { ctx.config.height }
   let ground_y = ctx.config.height - ground_rows
@@ -309,7 +338,9 @@ pub impl Game for BirdLikeGame with draw(self, ctx) {
   }
   frame.blit(sprite, self.bird_x, self.bird_y)
 
-  if self.is_over {
+  if !self.is_started {
+    frame.draw_rect(0, 0, ctx.config.width, 1, 6)
+  } else if self.is_over {
     frame.draw_rect(0, 0, ctx.config.width, 1, 4)
   }
 
@@ -327,19 +358,19 @@ pub fn scripted_demo_inputs(frame_count : Int) -> Array[InputState] {
 }
 
 ///|
-pub fn run_bird_like(
+pub fn run_driftbird(
   inputs : Array[InputState],
   config? : EngineConfig = default_engine_config(),
-) -> (BirdLikeGame, Array[Frame]) {
+) -> (DriftbirdGame, Array[Frame]) {
   let bundle = load_sample_assets()
-  let initial = new_bird_like_game(bundle)
+  let initial = new_driftbird_game(bundle)
   run_fixed_frames(initial, config, inputs)
 }
 
 ///|
-pub fn run_bird_like_demo(frame_count : Int) -> (BirdLikeGame, Array[String]) {
+pub fn run_driftbird_demo(frame_count : Int) -> (DriftbirdGame, Array[String]) {
   let inputs = scripted_demo_inputs(frame_count)
-  let (state, frames) = run_bird_like(inputs)
+  let (state, frames) = run_driftbird(inputs)
   let ascii_frames = frames.map(frame => frame.to_ascii())
   (state, ascii_frames)
 }

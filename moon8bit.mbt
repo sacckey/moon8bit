@@ -14,7 +14,7 @@ pub fn assets_cli_output(dsl : String) -> String {
 ///|
 pub fn demo_snapshot(frame_count : Int) -> String {
   let safe_count = if frame_count <= 0 { 1 } else { frame_count }
-  let (_, ascii_frames) = run_bird_like_demo(safe_count)
+  let (_, ascii_frames) = run_driftbird_demo(safe_count)
   if ascii_frames.length() == 0 {
     ""
   } else {

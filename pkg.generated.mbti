@@ -36,7 +36,7 @@ pub fn input_state(Bool, Bool) -> InputState
 
 pub fn load_sample_assets() -> AssetBundle
 
-pub fn new_bird_like_game(AssetBundle) -> BirdLikeGame
+pub fn new_driftbird_game(AssetBundle) -> DriftbirdGame
 
 pub fn palette_default() -> Palette
 
@@ -48,9 +48,9 @@ pub fn parse_assets_dsl_to_json_string(String) -> Result[String, DslError]
 
 pub fn rect_intersects(Rect, Rect) -> Bool
 
-pub fn run_bird_like(Array[InputState], config? : EngineConfig) -> (BirdLikeGame, Array[Frame])
+pub fn run_driftbird(Array[InputState], config? : EngineConfig) -> (DriftbirdGame, Array[Frame])
 
-pub fn run_bird_like_demo(Int) -> (BirdLikeGame, Array[String])
+pub fn run_driftbird_demo(Int) -> (DriftbirdGame, Array[String])
 
 pub fn[T : Game] run_fixed_frames(T, EngineConfig, Array[InputState]) -> (T, Array[Frame])
 
@@ -79,7 +79,14 @@ pub struct AssetBundle {
 pub impl Eq for AssetBundle
 pub impl Show for AssetBundle
 
-pub struct BirdLikeGame {
+pub struct Collider {
+  tag : String
+  rect : Rect
+}
+pub impl Eq for Collider
+pub impl Show for Collider
+
+pub struct DriftbirdGame {
   bundle : AssetBundle
   mut bird_x : Int
   mut bird_y : Int
@@ -91,22 +98,18 @@ pub struct BirdLikeGame {
   mut score : Int
   mut tick : Int
   mut terrain_offset : Int
+  mut is_started : Bool
   mut is_over : Bool
   mut last_hit_tag : String?
+  mut pipe_scored : Bool
 }
-pub fn BirdLikeGame::is_over(Self) -> Bool
-pub fn BirdLikeGame::last_hit_tag(Self) -> String?
-pub fn BirdLikeGame::score(Self) -> Int
-pub impl Eq for BirdLikeGame
-pub impl Show for BirdLikeGame
-pub impl Game for BirdLikeGame
-
-pub struct Collider {
-  tag : String
-  rect : Rect
-}
-pub impl Eq for Collider
-pub impl Show for Collider
+pub fn DriftbirdGame::is_over(Self) -> Bool
+pub fn DriftbirdGame::is_started(Self) -> Bool
+pub fn DriftbirdGame::last_hit_tag(Self) -> String?
+pub fn DriftbirdGame::score(Self) -> Int
+pub impl Eq for DriftbirdGame
+pub impl Show for DriftbirdGame
+pub impl Game for DriftbirdGame
 
 pub struct DslError {
   line : Int

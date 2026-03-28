@@ -20,7 +20,7 @@ Implemented in this repository:
 - Asset conversion helper:
   - DSL -> JSON string
 - Sample game:
-  - bird-like side scroller
+  - driftbird side scroller
   - flap/reset input
   - collision detection and scrolling obstacles
   - engine-level `Collider` API usage for overlap detection
@@ -49,7 +49,7 @@ python3 -m http.server 8000
 
 Then in browser:
 
-1. Press `Space` to flap.
+1. Press `Space` to start and flap.
 2. Edit a tile value in DSL and click `Apply DSL`.
 3. Confirm the scene changes and status line updates (`score`, `frame`, `hit`).
 
@@ -58,7 +58,7 @@ Run browser demo (Canvas 2D):
 ```bash
 moon build --target js cmd/web
 python3 -m http.server 8000
-# open http://localhost:8000/cmd/web/index.html
+# open http://localhost:8000/demo/
 ```
 
 Update GitHub Pages demo bundle (`demo/web.js`):
@@ -74,7 +74,7 @@ https://<github-user>.github.io/<repo>/demo/
 ```
 
 Controls:
-- `Space` / `ArrowUp`: flap
+- `Space` / `ArrowUp`: start, restart, and flap (one jump per key press)
 - `R`: reset
 - edit DSL in the textarea and click `Apply DSL` (or `Ctrl/Cmd + Enter`)
 - `Export DSL`: download current editor text as `moon8bit_assets.dsl`
@@ -147,7 +147,7 @@ This structure makes generated game code easy for AI to produce and refactor.
 
 - Engine provides reusable primitives: `Rect` + `Collider`.
 - Games build tagged colliders and choose collision responses in game logic.
-- The bird-like sample stores `last_hit_tag` (e.g. `ground`, `pipe_top`) for explainable game-over behavior.
+- The driftbird sample stores `last_hit_tag` (e.g. `ground`, `pipe_top`) for explainable game-over behavior.
 
 ## Why AI-Friendly
 
@@ -182,7 +182,7 @@ Recommended routine:
 This repository currently includes:
 - DSL success/error tests
 - Deterministic engine tests
-- Integration test for bird-like sample loop
+- Integration test for driftbird sample loop
 
 Run everything:
 

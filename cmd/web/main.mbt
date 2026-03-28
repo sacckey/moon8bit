@@ -8,19 +8,25 @@ let display_scale : Int = config.scale * 2
 let initial_bundle : @lib.AssetBundle = @lib.load_sample_assets()
 
 ///|
-let initial_game : @lib.BirdLikeGame = @lib.engine_init(
-  @lib.new_bird_like_game(initial_bundle),
+let initial_game : @lib.DriftbirdGame = @lib.engine_init(
+  @lib.new_driftbird_game(initial_bundle),
   config,
 )
 
 ///|
-let state_ref : Ref[@lib.BirdLikeGame] = @ref.new(initial_game)
+let state_ref : Ref[@lib.DriftbirdGame] = @ref.new(initial_game)
 
 ///|
 let frame_ref : Ref[Int] = @ref.new(0)
 
 ///|
 let palette_ref : Ref[@lib.Palette] = @ref.new(initial_bundle.palette)
+
+///|
+let flap_prev_ref : Ref[Bool] = @ref.new(false)
+
+///|
+let reset_prev_ref : Ref[Bool] = @ref.new(false)
 
 ///|
 fn palette_color(index : Int) -> String {
@@ -34,8 +40,14 @@ fn palette_color(index : Int) -> String {
 
 ///|
 fn poll_input() -> @lib.InputState {
-  let flap = web_key_down("Space") || web_key_down("ArrowUp")
-  let reset = web_key_down("KeyR")
+  let flap_down = web_key_down("Space") || web_key_down("ArrowUp")
+  let flap = flap_down && !flap_prev_ref.val
+  flap_prev_ref.val = flap_down
+
+  let reset_down = web_key_down("KeyR")
+  let reset = reset_down && !reset_prev_ref.val
+  reset_prev_ref.val = reset_down
+
   @lib.input_state(flap, reset)
 }
 
@@ -72,9 +84,20 @@ fn tick() -> Unit {
     Some(v) => v
     None => "-"
   }
-  web_set_status(
-    "moon8bit canvas demo  score=\{next.score()}  frame=\{frame_ref.val}  hit=\{hit_tag}  reset=R",
-  )
+
+  if !next.is_started() {
+    web_set_status(
+      "moon8bit driftbird demo  PRESS SPACE TO START  score=\{next.score()}  frame=\{frame_ref.val}  hit=\{hit_tag}  reset=R",
+    )
+  } else if next.is_over() {
+    web_set_status(
+      "moon8bit driftbird demo  GAME OVER - PRESS SPACE TO RESTART  score=\{next.score()}  frame=\{frame_ref.val}  hit=\{hit_tag}  reset=R",
+    )
+  } else {
+    web_set_status(
+      "moon8bit driftbird demo  score=\{next.score()}  frame=\{frame_ref.val}  hit=\{hit_tag}  reset=R",
+    )
+  }
 }
 
 ///|
@@ -90,7 +113,7 @@ fn apply_dsl_text(dsl_text : String) -> Unit {
     }
   }
 
-  state_ref.val = @lib.engine_init(@lib.new_bird_like_game(bundle), config)
+  state_ref.val = @lib.engine_init(@lib.new_driftbird_game(bundle), config)
   palette_ref.val = bundle.palette
   frame_ref.val = 0
 

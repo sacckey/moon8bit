@@ -39,7 +39,7 @@ Open:
 
 Expected:
 
-- [ ] Bird-like demo is playable (`Space` / `ArrowUp`, `R` reset).
+- [ ] Driftbird demo is playable (`Space` / `ArrowUp`, `R` reset).
 - [ ] DSL `Apply` updates screen output.
 - [ ] `Import DSL` loads local file and applies.
 - [ ] `Export DSL` downloads current editor text.

@@ -32,9 +32,14 @@ Use one short entry per decision to prevent direction drift.
 - Impact: Users can keep edited assets between sessions without server-side components.
 
 - Date: 2026-03-28
-- Decision: Introduce engine-level `Collider` API and route bird-like collision checks through it.
+- Decision: Introduce engine-level `Collider` API and route driftbird collision checks through it.
 - Why: Remove game-specific ad-hoc collision logic and provide reusable overlap primitives.
 - Impact: Future games can share one collision detection path while keeping collision response in game code.
+
+- Date: 2026-03-28
+- Decision: Adopt `driftbird` as the sample game naming for public-facing docs/demo text.
+- Why: Avoid direct similarity to existing IP phrasing while keeping the gameplay concept clear.
+- Impact: Documentation and demo messaging are aligned with safer, original naming.
 
 - Date: 2026-03-28
 - Decision: Record collision hit tags (`ground`, `ceiling`, `pipe_*`) in game state.
@@ -60,3 +65,8 @@ Use one short entry per decision to prevent direction drift.
 - Decision: Use root-based GitHub Pages with `demo/` as the published web demo path.
 - Why: `docs/` is reserved for project documents, so demo assets should be isolated without changing docs usage.
 - Impact: Added root `index.html`, `demo/index.html`, and bundle sync script for Pages-ready deployment.
+
+- Date: 2026-03-28
+- Decision: Switch driftbird control flow to press-to-start/restart with edge-triggered jump input and pass-through scoring.
+- Why: Prevent hold-to-fly behavior, improve game feel, and match retro loop expectations.
+- Impact: Added `is_started` state, one-press jump semantics, pipe pass scoring, and new tests for start/restart/score behavior.

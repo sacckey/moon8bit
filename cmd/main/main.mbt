@@ -58,7 +58,7 @@ fn run_demo(tokens : Array[String]) -> Unit {
     60
   }
 
-  let (state, frames) = @lib.run_bird_like_demo(frame_count)
+  let (state, frames) = @lib.run_driftbird_demo(frame_count)
   println(
     "moon8bit demo: frames=\{frame_count}, score=\{state.score()}, over=\{state.is_over()}",
   )

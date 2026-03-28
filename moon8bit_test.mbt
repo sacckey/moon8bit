@@ -56,15 +56,15 @@ test "assets CLI output returns JSON" {
 }
 
 ///|
-test "bird-like demo runs and renders" {
-  let (state, frames) = run_bird_like_demo(24)
+test "driftbird demo runs and renders" {
+  let (state, frames) = run_driftbird_demo(24)
   assert_eq(frames.length(), 24)
   assert_true(state.score() >= 0)
   assert_true(frames[23].length() > 0)
 }
 
 ///|
-test "bird-like draw reflects ground tilemap colors" {
+test "driftbird draw reflects ground tilemap colors" {
   let dsl = ["tilemap ground 1 2", "4", "6", "end"].join("\n")
   let bundle = match parse_assets_dsl(dsl) {
     Ok(v) => v
@@ -72,7 +72,7 @@ test "bird-like draw reflects ground tilemap colors" {
   }
 
   let config = default_engine_config()
-  let state = engine_init(new_bird_like_game(bundle), config)
+  let state = engine_init(new_driftbird_game(bundle), config)
   let (_, frame) = engine_step(state, config, input_none, 0)
 
   assert_eq(frame.get_pixel(0, config.height - 2), Some(4))
@@ -80,7 +80,7 @@ test "bird-like draw reflects ground tilemap colors" {
 }
 
 ///|
-test "bird-like draw reflects bg tilemap colors" {
+test "driftbird draw reflects bg tilemap colors" {
   let dsl = [
     "tilemap bg 1 1", "4", "end", "", "tilemap ground 1 2", "3", "3", "end",
   ].join("\n")
@@ -91,20 +91,45 @@ test "bird-like draw reflects bg tilemap colors" {
   }
 
   let config = default_engine_config()
-  let state = engine_init(new_bird_like_game(bundle), config)
-  let (_, frame) = engine_step(state, config, input_none, 0)
+  let state = engine_init(new_driftbird_game(bundle), config)
+  let (_, frame) = engine_step(state, config, input_state(true, false), 0)
 
   assert_eq(frame.get_pixel(0, 0), Some(4))
 }
 
 ///|
-test "bird-like records collision tag on game over" {
+test "driftbird records collision tag on game over" {
   let inputs : Array[InputState] = []
+  inputs.push(input_state(true, false))
   for _ in 0..<64 {
     inputs.push(input_none)
   }
 
-  let (state, _) = run_bird_like(inputs)
+  let (state, _) = run_driftbird(inputs)
   assert_true(state.is_over())
   assert_eq(state.last_hit_tag(), Some("ground"))
+}
+
+///|
+test "driftbird waits for flap before start" {
+  let inputs = [input_none, input_none, input_none]
+  let (state, _) = run_driftbird(inputs)
+
+  assert_true(!state.is_started())
+  assert_true(!state.is_over())
+  assert_eq(state.score(), 0)
+}
+
+///|
+test "driftbird restarts from game over on flap input" {
+  let inputs : Array[InputState] = []
+  inputs.push(input_state(true, false))
+  for _ in 0..<64 {
+    inputs.push(input_none)
+  }
+  inputs.push(input_state(true, false))
+
+  let (state, _) = run_driftbird(inputs)
+  assert_true(state.is_started())
+  assert_true(!state.is_over())
 }

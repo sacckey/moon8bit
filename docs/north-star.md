@@ -34,7 +34,6 @@ Build `moon8bit` as a retro 2D engine that is easy for both humans and AI to use
 ## Success Criteria by Final Submission (2026-04-21)
 
 - Reproducible build/run flow for reviewers.
-- One playable bird-like side-scroller demo on Web.
+- One playable driftbird side-scroller demo on Web.
 - Clear docs for architecture decisions and AI usage.
 - Sufficient tests covering core paths and edge cases.
-

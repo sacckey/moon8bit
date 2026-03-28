@@ -448,8 +448,10 @@ const _M0FP311moonbitlang4core7builtin43boyer__moore__horspool__find_2econstr_2f
 const _M0FP47sacckey8moon8bit3cmd3web15initial__bundle = _M0FP27sacckey8moon8bit20load__sample__assets();
 const _M0FP47sacckey8moon8bit3cmd3web12palette__ref = _M0FP311moonbitlang4core3ref3newGRP27sacckey8moon8bit7PaletteE(_M0FP47sacckey8moon8bit3cmd3web15initial__bundle.palette);
 const _M0FP47sacckey8moon8bit3cmd3web10frame__ref = _M0FP311moonbitlang4core3ref3newGiE(0);
-const _M0FP47sacckey8moon8bit3cmd3web13initial__game = _M0FP27sacckey8moon8bit12engine__initGRP27sacckey8moon8bit12BirdLikeGameE(_M0FP27sacckey8moon8bit21new__bird__like__game(_M0FP47sacckey8moon8bit3cmd3web15initial__bundle), _M0FP47sacckey8moon8bit3cmd3web6config);
-const _M0FP47sacckey8moon8bit3cmd3web10state__ref = _M0FP311moonbitlang4core3ref3newGRP27sacckey8moon8bit12BirdLikeGameE(_M0FP47sacckey8moon8bit3cmd3web13initial__game);
+const _M0FP47sacckey8moon8bit3cmd3web16reset__prev__ref = _M0FP311moonbitlang4core3ref3newGbE(false);
+const _M0FP47sacckey8moon8bit3cmd3web15flap__prev__ref = _M0FP311moonbitlang4core3ref3newGbE(false);
+const _M0FP47sacckey8moon8bit3cmd3web13initial__game = _M0FP27sacckey8moon8bit12engine__initGRP27sacckey8moon8bit13DriftbirdGameE(_M0FP27sacckey8moon8bit20new__driftbird__game(_M0FP47sacckey8moon8bit3cmd3web15initial__bundle), _M0FP47sacckey8moon8bit3cmd3web6config);
+const _M0FP47sacckey8moon8bit3cmd3web10state__ref = _M0FP311moonbitlang4core3ref3newGRP27sacckey8moon8bit13DriftbirdGameE(_M0FP47sacckey8moon8bit3cmd3web13initial__game);
 const _M0FP47sacckey8moon8bit3cmd3web14display__scale = Math.imul(_M0FP47sacckey8moon8bit3cmd3web6config.scale, 2) | 0;
 function _M0FP311moonbitlang4core5abort5abortGuE(msg) {
   $panic();
@@ -2672,10 +2674,13 @@ function _M0FP311moonbitlang4core7strconv18parse__int_2einner(str, base) {
 function _M0FP311moonbitlang4core3ref3newGiE(x) {
   return { val: x };
 }
-function _M0FP311moonbitlang4core3ref3newGRP27sacckey8moon8bit12BirdLikeGameE(x) {
+function _M0FP311moonbitlang4core3ref3newGRP27sacckey8moon8bit13DriftbirdGameE(x) {
   return { val: x };
 }
 function _M0FP311moonbitlang4core3ref3newGRP27sacckey8moon8bit7PaletteE(x) {
+  return { val: x };
+}
+function _M0FP311moonbitlang4core3ref3newGbE(x) {
   return { val: x };
 }
 function _M0FP27sacckey8moon8bit3errGRP27sacckey8moon8bit11AssetBundleE(line, message) {
@@ -3150,8 +3155,8 @@ function _M0FP27sacckey8moon8bit20load__sample__assets() {
     return { palette: _M0FP27sacckey8moon8bit16palette__default(), sprites: [_M0FP27sacckey8moon8bit21default__bird__sprite()], tilemaps: [] };
   }
 }
-function _M0FP27sacckey8moon8bit21new__bird__like__game(bundle) {
-  return { bundle: bundle, bird_x: 8, bird_y: 0, bird_vy: 0, pipe_x: 0, pipe_gap_y: 0, pipe_width: 0, gap_height: 0, score: 0, tick: 0, terrain_offset: 0, is_over: false, last_hit_tag: undefined };
+function _M0FP27sacckey8moon8bit20new__driftbird__game(bundle) {
+  return { bundle: bundle, bird_x: 8, bird_y: 0, bird_vy: 0, pipe_x: 0, pipe_gap_y: 0, pipe_width: 0, gap_height: 0, score: 0, tick: 0, terrain_offset: 0, is_started: false, is_over: false, last_hit_tag: undefined, pipe_scored: false };
 }
 function _M0FP27sacckey8moon8bit13make__context(config, input, frame) {
   let dt_ms;
@@ -3165,14 +3170,14 @@ function _M0FP27sacckey8moon8bit13make__context(config, input, frame) {
   }
   return { config: config, input: input, frame: frame, dt_ms: dt_ms };
 }
-function _M0FP27sacckey8moon8bit12engine__initGRP27sacckey8moon8bit12BirdLikeGameE(initial, config) {
+function _M0FP27sacckey8moon8bit12engine__initGRP27sacckey8moon8bit13DriftbirdGameE(initial, config) {
   const context = _M0FP27sacckey8moon8bit13make__context(config, _M0FP27sacckey8moon8bit11input__none, 0);
-  return _M0IP27sacckey8moon8bit12BirdLikeGameP27sacckey8moon8bit4Game4init(initial, context);
+  return _M0IP27sacckey8moon8bit13DriftbirdGameP27sacckey8moon8bit4Game4init(initial, context);
 }
-function _M0FP27sacckey8moon8bit12engine__stepGRP27sacckey8moon8bit12BirdLikeGameE(game, config, input, frame) {
+function _M0FP27sacckey8moon8bit12engine__stepGRP27sacckey8moon8bit13DriftbirdGameE(game, config, input, frame) {
   const context = _M0FP27sacckey8moon8bit13make__context(config, input, frame);
-  const next = _M0IP27sacckey8moon8bit12BirdLikeGameP27sacckey8moon8bit4Game6update(game, context);
-  const rendered = _M0IP27sacckey8moon8bit12BirdLikeGameP27sacckey8moon8bit4Game4draw(next, context);
+  const next = _M0IP27sacckey8moon8bit13DriftbirdGameP27sacckey8moon8bit4Game6update(game, context);
+  const rendered = _M0IP27sacckey8moon8bit13DriftbirdGameP27sacckey8moon8bit4Game4draw(next, context);
   return { _0: next, _1: rendered };
 }
 function _M0FP27sacckey8moon8bit5clamp(value, min_value, max_value) {
@@ -3193,7 +3198,7 @@ function _M0FP27sacckey8moon8bit12next__gap__y(seed, config, gap_height) {
   }
   return min_gap_top + (non_negative % span | 0) | 0;
 }
-function _M0FP27sacckey8moon8bit17reset__bird__like(game, config) {
+function _M0FP27sacckey8moon8bit16reset__driftbird(game, config) {
   game.bird_x = 8;
   if (2 === 0) {
     $panic();
@@ -3207,8 +3212,10 @@ function _M0FP27sacckey8moon8bit17reset__bird__like(game, config) {
   game.score = 0;
   game.tick = 0;
   game.terrain_offset = 0;
+  game.is_started = false;
   game.is_over = false;
   game.last_hit_tag = undefined;
+  game.pipe_scored = false;
   return game;
 }
 function _M0FP27sacckey8moon8bit10bird__rect(game) {
@@ -3233,22 +3240,22 @@ function _M0FP27sacckey8moon8bit30draw__scrolling__tilemap__rows(frame, tilemap,
   if (tilemap.width <= 0 || (tilemap.height <= 0 || rows <= 0)) {
     return undefined;
   }
-  const _start302 = 0;
-  const _end303 = rows;
-  let _tmp = _start302;
+  const _start306 = 0;
+  const _end307 = rows;
+  let _tmp = _start306;
   while (true) {
     const row = _tmp;
-    if (row < _end303) {
+    if (row < _end307) {
       if (tilemap.height === 0) {
         $panic();
       }
       const tile_y = row % tilemap.height | 0;
-      const _start308 = 0;
-      const _end309 = screen_width;
-      let _tmp$2 = _start308;
+      const _start312 = 0;
+      const _end313 = screen_width;
+      let _tmp$2 = _start312;
       while (true) {
         const x = _tmp$2;
-        if (x < _end309) {
+        if (x < _end313) {
           if (tilemap.width === 0) {
             $panic();
           }
@@ -3347,42 +3354,43 @@ function _M0FP27sacckey8moon8bit22detect__collision__tag(game, config) {
   }
   return hit.tag;
 }
-function _M0MP27sacckey8moon8bit12BirdLikeGame5score(self) {
+function _M0MP27sacckey8moon8bit13DriftbirdGame5score(self) {
   return self.score;
 }
-function _M0MP27sacckey8moon8bit12BirdLikeGame14last__hit__tag(self) {
+function _M0MP27sacckey8moon8bit13DriftbirdGame8is__over(self) {
+  return self.is_over;
+}
+function _M0MP27sacckey8moon8bit13DriftbirdGame11is__started(self) {
+  return self.is_started;
+}
+function _M0MP27sacckey8moon8bit13DriftbirdGame14last__hit__tag(self) {
   return self.last_hit_tag;
 }
-function _M0IP27sacckey8moon8bit12BirdLikeGameP27sacckey8moon8bit4Game4init(self, ctx) {
-  return _M0FP27sacckey8moon8bit17reset__bird__like(self, ctx.config);
-}
-function _M0IP27sacckey8moon8bit12BirdLikeGameP27sacckey8moon8bit4Game6update(self, ctx) {
-  if (ctx.input.reset) {
-    return _M0FP27sacckey8moon8bit17reset__bird__like(self, ctx.config);
-  }
-  if (self.is_over) {
-    return self;
-  }
+function _M0FP27sacckey8moon8bit13step__running(game, ctx) {
   if (ctx.input.flap) {
-    self.bird_vy = -3;
+    game.bird_vy = -3;
   }
-  self.bird_vy = _M0FP27sacckey8moon8bit5clamp(self.bird_vy + 1 | 0, -4, 3);
-  self.bird_y = self.bird_y + self.bird_vy | 0;
-  self.pipe_x = self.pipe_x - 1 | 0;
-  if ((self.pipe_x + self.pipe_width | 0) < 0) {
-    self.pipe_x = ctx.config.width + 6 | 0;
-    self.score = self.score + 1 | 0;
-    self.pipe_gap_y = _M0FP27sacckey8moon8bit12next__gap__y(self.tick + 97 | 0, ctx.config, self.gap_height);
+  game.bird_vy = _M0FP27sacckey8moon8bit5clamp(game.bird_vy + 1 | 0, -4, 3);
+  game.bird_y = game.bird_y + game.bird_vy | 0;
+  game.pipe_x = game.pipe_x - 1 | 0;
+  if (!game.pipe_scored && (game.pipe_x + game.pipe_width | 0) < game.bird_x) {
+    game.score = game.score + 1 | 0;
+    game.pipe_scored = true;
+  }
+  if ((game.pipe_x + game.pipe_width | 0) < 0) {
+    game.pipe_x = ctx.config.width + 6 | 0;
+    game.pipe_gap_y = _M0FP27sacckey8moon8bit12next__gap__y(game.tick + 97 | 0, ctx.config, game.gap_height);
+    game.pipe_scored = false;
   }
   if (ctx.config.width === 0) {
     $panic();
   }
-  self.terrain_offset = (self.terrain_offset + 1 | 0) % ctx.config.width | 0;
-  self.tick = self.tick + 1 | 0;
+  game.terrain_offset = (game.terrain_offset + 1 | 0) % ctx.config.width | 0;
+  game.tick = game.tick + 1 | 0;
   let tag;
   _L: {
     _L$2: {
-      const _bind = _M0FP27sacckey8moon8bit22detect__collision__tag(self, ctx.config);
+      const _bind = _M0FP27sacckey8moon8bit22detect__collision__tag(game, ctx.config);
       if (_bind === undefined) {
       } else {
         const _Some = _bind;
@@ -3392,30 +3400,33 @@ function _M0IP27sacckey8moon8bit12BirdLikeGameP27sacckey8moon8bit4Game6update(se
       }
       break _L;
     }
-    self.last_hit_tag = tag;
-    switch (tag) {
-      case "pipe_top": {
-        self.is_over = true;
-        break;
-      }
-      case "pipe_bottom": {
-        self.is_over = true;
-        break;
-      }
-      case "ground": {
-        self.is_over = true;
-        break;
-      }
-      case "ceiling": {
-        self.is_over = true;
-        break;
-      }
-      default: {
-        self.is_over = true;
-      }
-    }
+    game.last_hit_tag = tag;
+    game.is_over = true;
   }
-  return self;
+  return game;
+}
+function _M0IP27sacckey8moon8bit13DriftbirdGameP27sacckey8moon8bit4Game4init(self, ctx) {
+  return _M0FP27sacckey8moon8bit16reset__driftbird(self, ctx.config);
+}
+function _M0IP27sacckey8moon8bit13DriftbirdGameP27sacckey8moon8bit4Game6update(self, ctx) {
+  if (ctx.input.reset) {
+    return _M0FP27sacckey8moon8bit16reset__driftbird(self, ctx.config);
+  }
+  if (self.is_over) {
+    if (!ctx.input.flap) {
+      return self;
+    }
+    const restarted = _M0FP27sacckey8moon8bit16reset__driftbird(self, ctx.config);
+    restarted.is_started = true;
+    return _M0FP27sacckey8moon8bit13step__running(restarted, ctx);
+  }
+  if (!self.is_started) {
+    if (!ctx.input.flap) {
+      return self;
+    }
+    self.is_started = true;
+  }
+  return _M0FP27sacckey8moon8bit13step__running(self, ctx);
 }
 function _M0FP27sacckey8moon8bit12find__sprite(bundle, name) {
   const _arr = bundle.sprites;
@@ -3516,7 +3527,7 @@ function _M0MP27sacckey8moon8bit5Frame10draw__rect(self, x, y, w, h, color) {
 function _M0MP27sacckey8moon8bit5Frame11new_2einner(width, height, fill) {
   return { width: width, height: height, pixels: _M0MP311moonbitlang4core5array5Array4makeGiE(Math.imul(width, height) | 0, fill) };
 }
-function _M0IP27sacckey8moon8bit12BirdLikeGameP27sacckey8moon8bit4Game4draw(self, ctx) {
+function _M0IP27sacckey8moon8bit13DriftbirdGameP27sacckey8moon8bit4Game4draw(self, ctx) {
   const frame = _M0MP27sacckey8moon8bit5Frame11new_2einner(ctx.config.width, ctx.config.height, 0);
   const ground_rows = ctx.config.height >= 2 ? 2 : ctx.config.height;
   const ground_y = ctx.config.height - ground_rows | 0;
@@ -3595,8 +3606,12 @@ function _M0IP27sacckey8moon8bit12BirdLikeGameP27sacckey8moon8bit4Game4draw(self
     sprite = _found;
   }
   _M0MP27sacckey8moon8bit5Frame4blit(frame, sprite, self.bird_x, self.bird_y);
-  if (self.is_over) {
-    _M0MP27sacckey8moon8bit5Frame10draw__rect(frame, 0, 0, ctx.config.width, 1, 4);
+  if (!self.is_started) {
+    _M0MP27sacckey8moon8bit5Frame10draw__rect(frame, 0, 0, ctx.config.width, 1, 6);
+  } else {
+    if (self.is_over) {
+      _M0MP27sacckey8moon8bit5Frame10draw__rect(frame, 0, 0, ctx.config.width, 1, 4);
+    }
   }
   return frame;
 }
@@ -3608,8 +3623,12 @@ function _M0FP47sacckey8moon8bit3cmd3web14palette__color(index) {
   return index >= 0 && index < palette.colors.length ? _M0MP311moonbitlang4core5array5Array2atGsE(palette.colors, index) : "#101820";
 }
 function _M0FP47sacckey8moon8bit3cmd3web11poll__input() {
-  const flap = _M0FP47sacckey8moon8bit3cmd3web14web__key__down("Space") || _M0FP47sacckey8moon8bit3cmd3web14web__key__down("ArrowUp");
-  const reset = _M0FP47sacckey8moon8bit3cmd3web14web__key__down("KeyR");
+  const flap_down = _M0FP47sacckey8moon8bit3cmd3web14web__key__down("Space") || _M0FP47sacckey8moon8bit3cmd3web14web__key__down("ArrowUp");
+  const flap = flap_down && !_M0FP47sacckey8moon8bit3cmd3web15flap__prev__ref.val;
+  _M0FP47sacckey8moon8bit3cmd3web15flap__prev__ref.val = flap_down;
+  const reset_down = _M0FP47sacckey8moon8bit3cmd3web14web__key__down("KeyR");
+  const reset = reset_down && !_M0FP47sacckey8moon8bit3cmd3web16reset__prev__ref.val;
+  _M0FP47sacckey8moon8bit3cmd3web16reset__prev__ref.val = reset_down;
   return _M0FP27sacckey8moon8bit12input__state(flap, reset);
 }
 function _M0FP47sacckey8moon8bit3cmd3web11draw__frame(frame) {
@@ -3649,7 +3668,7 @@ function _M0FP47sacckey8moon8bit3cmd3web4tick() {
   let next;
   let rendered;
   _L: {
-    const _bind = _M0FP27sacckey8moon8bit12engine__stepGRP27sacckey8moon8bit12BirdLikeGameE(_M0FP47sacckey8moon8bit3cmd3web10state__ref.val, _M0FP47sacckey8moon8bit3cmd3web6config, input, frame_index);
+    const _bind = _M0FP27sacckey8moon8bit12engine__stepGRP27sacckey8moon8bit13DriftbirdGameE(_M0FP47sacckey8moon8bit3cmd3web10state__ref.val, _M0FP47sacckey8moon8bit3cmd3web6config, input, frame_index);
     const _next = _bind._0;
     const _rendered = _bind._1;
     next = _next;
@@ -3660,7 +3679,7 @@ function _M0FP47sacckey8moon8bit3cmd3web4tick() {
   _M0FP47sacckey8moon8bit3cmd3web10frame__ref.val = frame_index + 1 | 0;
   _M0FP47sacckey8moon8bit3cmd3web11draw__frame(rendered);
   let hit_tag;
-  const _bind = _M0MP27sacckey8moon8bit12BirdLikeGame14last__hit__tag(next);
+  const _bind = _M0MP27sacckey8moon8bit13DriftbirdGame14last__hit__tag(next);
   if (_bind === undefined) {
     hit_tag = "-";
   } else {
@@ -3668,7 +3687,18 @@ function _M0FP47sacckey8moon8bit3cmd3web4tick() {
     const _v = _Some;
     hit_tag = _v;
   }
-  _M0FP47sacckey8moon8bit3cmd3web16web__set__status(`moon8bit canvas demo  score=${_M0IP016_24default__implP311moonbitlang4core7builtin4Show10to__stringGiE(_M0MP27sacckey8moon8bit12BirdLikeGame5score(next))}  frame=${_M0IP016_24default__implP311moonbitlang4core7builtin4Show10to__stringGiE(_M0FP47sacckey8moon8bit3cmd3web10frame__ref.val)}  hit=${_M0IP311moonbitlang4core6string6StringP311moonbitlang4core7builtin4Show10to__string(hit_tag)}  reset=R`);
+  if (!_M0MP27sacckey8moon8bit13DriftbirdGame11is__started(next)) {
+    _M0FP47sacckey8moon8bit3cmd3web16web__set__status(`moon8bit driftbird demo  PRESS SPACE TO START  score=${_M0IP016_24default__implP311moonbitlang4core7builtin4Show10to__stringGiE(_M0MP27sacckey8moon8bit13DriftbirdGame5score(next))}  frame=${_M0IP016_24default__implP311moonbitlang4core7builtin4Show10to__stringGiE(_M0FP47sacckey8moon8bit3cmd3web10frame__ref.val)}  hit=${_M0IP311moonbitlang4core6string6StringP311moonbitlang4core7builtin4Show10to__string(hit_tag)}  reset=R`);
+    return;
+  } else {
+    if (_M0MP27sacckey8moon8bit13DriftbirdGame8is__over(next)) {
+      _M0FP47sacckey8moon8bit3cmd3web16web__set__status(`moon8bit driftbird demo  GAME OVER - PRESS SPACE TO RESTART  score=${_M0IP016_24default__implP311moonbitlang4core7builtin4Show10to__stringGiE(_M0MP27sacckey8moon8bit13DriftbirdGame5score(next))}  frame=${_M0IP016_24default__implP311moonbitlang4core7builtin4Show10to__stringGiE(_M0FP47sacckey8moon8bit3cmd3web10frame__ref.val)}  hit=${_M0IP311moonbitlang4core6string6StringP311moonbitlang4core7builtin4Show10to__string(hit_tag)}  reset=R`);
+      return;
+    } else {
+      _M0FP47sacckey8moon8bit3cmd3web16web__set__status(`moon8bit driftbird demo  score=${_M0IP016_24default__implP311moonbitlang4core7builtin4Show10to__stringGiE(_M0MP27sacckey8moon8bit13DriftbirdGame5score(next))}  frame=${_M0IP016_24default__implP311moonbitlang4core7builtin4Show10to__stringGiE(_M0FP47sacckey8moon8bit3cmd3web10frame__ref.val)}  hit=${_M0IP311moonbitlang4core6string6StringP311moonbitlang4core7builtin4Show10to__string(hit_tag)}  reset=R`);
+      return;
+    }
+  }
 }
 function _M0FP47sacckey8moon8bit3cmd3web16apply__dsl__text(dsl_text) {
   let bundle;
@@ -3691,7 +3721,7 @@ function _M0FP47sacckey8moon8bit3cmd3web16apply__dsl__text(dsl_text) {
     _M0FP47sacckey8moon8bit3cmd3web26web__set__editor__feedback(`Parse error at line ${_M0IP016_24default__implP311moonbitlang4core7builtin4Show10to__stringGiE(err.line)}: ${_M0IP311moonbitlang4core6string6StringP311moonbitlang4core7builtin4Show10to__string(err.message)}`, true);
     return undefined;
   }
-  _M0FP47sacckey8moon8bit3cmd3web10state__ref.val = _M0FP27sacckey8moon8bit12engine__initGRP27sacckey8moon8bit12BirdLikeGameE(_M0FP27sacckey8moon8bit21new__bird__like__game(bundle), _M0FP47sacckey8moon8bit3cmd3web6config);
+  _M0FP47sacckey8moon8bit3cmd3web10state__ref.val = _M0FP27sacckey8moon8bit12engine__initGRP27sacckey8moon8bit13DriftbirdGameE(_M0FP27sacckey8moon8bit20new__driftbird__game(bundle), _M0FP47sacckey8moon8bit3cmd3web6config);
   _M0FP47sacckey8moon8bit3cmd3web12palette__ref.val = bundle.palette;
   _M0FP47sacckey8moon8bit3cmd3web10frame__ref.val = 0;
   _M0FP47sacckey8moon8bit3cmd3web26web__set__editor__feedback("Applied DSL successfully", false);

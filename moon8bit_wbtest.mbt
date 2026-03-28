@@ -1,8 +1,8 @@
 ///|
 test "engine deterministic with identical inputs" {
   let inputs = scripted_demo_inputs(48)
-  let (state1, frames1) = run_bird_like(inputs)
-  let (state2, frames2) = run_bird_like(inputs)
+  let (state1, frames1) = run_driftbird(inputs)
+  let (state2, frames2) = run_driftbird(inputs)
 
   assert_eq(state1, state2)
   assert_eq(frames1, frames2)
@@ -17,7 +17,7 @@ test "reset input restores game state" {
     input_none,
   ]
 
-  let (state, _) = run_bird_like(inputs)
+  let (state, _) = run_driftbird(inputs)
   assert_true(!state.is_over())
   assert_eq(state.score(), 0)
 }
@@ -62,8 +62,9 @@ test "collider API ignores empty collider boxes" {
 ///|
 test "engine step records pipe collision hit tag" {
   let config = default_engine_config()
-  let state = engine_init(new_bird_like_game(load_sample_assets()), config)
+  let state = engine_init(new_driftbird_game(load_sample_assets()), config)
 
+  state.is_started = true
   state.bird_x = 8
   state.bird_y = 4
   state.bird_vy = 0
@@ -77,4 +78,26 @@ test "engine step records pipe collision hit tag" {
   let (next, _) = engine_step(state, config, input_none, 0)
   assert_true(next.is_over())
   assert_eq(next.last_hit_tag(), Some("pipe_top"))
+}
+
+///|
+test "engine step increments score when passing a pipe" {
+  let config = default_engine_config()
+  let state = engine_init(new_driftbird_game(load_sample_assets()), config)
+
+  state.is_started = true
+  state.is_over = false
+  state.score = 0
+  state.bird_x = 20
+  state.bird_y = 20
+  state.bird_vy = 0
+  state.pipe_x = 10
+  state.pipe_width = 5
+  state.pipe_gap_y = 0
+  state.gap_height = 30
+  state.pipe_scored = false
+
+  let (next, _) = engine_step(state, config, input_none, 0)
+  assert_eq(next.score(), 1)
+  assert_true(next.pipe_scored)
 }

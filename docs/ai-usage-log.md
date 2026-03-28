@@ -12,7 +12,7 @@
 
 ## Human decisions
 - Chose to keep v1 asset format text-first and avoid external LLM API coupling.
-- Chose bird-like side-scroller as sample to cover input/collision/scrolling in one scene.
+- Chose driftbird side-scroller as sample to cover input/collision/scrolling in one scene.
 - Prioritized deterministic runtime and parser diagnostics over graphics complexity.
 
 ## Verification steps
@@ -35,3 +35,4 @@
 - Added evaluator quickstart steps in README for faster reproduction.
 - Added submission-ready operational docs (`submission-checklist`, `demo-script`) and concrete handoff notes.
 - Prepared GitHub Pages publishing layout (`root index + demo/ path`) and bundle sync script.
+- Refined gameplay loop to driftbird naming and press-based controls (`Press Space` start/restart, edge-trigger jump, pass-through scoring) with additional regression tests.
