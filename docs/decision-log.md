@@ -35,3 +35,8 @@ Use one short entry per decision to prevent direction drift.
 - Decision: Introduce engine-level `Collider` API and route bird-like collision checks through it.
 - Why: Remove game-specific ad-hoc collision logic and provide reusable overlap primitives.
 - Impact: Future games can share one collision detection path while keeping collision response in game code.
+
+- Date: 2026-03-28
+- Decision: Record collision hit tags (`ground`, `ceiling`, `pipe_*`) in game state.
+- Why: Keep collision outcomes explainable and allow game-side branching based on collision type.
+- Impact: Integration tests can verify both game-over and collision cause, improving debugging and reproducibility.

@@ -114,6 +114,12 @@ end
 
 This structure makes generated game code easy for AI to produce and refactor.
 
+## Collision Model
+
+- Engine provides reusable primitives: `Rect` + `Collider`.
+- Games build tagged colliders and choose collision responses in game logic.
+- The bird-like sample stores `last_hit_tag` (e.g. `ground`, `pipe_top`) for explainable game-over behavior.
+
 ## Why AI-Friendly
 
 - Text DSL is easy to prompt, diff, review, and regenerate.

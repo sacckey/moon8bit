@@ -47,6 +47,7 @@ pub struct BirdLikeGame {
   mut tick : Int
   mut terrain_offset : Int
   mut is_over : Bool
+  mut last_hit_tag : String?
 } derive(Eq, Show)
 
 ///|
@@ -88,6 +89,7 @@ fn reset_bird_like(game : BirdLikeGame, config : EngineConfig) -> BirdLikeGame {
   game.tick = 0
   game.terrain_offset = 0
   game.is_over = false
+  game.last_hit_tag = None
   game
 }
 
@@ -151,17 +153,23 @@ fn pipe_colliders(
 }
 
 ///|
-fn is_collision(game : BirdLikeGame, config : EngineConfig) -> Bool {
+fn detect_collision_tag(game : BirdLikeGame, config : EngineConfig) -> String? {
   let ground_y = config.height - 2
   let bird = bird_rect(game)
 
-  if game.bird_y < 0 || game.bird_y + bird.h > ground_y {
-    return true
+  if game.bird_y < 0 {
+    return Some("ceiling")
+  }
+  if game.bird_y + bird.h > ground_y {
+    return Some("ground")
   }
 
   let bird_collider = collider("bird", bird)
   let obstacles = pipe_colliders(game, config)
-  collider_hits_any(bird_collider, obstacles)
+  match collider_first_hit(bird_collider, obstacles) {
+    Some(hit) => Some(hit.tag)
+    None => None
+  }
 }
 
 ///|
@@ -179,6 +187,7 @@ pub fn new_bird_like_game(bundle : AssetBundle) -> BirdLikeGame {
     tick: 0,
     terrain_offset: 0,
     is_over: false,
+    last_hit_tag: None,
   }
 }
 
@@ -190,6 +199,11 @@ pub fn BirdLikeGame::score(self : BirdLikeGame) -> Int {
 ///|
 pub fn BirdLikeGame::is_over(self : BirdLikeGame) -> Bool {
   self.is_over
+}
+
+///|
+pub fn BirdLikeGame::last_hit_tag(self : BirdLikeGame) -> String? {
+  self.last_hit_tag
 }
 
 ///|
@@ -224,8 +238,18 @@ pub impl Game for BirdLikeGame with update(self, ctx) {
   self.terrain_offset = (self.terrain_offset + 1) % ctx.config.width
   self.tick += 1
 
-  if is_collision(self, ctx.config) {
-    self.is_over = true
+  match detect_collision_tag(self, ctx.config) {
+    Some(tag) => {
+      self.last_hit_tag = Some(tag)
+      match tag {
+        "pipe_top" => self.is_over = true
+        "pipe_bottom" => self.is_over = true
+        "ground" => self.is_over = true
+        "ceiling" => self.is_over = true
+        _ => self.is_over = true
+      }
+    }
+    None => ()
   }
 
   self

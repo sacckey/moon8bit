@@ -96,3 +96,15 @@ test "bird-like draw reflects bg tilemap colors" {
 
   assert_eq(frame.get_pixel(0, 0), Some(4))
 }
+
+///|
+test "bird-like records collision tag on game over" {
+  let inputs : Array[InputState] = []
+  for _ in 0..<64 {
+    inputs.push(input_none)
+  }
+
+  let (state, _) = run_bird_like(inputs)
+  assert_true(state.is_over())
+  assert_eq(state.last_hit_tag(), Some("ground"))
+}
