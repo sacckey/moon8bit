@@ -2,35 +2,33 @@
 
 ## Session
 
-- Date: 2026-03-28
-- Timebox: 2-3 hours
+- Date: 2026-03-31
+- Timebox: 1-2 hours
 - Branch: `main`
 
 ## Today Focus (max 2)
 
-1. Add `Export DSL` and `Import DSL` to the web editor workflow.
-2. Update docs and verify the full build/test flow.
+1. Lock submission messaging (evidence-based claims, no uniqueness overreach).
+2. Finalize Stage 1 submission gate and post-submission implementation order.
 
 ## Done Definition
 
-- Web demo supports `Edit -> Apply -> Export`.
-- Web demo supports `Import -> Textarea update -> Apply`.
-- README includes operation steps for export/import.
-- `moon check`, `moon test`, and `moon build --target js cmd/web` pass.
+- `docs/application-draft.md` wording is aligned with evidence-based positioning.
+- `docs/submission-checklist.md` includes Stage 1 gate and execution order.
+- `docs/north-star.md` includes positioning guardrails.
 
 ## Explicitly Out of Scope Today
 
-- WebGPU backend.
-- Engine-level collision API refactor.
-- External LLM API integration.
+- Major gameplay refactor.
+- Wrapper API implementation work.
+- New rendering backend work.
 
 ## Constraints / Assumptions
 
-- Keep local-first workflow (`localhost`) and browser-based persistence via file import/export.
-- Preserve existing Canvas runtime behavior and controls.
+- Stage 1 submission completion is higher priority than new features.
+- Existing playable driftbird behavior must remain unchanged.
 
 ## Verification Plan
 
-- `moon check`
-- `moon test`
-- `moon build --target js cmd/web`
+- Review updated docs for consistency and concrete claims.
+- Run verification commands only if source code changes are introduced.

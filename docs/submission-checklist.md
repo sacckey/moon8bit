@@ -4,7 +4,19 @@
 
 - Submission target: MoonBit SCC 2026
 - Deadline: 2026-04-21
-- Current status date: 2026-03-28
+- Current status date: 2026-03-31
+
+## Stage 1 Submission Gate
+
+- [ ] Google Form is submitted (target: 2026-04-01).
+- [ ] Submission timestamp is recorded in `docs/handoff.md`.
+- [ ] Final submitted text snapshot is preserved locally.
+
+## Messaging Safety Checks
+
+- [ ] Claims are evidence-based (implementation facts only).
+- [ ] No "first/only/better than X" uniqueness claims without proof.
+- [ ] Competitor comparison is optional and not required for this submission.
 
 ## Required Artifacts
 
@@ -52,3 +64,10 @@ Expected:
 - [ ] Ensure latest docs match actual implementation.
 - [ ] Ensure commit history is clean and understandable.
 - [ ] Submit with final application text and demo link.
+
+## Post-Submission Priority (Execution Order)
+
+1. Add thin ergonomic wrapper APIs with backward compatibility.
+2. Add wrapper equivalence tests (same behavior as existing APIs).
+3. Add a compact wrapped sample while keeping `game_driftbird.mbt` as baseline.
+4. Update README with concise API examples and reproducibility proof points.

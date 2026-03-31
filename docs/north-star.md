@@ -9,6 +9,7 @@ Build `moon8bit` as a retro 2D engine that is easy for both humans and AI to use
 - Retro game target first (small 2D games, pixel style).
 - AI-friendly workflow as a first-class goal (text DSL, deterministic loop, clear errors).
 - Portable runtime model with MoonBit, with Web demo as the primary showcase in v1.
+- Keep API ergonomics simple enough for short human/AI-generated game code.
 
 ## In Scope (v1)
 
@@ -30,6 +31,16 @@ Build `moon8bit` as a retro 2D engine that is easy for both humans and AI to use
 - Keep asset format text-first and diff-friendly.
 - Keep core gameplay loop deterministic for reproducible tests.
 - Keep API and docs understandable for AI-assisted generation.
+- Keep claims evidence-based; avoid uniqueness claims without explicit proof.
+
+## Positioning Guardrails
+
+- Describe moon8bit by implemented facts, not competitor comparison.
+- "AI-friendly" claims should be backed by concrete features:
+  - text-first DSL assets
+  - line-numbered parser diagnostics
+  - deterministic runtime + reproducible tests
+  - web edit/apply/import/export loop
 
 ## Success Criteria by Final Submission (2026-04-21)
 

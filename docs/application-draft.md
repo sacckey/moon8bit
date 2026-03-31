@@ -1,8 +1,8 @@
 # moon8bit (Draft Submission Description)
 
-moon8bit is a retro 2D game engine prototype built in MoonBit with a clear product direction: make game generation workflows practical for AI and humans without relying on heavy binary asset pipelines.
+moon8bit is a retro 2D game engine prototype built in MoonBit with a clear product direction: make game generation workflows practical for AI and humans through text-first assets, deterministic runtime behavior, and a compact API surface.
 
-The core problem is simple. LLMs can generate gameplay code quickly, but visual assets often become the bottleneck. Typical PNG-centered workflows require external tools, binary diffing, and manual integration steps that are hard to iterate in short AI loops. moon8bit addresses this by making assets text-native first. In v1, palettes, sprites, and tilemaps are authored in a compact DSL, parsed with line-numbered diagnostics, and converted into runtime data (or JSON for inspection).
+The core problem is simple. LLMs can generate gameplay code quickly, but assets and debugging loops often slow iteration. moon8bit focuses on reducing that loop cost in MoonBit: palettes, sprites, and tilemaps are authored in a compact DSL, parsed with line-numbered diagnostics, and converted into runtime data (or JSON for inspection). The contribution of moon8bit is a reproducible MoonBit workflow that integrates text-first assets, deterministic runtime behavior, and line-numbered diagnostics for fast AI-assisted iteration.
 
 Current implementation includes five integrated parts:
 
@@ -21,4 +21,6 @@ This design maps directly to the SCC evaluation axes:
 
 MoonBit is a strong fit for this direction because of portability and clean data modeling. The implementation stays intentionally compact so evaluators can inspect behavior quickly and reproduce results with minimal setup.
 
-moon8bit is not positioned as a full-featured engine yet; it is a focused, submission-ready exploration of an AI-friendly retro game surface. The next steps after submission are richer DSL features (animation/tileset references), broader runtime backends, and stronger automation around AI-generated content validation.
+moon8bit is not positioned as a full-featured engine yet; it is a focused, submission-ready exploration of an AI-friendly retro game surface. The first post-submission engineering milestone is API ergonomics: add thin wrapper APIs (`init`, `btn`, `step`, `run`, `cls`, `pset`, `rect`, `spr`) while preserving existing APIs for backward compatibility. This will let us prove simpler authoring style without destabilizing the current demo and tests.
+
+The next steps after that are richer DSL features (animation/tileset references), broader runtime backends, and stronger automation around AI-generated content validation.
