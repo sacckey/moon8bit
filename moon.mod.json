@@ -1,5 +1,6 @@
 {
   "name": "sacckey/moon8bit",
+  "source": "src",
   "version": "0.1.0",
   "readme": "README.mbt.md",
   "repository": "",
