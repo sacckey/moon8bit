@@ -169,6 +169,17 @@ This structure makes generated game code easy for AI to produce and refactor.
 - Line-numbered parser errors are easy to feed back into iterative AI loops.
 - Deterministic game loop makes AI-generated tests stable.
 
+## Baseline and Differentiation
+
+- Baseline capabilities we are pursuing as a practical engine:
+  - playable rendering paths (Canvas now, WebGPU path as next milestone)
+  - practical audio path (BGM + SFX)
+  - minimal GUI authoring path (sprite + sound)
+- moon8bit-specific value:
+  - text-first asset workflow for AI iteration
+  - deterministic runtime and reproducible validation
+  - compact MoonBit codebase that remains easy to inspect
+
 ## Context Harness (Anti-Drift)
 
 To avoid goal drift across daily AI-assisted sessions, keep these docs updated:

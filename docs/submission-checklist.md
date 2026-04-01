@@ -26,6 +26,19 @@
 - [ ] README includes reproducible run/build/test path.
 - [ ] Core-path tests and edge-case validation are documented.
 
+## Baseline Capability Track (toward final deadline)
+
+- [ ] WebGPU path reaches minimum playable parity with current Canvas frame primitives.
+- [ ] Audio path supports practical BGM + SFX playback.
+- [ ] Minimal GUI authoring path exists for sprite editing and sound editing.
+
+## moon8bit Unique Value Track
+
+- [ ] Text-first asset workflow remains central (not replaced by binary-only tooling).
+- [ ] Deterministic runtime behavior remains testable and reproducible.
+- [ ] Diagnostics stay AI-loop-friendly (line-numbered parser feedback + clear errors).
+- [ ] Public docs explain baseline capabilities and moon8bit-specific value separately.
+
 ## Required Artifacts
 
 - [ ] Repository URL is final and accessible.

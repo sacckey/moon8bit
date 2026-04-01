@@ -18,13 +18,18 @@ Build `moon8bit` as a retro 2D engine that is easy for both humans and AI to use
 - CLI conversion path (DSL -> JSON).
 - Web demo with live DSL apply and visible gameplay effect.
 - Basic tests for parser, runtime determinism, and sample game integration.
+- Practical baseline capability expansion before final deadline:
+  - WebGPU rendering path (minimum viable backend parity with current frame primitives)
+  - sound playback path (BGM + core SFX)
+  - minimal GUI editing path (sprite + sound authoring)
 
 ## Out of Scope (v1)
 
 - Built-in external LLM API integration.
 - Full editor suite / full IDE.
-- Advanced rendering backends (WebGPU) as mandatory runtime.
 - Large-scale ECS, physics stack, or full game framework.
+- high-end audio tooling (full DAW-style sequencing/mixing)
+- advanced visual editors beyond minimum authoring workflow
 
 ## Non-Negotiables
 
@@ -41,6 +46,15 @@ Build `moon8bit` as a retro 2D engine that is easy for both humans and AI to use
   - line-numbered parser diagnostics
   - deterministic runtime + reproducible tests
   - web edit/apply/import/export loop
+
+## Baseline vs Unique
+
+- Baseline (expected for a practical retro engine):
+  - rendering, input loop, assets, audio, and basic editor workflows
+- moon8bit-specific value (what we emphasize):
+  - text-first AI iteration workflow
+  - deterministic behavior + reproducible validation
+  - compact and inspectable MoonBit implementation
 
 ## Success Criteria by Final Submission (2026-04-21)
 

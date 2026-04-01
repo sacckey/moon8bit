@@ -11,6 +11,14 @@ Concrete scope for this submission:
 - Architecture idea: a layered flow of `assets DSL -> parser/validation -> runtime state transition -> renderer -> web demo`, with CLI and tests sharing the same core package.
 - Feasibility: the repository already includes a playable driftbird web demo, CLI commands, parser diagnostics, deterministic runtime tests, and reproducible local run steps.
 
+Baseline engine capability target by the final challenge deadline:
+
+- Rendering baseline: keep current Canvas path and add a minimal WebGPU backend path for the same frame primitives.
+- Audio baseline: support practical game audio with BGM playback and core SFX playback.
+- Authoring baseline: provide minimal GUI workflows for editing sprite and sound data, then saving/loading through the same project asset path.
+
+On top of this baseline, moon8bit's differentiation is explicit: AI-oriented text asset workflow, deterministic update model, and diagnostics that are easy to feed back into iterative AI coding loops.
+
 Current implementation includes five integrated parts:
 
 1. Engine core with explicit `init/update/draw` phases and fixed-step runtime.
@@ -28,6 +36,4 @@ This design maps directly to the SCC evaluation axes:
 
 MoonBit is a strong fit for this direction because of portability and clean data modeling. The implementation stays intentionally compact so evaluators can inspect behavior quickly and reproduce results with minimal setup.
 
-moon8bit is not positioned as a full-featured engine yet; it is a focused, submission-ready exploration of an AI-friendly retro game surface. The first post-submission engineering milestone is API ergonomics: add thin wrapper APIs (`init`, `btn`, `step`, `run`, `cls`, `pset`, `rect`, `spr`) while preserving existing APIs for backward compatibility. This will let us prove simpler authoring style without destabilizing the current demo and tests.
-
-The next steps after that are richer DSL features (animation/tileset references), broader runtime backends, and stronger automation around AI-generated content validation.
+The execution plan is two-track: first, reach practical engine baseline expectations (WebGPU path, audio path, GUI authoring minimum); second, strengthen moon8bit-specific value through concise APIs, richer DSL features, and stronger AI validation workflows. This keeps the roadmap ambitious but still feasible within the challenge timeline.

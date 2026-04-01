@@ -10,6 +10,7 @@
   - concrete scope fields added (goal/target users/architecture/feasibility)
   - README environment requirements clarified
   - checklist expanded with showcase readiness checks
+  - baseline-vs-unique framing documented (`WebGPU/Sound/GUI` baseline + AI workflow differentiation)
 
 ## Session End Summary
 
