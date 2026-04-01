@@ -146,7 +146,7 @@ fn draw_scrolling_tilemap_rows(
         Some(v) => v
         None => 3
       }
-      frame.set_pixel(x, start_y + row, color)
+      pset(frame, x, start_y + row, color)
     }
   }
 }
@@ -343,10 +343,10 @@ pub impl Game for DriftbirdGame with draw(self, ctx) {
     None =>
       for x in 0..<ctx.config.width {
         if (x + self.terrain_offset) % 7 == 0 {
-          frame.set_pixel(x, 1, 1)
+          pset(frame, x, 1, 1)
         }
         if (x + self.terrain_offset) % 11 == 0 {
-          frame.set_pixel(x, 3, 1)
+          pset(frame, x, 3, 1)
         }
       }
   }
@@ -361,26 +361,26 @@ pub impl Game for DriftbirdGame with draw(self, ctx) {
         ctx.config.width,
         ground_rows,
       )
-    None => frame.draw_rect(0, ground_y, ctx.config.width, ground_rows, 3)
+    None => rect(frame, 0, ground_y, ctx.config.width, ground_rows, 3)
   }
 
-  frame.draw_rect(self.pipe_x, 0, self.pipe_width, self.pipe_gap_y, 2)
+  rect(frame, self.pipe_x, 0, self.pipe_width, self.pipe_gap_y, 2)
   let bottom_y = self.pipe_gap_y + self.gap_height
   let bottom_h = ground_y - bottom_y
   if bottom_h > 0 {
-    frame.draw_rect(self.pipe_x, bottom_y, self.pipe_width, bottom_h, 2)
+    rect(frame, self.pipe_x, bottom_y, self.pipe_width, bottom_h, 2)
   }
 
   let sprite = match find_sprite(self.bundle, "bird") {
     Some(found) => found
     None => default_bird_sprite()
   }
-  frame.blit(sprite, self.bird_x, bird_y_px(self))
+  spr(frame, sprite, self.bird_x, bird_y_px(self))
 
   if !self.is_started {
-    frame.draw_rect(0, 0, ctx.config.width, 1, 6)
+    rect(frame, 0, 0, ctx.config.width, 1, 6)
   } else if self.is_over {
-    frame.draw_rect(0, 0, ctx.config.width, 1, 4)
+    rect(frame, 0, 0, ctx.config.width, 1, 4)
   }
 
   frame
@@ -391,7 +391,7 @@ pub fn scripted_demo_inputs(frame_count : Int) -> Array[InputState] {
   let inputs : Array[InputState] = []
   for i in 0..<frame_count {
     let flap = i % 8 == 0 || i % 13 == 0
-    inputs.push(InputState::{ flap, reset: false })
+    inputs.push(btn(flap, false))
   }
   inputs
 }
@@ -403,7 +403,7 @@ pub fn run_driftbird(
 ) -> (DriftbirdGame, Array[Frame]) {
   let bundle = load_sample_assets()
   let initial = new_driftbird_game(bundle)
-  run_fixed_frames(initial, config, inputs)
+  run(initial, config, inputs)
 }
 
 ///|

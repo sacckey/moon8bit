@@ -3186,6 +3186,9 @@ function _M0FP27sacckey8moon8bit12engine__stepGRP27sacckey8moon8bit13DriftbirdGa
   const rendered = _M0IP27sacckey8moon8bit13DriftbirdGameP27sacckey8moon8bit4Game4draw(next, context);
   return { _0: next, _1: rendered };
 }
+function _M0FP27sacckey8moon8bit12input__state(flap, reset) {
+  return { flap: flap, reset: reset };
+}
 function _M0FP27sacckey8moon8bit13clamp__double(value, min_value, max_value) {
   return value < min_value ? min_value : value > max_value ? max_value : value;
 }
@@ -3235,6 +3238,16 @@ function _M0FP27sacckey8moon8bit16reset__driftbird(game, config) {
 function _M0FP27sacckey8moon8bit10bird__rect(game) {
   return { x: game.bird_x, y: _M0FP27sacckey8moon8bit11bird__y__px(game), w: 5, h: 3 };
 }
+function _M0MP27sacckey8moon8bit5Frame10set__pixel(self, x, y, color) {
+  if (x < 0 || (x >= self.width || (y < 0 || y >= self.height))) {
+    return undefined;
+  }
+  const idx = (Math.imul(y, self.width) | 0) + x | 0;
+  _M0MP311moonbitlang4core5array5Array3setGiE(self.pixels, idx, color);
+}
+function _M0FP27sacckey8moon8bit4pset(frame, x, y, color) {
+  _M0MP27sacckey8moon8bit5Frame10set__pixel(frame, x, y, color);
+}
 function _M0FP27sacckey8moon8bit8tile__at(tilemap, x, y) {
   if (x < 0 || (x >= tilemap.width || (y < 0 || y >= tilemap.height))) {
     return undefined;
@@ -3243,33 +3256,26 @@ function _M0FP27sacckey8moon8bit8tile__at(tilemap, x, y) {
     return _M0MP311moonbitlang4core5array5Array2atGiE(tilemap.tiles, idx);
   }
 }
-function _M0MP27sacckey8moon8bit5Frame10set__pixel(self, x, y, color) {
-  if (x < 0 || (x >= self.width || (y < 0 || y >= self.height))) {
-    return undefined;
-  }
-  const idx = (Math.imul(y, self.width) | 0) + x | 0;
-  _M0MP311moonbitlang4core5array5Array3setGiE(self.pixels, idx, color);
-}
 function _M0FP27sacckey8moon8bit30draw__scrolling__tilemap__rows(frame, tilemap, scroll_x, start_y, screen_width, rows) {
   if (tilemap.width <= 0 || (tilemap.height <= 0 || rows <= 0)) {
     return undefined;
   }
-  const _start315 = 0;
-  const _end316 = rows;
-  let _tmp = _start315;
+  const _start345 = 0;
+  const _end346 = rows;
+  let _tmp = _start345;
   while (true) {
     const row = _tmp;
-    if (row < _end316) {
+    if (row < _end346) {
       if (tilemap.height === 0) {
         $panic();
       }
       const tile_y = row % tilemap.height | 0;
-      const _start321 = 0;
-      const _end322 = screen_width;
-      let _tmp$2 = _start321;
+      const _start351 = 0;
+      const _end352 = screen_width;
+      let _tmp$2 = _start351;
       while (true) {
         const x = _tmp$2;
-        if (x < _end322) {
+        if (x < _end352) {
           if (tilemap.width === 0) {
             $panic();
           }
@@ -3283,7 +3289,7 @@ function _M0FP27sacckey8moon8bit30draw__scrolling__tilemap__rows(frame, tilemap,
             const _v = _Some;
             color = _v;
           }
-          _M0MP27sacckey8moon8bit5Frame10set__pixel(frame, x, start_y + row | 0, color);
+          _M0FP27sacckey8moon8bit4pset(frame, x, start_y + row | 0, color);
           _tmp$2 = x + 1 | 0;
           continue;
         } else {
@@ -3489,19 +3495,49 @@ function _M0FP27sacckey8moon8bit13find__tilemap(bundle, name) {
   }
   return undefined;
 }
+function _M0MP27sacckey8moon8bit5Frame10draw__rect(self, x, y, w, h, color) {
+  const _start184 = y;
+  const _end185 = y + h | 0;
+  let _tmp = _start184;
+  while (true) {
+    const py = _tmp;
+    if (py < _end185) {
+      const _start189 = x;
+      const _end190 = x + w | 0;
+      let _tmp$2 = _start189;
+      while (true) {
+        const px = _tmp$2;
+        if (px < _end190) {
+          _M0MP27sacckey8moon8bit5Frame10set__pixel(self, px, py, color);
+          _tmp$2 = px + 1 | 0;
+          continue;
+        } else {
+          break;
+        }
+      }
+      _tmp = py + 1 | 0;
+      continue;
+    } else {
+      return;
+    }
+  }
+}
+function _M0FP27sacckey8moon8bit4rect(frame, x, y, w, h, color) {
+  _M0MP27sacckey8moon8bit5Frame10draw__rect(frame, x, y, w, h, color);
+}
 function _M0MP27sacckey8moon8bit5Frame4blit(self, sprite, x, y) {
-  const _start136 = 0;
-  const _end137 = sprite.height;
-  let _tmp = _start136;
+  const _start166 = 0;
+  const _end167 = sprite.height;
+  let _tmp = _start166;
   while (true) {
     const sy = _tmp;
-    if (sy < _end137) {
-      const _start141 = 0;
-      const _end142 = sprite.width;
-      let _tmp$2 = _start141;
+    if (sy < _end167) {
+      const _start171 = 0;
+      const _end172 = sprite.width;
+      let _tmp$2 = _start171;
       while (true) {
         const sx = _tmp$2;
-        if (sx < _end142) {
+        if (sx < _end172) {
           const idx = (Math.imul(sy, sprite.width) | 0) + sx | 0;
           const color = _M0MP311moonbitlang4core5array5Array2atGiE(sprite.pixels, idx);
           if (color >= 0) {
@@ -3520,32 +3556,8 @@ function _M0MP27sacckey8moon8bit5Frame4blit(self, sprite, x, y) {
     }
   }
 }
-function _M0MP27sacckey8moon8bit5Frame10draw__rect(self, x, y, w, h, color) {
-  const _start154 = y;
-  const _end155 = y + h | 0;
-  let _tmp = _start154;
-  while (true) {
-    const py = _tmp;
-    if (py < _end155) {
-      const _start159 = x;
-      const _end160 = x + w | 0;
-      let _tmp$2 = _start159;
-      while (true) {
-        const px = _tmp$2;
-        if (px < _end160) {
-          _M0MP27sacckey8moon8bit5Frame10set__pixel(self, px, py, color);
-          _tmp$2 = px + 1 | 0;
-          continue;
-        } else {
-          break;
-        }
-      }
-      _tmp = py + 1 | 0;
-      continue;
-    } else {
-      return;
-    }
-  }
+function _M0FP27sacckey8moon8bit3spr(frame, sprite, x, y) {
+  _M0MP27sacckey8moon8bit5Frame4blit(frame, sprite, x, y);
 }
 function _M0MP27sacckey8moon8bit5Frame11new_2einner(width, height, fill) {
   return { width: width, height: height, pixels: _M0MP311moonbitlang4core5array5Array4makeGiE(Math.imul(width, height) | 0, fill) };
@@ -3560,23 +3572,23 @@ function _M0IP27sacckey8moon8bit13DriftbirdGameP27sacckey8moon8bit4Game4draw(sel
     _L$2: {
       const _bind = _M0FP27sacckey8moon8bit13find__tilemap(self.bundle, "bg");
       if (_bind === undefined) {
-        const _start264 = 0;
-        const _end265 = ctx.config.width;
-        let _tmp = _start264;
+        const _start294 = 0;
+        const _end295 = ctx.config.width;
+        let _tmp = _start294;
         while (true) {
           const x = _tmp;
-          if (x < _end265) {
+          if (x < _end295) {
             if (7 === 0) {
               $panic();
             }
             if (((x + self.terrain_offset | 0) % 7 | 0) === 0) {
-              _M0MP27sacckey8moon8bit5Frame10set__pixel(frame, x, 1, 1);
+              _M0FP27sacckey8moon8bit4pset(frame, x, 1, 1);
             }
             if (11 === 0) {
               $panic();
             }
             if (((x + self.terrain_offset | 0) % 11 | 0) === 0) {
-              _M0MP27sacckey8moon8bit5Frame10set__pixel(frame, x, 3, 1);
+              _M0FP27sacckey8moon8bit4pset(frame, x, 3, 1);
             }
             _tmp = x + 1 | 0;
             continue;
@@ -3602,7 +3614,7 @@ function _M0IP27sacckey8moon8bit13DriftbirdGameP27sacckey8moon8bit4Game4draw(sel
     _L$3: {
       const _bind = _M0FP27sacckey8moon8bit13find__tilemap(self.bundle, "ground");
       if (_bind === undefined) {
-        _M0MP27sacckey8moon8bit5Frame10draw__rect(frame, 0, ground_y, ctx.config.width, ground_rows, 3);
+        _M0FP27sacckey8moon8bit4rect(frame, 0, ground_y, ctx.config.width, ground_rows, 3);
       } else {
         const _Some = _bind;
         const _tilemap = _Some;
@@ -3613,11 +3625,11 @@ function _M0IP27sacckey8moon8bit13DriftbirdGameP27sacckey8moon8bit4Game4draw(sel
     }
     _M0FP27sacckey8moon8bit30draw__scrolling__tilemap__rows(frame, tilemap$2, self.terrain_offset, ground_y, ctx.config.width, ground_rows);
   }
-  _M0MP27sacckey8moon8bit5Frame10draw__rect(frame, self.pipe_x, 0, self.pipe_width, self.pipe_gap_y, 2);
+  _M0FP27sacckey8moon8bit4rect(frame, self.pipe_x, 0, self.pipe_width, self.pipe_gap_y, 2);
   const bottom_y = self.pipe_gap_y + self.gap_height | 0;
   const bottom_h = ground_y - bottom_y | 0;
   if (bottom_h > 0) {
-    _M0MP27sacckey8moon8bit5Frame10draw__rect(frame, self.pipe_x, bottom_y, self.pipe_width, bottom_h, 2);
+    _M0FP27sacckey8moon8bit4rect(frame, self.pipe_x, bottom_y, self.pipe_width, bottom_h, 2);
   }
   let sprite;
   const _bind = _M0FP27sacckey8moon8bit12find__sprite(self.bundle, "bird");
@@ -3628,18 +3640,15 @@ function _M0IP27sacckey8moon8bit13DriftbirdGameP27sacckey8moon8bit4Game4draw(sel
     const _found = _Some;
     sprite = _found;
   }
-  _M0MP27sacckey8moon8bit5Frame4blit(frame, sprite, self.bird_x, _M0FP27sacckey8moon8bit11bird__y__px(self));
+  _M0FP27sacckey8moon8bit3spr(frame, sprite, self.bird_x, _M0FP27sacckey8moon8bit11bird__y__px(self));
   if (!self.is_started) {
-    _M0MP27sacckey8moon8bit5Frame10draw__rect(frame, 0, 0, ctx.config.width, 1, 6);
+    _M0FP27sacckey8moon8bit4rect(frame, 0, 0, ctx.config.width, 1, 6);
   } else {
     if (self.is_over) {
-      _M0MP27sacckey8moon8bit5Frame10draw__rect(frame, 0, 0, ctx.config.width, 1, 4);
+      _M0FP27sacckey8moon8bit4rect(frame, 0, 0, ctx.config.width, 1, 4);
     }
   }
   return frame;
-}
-function _M0FP27sacckey8moon8bit12input__state(flap, reset) {
-  return { flap: flap, reset: reset };
 }
 function _M0FP47sacckey8moon8bit3cmd3web14palette__color(index) {
   const palette = _M0FP47sacckey8moon8bit3cmd3web12palette__ref.val;

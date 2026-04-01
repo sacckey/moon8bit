@@ -90,5 +90,5 @@ Expected:
 
 1. Add thin ergonomic wrapper APIs with backward compatibility.
 2. Add wrapper equivalence tests (same behavior as existing APIs).
-3. Add a compact wrapped sample while keeping `game_driftbird.mbt` as baseline.
+3. Apply wrapper API usage to `game_driftbird.mbt` itself and verify behavior parity.
 4. Update README with concise API examples and reproducibility proof points.

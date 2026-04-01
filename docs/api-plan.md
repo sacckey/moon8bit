@@ -99,7 +99,7 @@ pub fn spr(frame : Frame, sprite : Sprite, x : Int, y : Int) -> Unit
    - `cls/pset/rect/spr` frame results equal corresponding `Frame::*` calls.
 3. Sample behavior:
    - `game_driftbird` baseline remains playable and behavior-consistent.
-   - optional wrapped sample demonstrates shorter usage style.
+   - `game_driftbird` call sites adopt wrappers where applicable (`btn/run/cls/pset/rect/spr`).
 4. Final verification commands:
    - `moon check`
    - `moon test`
@@ -116,4 +116,4 @@ pub fn spr(frame : Frame, sprite : Sprite, x : Int, y : Int) -> Unit
 
 - Should `init` also offer an overload that starts from `default_engine_config()` and only overrides selected fields?
 - Should we expose tiny aliases for booleans (`btnf`, `btnr`) or keep only explicit `btn(flap, reset)`?
-- Should wrapped sample live in `game_driftbird_wrapped.mbt` or in README-only snippets first?
+- Should we expose a CLI/web toggle to compare classic calls vs wrapped calls in the same demo?

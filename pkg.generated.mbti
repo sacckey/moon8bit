@@ -66,8 +66,6 @@ pub fn run_driftbird_demo(Int) -> (DriftbirdGame, Array[String])
 
 pub fn[T : Game] run_fixed_frames(T, EngineConfig, Array[InputState]) -> (T, Array[Frame])
 
-pub fn run_wrapped_sample(Int, cfg? : EngineConfig) -> (WrappedSampleGame, Array[Frame])
-
 pub fn sample_assets_dsl() -> String
 
 pub fn scripted_demo_inputs(Int) -> Array[InputState]
@@ -85,8 +83,6 @@ pub fn tile_at(Tilemap, Int, Int) -> Int?
 pub fn tilemap_to_json(Tilemap) -> Json
 
 pub fn version_tag() -> String
-
-pub fn wrapped_sample_inputs(Int) -> Array[InputState]
 
 // Errors
 
@@ -212,16 +208,6 @@ pub struct Tilemap {
 }
 pub impl Eq for Tilemap
 pub impl Show for Tilemap
-
-pub struct WrappedSampleGame {
-  mut x : Int
-  mut y : Int
-  mut vy : Int
-  mut tick : Int
-}
-pub impl Eq for WrappedSampleGame
-pub impl Show for WrappedSampleGame
-pub impl Game for WrappedSampleGame
 
 // Type aliases
 
