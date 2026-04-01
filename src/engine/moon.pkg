@@ -1,0 +1,3 @@
+import {
+  "sacckey/moon8bit/model" @model,
+}

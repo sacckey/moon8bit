@@ -1,0 +1,136 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "sacckey/moon8bit/model"
+
+// Values
+pub fn collider(String, Rect) -> Collider
+
+pub fn collider_box(String, Int, Int, Int, Int) -> Collider
+
+pub fn collider_first_hit(Collider, Array[Collider]) -> Collider?
+
+pub fn collider_hits_any(Collider, Array[Collider]) -> Bool
+
+pub fn collider_intersects(Collider, Collider) -> Bool
+
+pub fn default_engine_config() -> EngineConfig
+
+pub fn find_sprite(AssetBundle, String) -> Sprite?
+
+pub fn find_tilemap(AssetBundle, String) -> Tilemap?
+
+pub let input_none : InputState
+
+pub fn input_state(Bool, Bool) -> InputState
+
+pub fn palette_default() -> Palette
+
+pub fn rect_intersects(Rect, Rect) -> Bool
+
+pub fn sprite_pixel(Sprite, Int, Int) -> Int?
+
+pub fn tile_at(Tilemap, Int, Int) -> Int?
+
+// Errors
+
+// Types and methods
+pub(all) struct AssetBundle {
+  palette : Palette
+  sprites : Array[Sprite]
+  tilemaps : Array[Tilemap]
+}
+pub impl Eq for AssetBundle
+pub impl Show for AssetBundle
+
+pub(all) struct Collider {
+  tag : String
+  rect : Rect
+}
+pub impl Eq for Collider
+pub impl Show for Collider
+
+pub(all) struct DslError {
+  line : Int
+  message : String
+}
+pub impl Eq for DslError
+pub impl Show for DslError
+
+pub(all) struct EngineConfig {
+  width : Int
+  height : Int
+  fps : Int
+  scale : Int
+  palette : Palette
+}
+pub impl Eq for EngineConfig
+pub impl Show for EngineConfig
+
+pub(all) struct Frame {
+  width : Int
+  height : Int
+  pixels : Array[Int]
+}
+pub fn Frame::blit(Self, Sprite, Int, Int) -> Unit
+pub fn Frame::clear(Self, Int) -> Unit
+pub fn Frame::draw_rect(Self, Int, Int, Int, Int, Int) -> Unit
+pub fn Frame::get_pixel(Self, Int, Int) -> Int?
+pub fn Frame::new(Int, Int, fill? : Int) -> Self
+pub fn Frame::set_pixel(Self, Int, Int, Int) -> Unit
+pub fn Frame::to_ascii(Self) -> String
+pub impl Eq for Frame
+pub impl Show for Frame
+
+pub(all) struct InputState {
+  flap : Bool
+  reset : Bool
+}
+pub impl Eq for InputState
+pub impl Show for InputState
+
+pub(all) struct Palette {
+  name : String
+  colors : Array[String]
+}
+pub impl Eq for Palette
+pub impl Show for Palette
+
+pub(all) struct Rect {
+  x : Int
+  y : Int
+  w : Int
+  h : Int
+}
+pub impl Eq for Rect
+pub impl Show for Rect
+
+pub(all) struct RuntimeContext {
+  config : EngineConfig
+  input : InputState
+  frame : Int
+  dt_ms : Int
+}
+pub impl Eq for RuntimeContext
+pub impl Show for RuntimeContext
+
+pub(all) struct Sprite {
+  name : String
+  width : Int
+  height : Int
+  pixels : Array[Int]
+}
+pub impl Eq for Sprite
+pub impl Show for Sprite
+
+pub(all) struct Tilemap {
+  name : String
+  width : Int
+  height : Int
+  tiles : Array[Int]
+}
+pub impl Eq for Tilemap
+pub impl Show for Tilemap
+
+// Type aliases
+
+// Traits
+

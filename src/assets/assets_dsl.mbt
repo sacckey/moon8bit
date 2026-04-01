@@ -1,4 +1,24 @@
 ///|
+type DslError = @model.DslError
+
+///|
+type Palette = @model.Palette
+
+///|
+type Sprite = @model.Sprite
+
+///|
+type Tilemap = @model.Tilemap
+
+///|
+type AssetBundle = @model.AssetBundle
+
+///|
+fn palette_default() -> Palette {
+  @model.palette_default()
+}
+
+///|
 fn[T] err(line : Int, message : String) -> Result[T, DslError] {
   Err(DslError::{ line, message })
 }

@@ -1,5 +1,20 @@
 ///|
-pub trait Game {
+type EngineConfig = @model.EngineConfig
+
+///|
+type InputState = @model.InputState
+
+///|
+type RuntimeContext = @model.RuntimeContext
+
+///|
+type Frame = @model.Frame
+
+///|
+let input_none : InputState = @model.input_none
+
+///|
+pub(open) trait Game {
   init(Self, RuntimeContext) -> Self
   update(Self, RuntimeContext) -> Self
   draw(Self, RuntimeContext) -> Frame

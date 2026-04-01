@@ -1,11 +1,11 @@
 ///|
-pub struct Palette {
+pub(all) struct Palette {
   name : String
   colors : Array[String]
 } derive(Eq, Show)
 
 ///|
-pub struct Sprite {
+pub(all) struct Sprite {
   name : String
   width : Int
   height : Int
@@ -13,7 +13,7 @@ pub struct Sprite {
 } derive(Eq, Show)
 
 ///|
-pub struct Tilemap {
+pub(all) struct Tilemap {
   name : String
   width : Int
   height : Int
@@ -21,14 +21,14 @@ pub struct Tilemap {
 } derive(Eq, Show)
 
 ///|
-pub struct AssetBundle {
+pub(all) struct AssetBundle {
   palette : Palette
   sprites : Array[Sprite]
   tilemaps : Array[Tilemap]
 } derive(Eq, Show)
 
 ///|
-pub struct DslError {
+pub(all) struct DslError {
   line : Int
   message : String
 } derive(Eq, Show)

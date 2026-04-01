@@ -1,5 +1,5 @@
 ///|
-pub struct Frame {
+pub(all) struct Frame {
   width : Int
   height : Int
   pixels : Array[Int]

@@ -1,5 +1,5 @@
 ///|
-pub struct EngineConfig {
+pub(all) struct EngineConfig {
   width : Int
   height : Int
   fps : Int
@@ -8,7 +8,7 @@ pub struct EngineConfig {
 } derive(Eq, Show)
 
 ///|
-pub struct InputState {
+pub(all) struct InputState {
   flap : Bool
   reset : Bool
 } derive(Eq, Show)
@@ -22,7 +22,7 @@ pub fn input_state(flap : Bool, reset : Bool) -> InputState {
 }
 
 ///|
-pub struct RuntimeContext {
+pub(all) struct RuntimeContext {
   config : EngineConfig
   input : InputState
   frame : Int
@@ -30,7 +30,7 @@ pub struct RuntimeContext {
 } derive(Eq, Show)
 
 ///|
-pub struct Rect {
+pub(all) struct Rect {
   x : Int
   y : Int
   w : Int
@@ -38,7 +38,7 @@ pub struct Rect {
 } derive(Eq, Show)
 
 ///|
-pub struct Collider {
+pub(all) struct Collider {
   tag : String
   rect : Rect
 } derive(Eq, Show)

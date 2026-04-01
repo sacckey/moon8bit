@@ -1,4 +1,108 @@
 ///|
+type Palette = @model.Palette
+
+///|
+type Sprite = @model.Sprite
+
+///|
+type Tilemap = @model.Tilemap
+
+///|
+type AssetBundle = @model.AssetBundle
+
+///|
+type Rect = @model.Rect
+
+///|
+type Collider = @model.Collider
+
+///|
+type EngineConfig = @model.EngineConfig
+
+///|
+type InputState = @model.InputState
+
+///|
+type RuntimeContext = @model.RuntimeContext
+
+///|
+type Frame = @model.Frame
+
+///|
+fn parse_assets_dsl(input : String) -> Result[AssetBundle, @model.DslError] {
+  @assets.parse_assets_dsl(input)
+}
+
+///|
+fn palette_default() -> Palette {
+  @model.palette_default()
+}
+
+///|
+fn find_sprite(bundle : AssetBundle, name : String) -> Sprite? {
+  @model.find_sprite(bundle, name)
+}
+
+///|
+fn find_tilemap(bundle : AssetBundle, name : String) -> Tilemap? {
+  @model.find_tilemap(bundle, name)
+}
+
+///|
+fn tile_at(tilemap : Tilemap, x : Int, y : Int) -> Int? {
+  @model.tile_at(tilemap, x, y)
+}
+
+///|
+fn collider(tag : String, rect : Rect) -> Collider {
+  @model.collider(tag, rect)
+}
+
+///|
+fn collider_box(tag : String, x : Int, y : Int, w : Int, h : Int) -> Collider {
+  @model.collider_box(tag, x, y, w, h)
+}
+
+///|
+fn collider_first_hit(target : Collider, others : Array[Collider]) -> Collider? {
+  @model.collider_first_hit(target, others)
+}
+
+///|
+fn default_engine_config() -> EngineConfig {
+  @model.default_engine_config()
+}
+
+///|
+fn btn(flap : Bool, reset : Bool) -> InputState {
+  @engine.btn(flap, reset)
+}
+
+///|
+fn pset(frame : Frame, x : Int, y : Int, color : Int) -> Unit {
+  @engine.pset(frame, x, y, color)
+}
+
+///|
+fn rect(frame : Frame, x : Int, y : Int, w : Int, h : Int, color : Int) -> Unit {
+  @engine.rect(frame, x, y, w, h, color)
+}
+
+///|
+fn spr(frame : Frame, sprite : Sprite, x : Int, y : Int) -> Unit {
+  @engine.spr(frame, sprite, x, y)
+}
+
+///|
+fn[T : @engine.Game] run(
+  game : T,
+  config : EngineConfig,
+  inputs : Array[InputState],
+) -> (T, Array[Frame]) {
+  @engine.run(game, config, inputs)
+}
+
+///|
 fn default_bird_sprite() -> Sprite {
   Sprite::{
     name: "bird",
@@ -294,12 +398,12 @@ fn step_running(game : DriftbirdGame, ctx : RuntimeContext) -> DriftbirdGame {
 }
 
 ///|
-pub impl Game for DriftbirdGame with init(self, ctx) {
+pub impl @engine.Game for DriftbirdGame with init(self, ctx) {
   reset_driftbird(self, ctx.config)
 }
 
 ///|
-pub impl Game for DriftbirdGame with update(self, ctx) {
+pub impl @engine.Game for DriftbirdGame with update(self, ctx) {
   if ctx.input.reset {
     return reset_driftbird(self, ctx.config)
   }
@@ -324,7 +428,7 @@ pub impl Game for DriftbirdGame with update(self, ctx) {
 }
 
 ///|
-pub impl Game for DriftbirdGame with draw(self, ctx) {
+pub impl @engine.Game for DriftbirdGame with draw(self, ctx) {
   let frame = Frame::new(ctx.config.width, ctx.config.height, fill=0)
   let ground_rows = if ctx.config.height >= 2 { 2 } else { ctx.config.height }
   let ground_y = ctx.config.height - ground_rows

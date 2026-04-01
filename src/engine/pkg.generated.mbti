@@ -1,0 +1,43 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "sacckey/moon8bit/engine"
+
+import {
+  "sacckey/moon8bit/model",
+}
+
+// Values
+pub fn btn(Bool, Bool) -> @model.InputState
+
+pub fn cls(@model.Frame, Int) -> Unit
+
+pub fn config(Int, Int, fps? : Int, scale? : Int, palette? : @model.Palette) -> @model.EngineConfig
+
+pub fn[T : Game] engine_init(T, @model.EngineConfig) -> T
+
+pub fn[T : Game] engine_step(T, @model.EngineConfig, @model.InputState, Int) -> (T, @model.Frame)
+
+pub fn pset(@model.Frame, Int, Int, Int) -> Unit
+
+pub fn rect(@model.Frame, Int, Int, Int, Int, Int) -> Unit
+
+pub fn[T : Game] run(T, @model.EngineConfig, Array[@model.InputState]) -> (T, Array[@model.Frame])
+
+pub fn[T : Game] run_fixed_frames(T, @model.EngineConfig, Array[@model.InputState]) -> (T, Array[@model.Frame])
+
+pub fn spr(@model.Frame, @model.Sprite, Int, Int) -> Unit
+
+pub fn[T : Game] step(T, @model.EngineConfig, @model.InputState, Int) -> (T, @model.Frame)
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+pub(open) trait Game {
+  init(Self, @model.RuntimeContext) -> Self
+  update(Self, @model.RuntimeContext) -> Self
+  draw(Self, @model.RuntimeContext) -> @model.Frame
+}
+

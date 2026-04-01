@@ -1,220 +1,123 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "sacckey/moon8bit"
 
-// Values
-pub fn asset_bundle_to_json(AssetBundle) -> Json
+import {
+  "sacckey/moon8bit/engine",
+  "sacckey/moon8bit/games/driftbird",
+  "sacckey/moon8bit/model",
+}
 
-pub fn asset_bundle_to_json_string(AssetBundle) -> String
+// Values
+pub fn asset_bundle_to_json(@model.AssetBundle) -> Json
+
+pub fn asset_bundle_to_json_string(@model.AssetBundle) -> String
 
 pub fn assets_cli_output(String) -> String
 
-pub fn btn(Bool, Bool) -> InputState
+pub fn btn(Bool, Bool) -> @model.InputState
 
-pub fn cls(Frame, Int) -> Unit
+pub fn cls(@model.Frame, Int) -> Unit
 
-pub fn collider(String, Rect) -> Collider
+pub fn collider(String, @model.Rect) -> @model.Collider
 
-pub fn collider_box(String, Int, Int, Int, Int) -> Collider
+pub fn collider_box(String, Int, Int, Int, Int) -> @model.Collider
 
-pub fn collider_first_hit(Collider, Array[Collider]) -> Collider?
+pub fn collider_first_hit(@model.Collider, Array[@model.Collider]) -> @model.Collider?
 
-pub fn collider_hits_any(Collider, Array[Collider]) -> Bool
+pub fn collider_hits_any(@model.Collider, Array[@model.Collider]) -> Bool
 
-pub fn collider_intersects(Collider, Collider) -> Bool
+pub fn collider_intersects(@model.Collider, @model.Collider) -> Bool
 
-pub fn config(Int, Int, fps? : Int, scale? : Int, palette? : Palette) -> EngineConfig
+pub fn config(Int, Int, fps? : Int, scale? : Int, palette? : @model.Palette) -> @model.EngineConfig
 
-pub fn default_engine_config() -> EngineConfig
+pub fn default_engine_config() -> @model.EngineConfig
 
 pub fn demo_snapshot(Int) -> String
 
-pub fn[T : Game] engine_init(T, EngineConfig) -> T
+pub fn[T : @engine.Game] engine_init(T, @model.EngineConfig) -> T
 
-pub fn[T : Game] engine_step(T, EngineConfig, InputState, Int) -> (T, Frame)
+pub fn[T : @engine.Game] engine_step(T, @model.EngineConfig, @model.InputState, Int) -> (T, @model.Frame)
 
-pub fn find_sprite(AssetBundle, String) -> Sprite?
+pub fn find_sprite(@model.AssetBundle, String) -> @model.Sprite?
 
-pub fn find_tilemap(AssetBundle, String) -> Tilemap?
+pub fn find_tilemap(@model.AssetBundle, String) -> @model.Tilemap?
 
-pub let input_none : InputState
+pub let input_none : @model.InputState
 
-pub fn input_state(Bool, Bool) -> InputState
+pub fn input_state(Bool, Bool) -> @model.InputState
 
-pub fn load_sample_assets() -> AssetBundle
+pub fn load_sample_assets() -> @model.AssetBundle
 
-pub fn new_driftbird_game(AssetBundle) -> DriftbirdGame
+pub fn new_driftbird_game(@model.AssetBundle) -> @driftbird.DriftbirdGame
 
-pub fn palette_default() -> Palette
+pub fn palette_default() -> @model.Palette
 
-pub fn palette_to_json(Palette) -> Json
+pub fn palette_to_json(@model.Palette) -> Json
 
-pub fn parse_assets_dsl(String) -> Result[AssetBundle, DslError]
+pub fn parse_assets_dsl(String) -> Result[@model.AssetBundle, @model.DslError]
 
-pub fn parse_assets_dsl_to_json_string(String) -> Result[String, DslError]
+pub fn parse_assets_dsl_to_json_string(String) -> Result[String, @model.DslError]
 
-pub fn pset(Frame, Int, Int, Int) -> Unit
+pub fn pset(@model.Frame, Int, Int, Int) -> Unit
 
-pub fn rect(Frame, Int, Int, Int, Int, Int) -> Unit
+pub fn rect(@model.Frame, Int, Int, Int, Int, Int) -> Unit
 
-pub fn rect_intersects(Rect, Rect) -> Bool
+pub fn rect_intersects(@model.Rect, @model.Rect) -> Bool
 
-pub fn[T : Game] run(T, EngineConfig, Array[InputState]) -> (T, Array[Frame])
+pub fn[T : @engine.Game] run(T, @model.EngineConfig, Array[@model.InputState]) -> (T, Array[@model.Frame])
 
-pub fn run_driftbird(Array[InputState], config? : EngineConfig) -> (DriftbirdGame, Array[Frame])
+pub fn run_driftbird(Array[@model.InputState], config? : @model.EngineConfig) -> (@driftbird.DriftbirdGame, Array[@model.Frame])
 
-pub fn run_driftbird_demo(Int) -> (DriftbirdGame, Array[String])
+pub fn run_driftbird_demo(Int) -> (@driftbird.DriftbirdGame, Array[String])
 
-pub fn[T : Game] run_fixed_frames(T, EngineConfig, Array[InputState]) -> (T, Array[Frame])
+pub fn[T : @engine.Game] run_fixed_frames(T, @model.EngineConfig, Array[@model.InputState]) -> (T, Array[@model.Frame])
 
 pub fn sample_assets_dsl() -> String
 
-pub fn scripted_demo_inputs(Int) -> Array[InputState]
+pub fn scripted_demo_inputs(Int) -> Array[@model.InputState]
 
-pub fn spr(Frame, Sprite, Int, Int) -> Unit
+pub fn spr(@model.Frame, @model.Sprite, Int, Int) -> Unit
 
-pub fn sprite_pixel(Sprite, Int, Int) -> Int?
+pub fn sprite_pixel(@model.Sprite, Int, Int) -> Int?
 
-pub fn sprite_to_json(Sprite) -> Json
+pub fn sprite_to_json(@model.Sprite) -> Json
 
-pub fn[T : Game] step(T, EngineConfig, InputState, Int) -> (T, Frame)
+pub fn[T : @engine.Game] step(T, @model.EngineConfig, @model.InputState, Int) -> (T, @model.Frame)
 
-pub fn tile_at(Tilemap, Int, Int) -> Int?
+pub fn tile_at(@model.Tilemap, Int, Int) -> Int?
 
-pub fn tilemap_to_json(Tilemap) -> Json
+pub fn tilemap_to_json(@model.Tilemap) -> Json
 
 pub fn version_tag() -> String
 
 // Errors
 
 // Types and methods
-pub struct AssetBundle {
-  palette : Palette
-  sprites : Array[Sprite]
-  tilemaps : Array[Tilemap]
-}
-pub impl Eq for AssetBundle
-pub impl Show for AssetBundle
-
-pub struct Collider {
-  tag : String
-  rect : Rect
-}
-pub impl Eq for Collider
-pub impl Show for Collider
-
-pub struct DriftbirdGame {
-  bundle : AssetBundle
-  mut bird_x : Int
-  mut bird_y : Double
-  mut bird_vy : Double
-  mut pipe_x : Int
-  mut pipe_gap_y : Int
-  mut pipe_width : Int
-  mut gap_height : Int
-  mut score : Int
-  mut tick : Int
-  mut terrain_offset : Int
-  mut is_started : Bool
-  mut is_over : Bool
-  mut last_hit_tag : String?
-  mut pipe_scored : Bool
-}
-pub fn DriftbirdGame::is_over(Self) -> Bool
-pub fn DriftbirdGame::is_started(Self) -> Bool
-pub fn DriftbirdGame::last_hit_tag(Self) -> String?
-pub fn DriftbirdGame::score(Self) -> Int
-pub impl Eq for DriftbirdGame
-pub impl Show for DriftbirdGame
-pub impl Game for DriftbirdGame
-
-pub struct DslError {
-  line : Int
-  message : String
-}
-pub impl Eq for DslError
-pub impl Show for DslError
-
-pub struct EngineConfig {
-  width : Int
-  height : Int
-  fps : Int
-  scale : Int
-  palette : Palette
-}
-pub impl Eq for EngineConfig
-pub impl Show for EngineConfig
-
-pub struct Frame {
-  width : Int
-  height : Int
-  pixels : Array[Int]
-}
-pub fn Frame::blit(Self, Sprite, Int, Int) -> Unit
-pub fn Frame::clear(Self, Int) -> Unit
-pub fn Frame::draw_rect(Self, Int, Int, Int, Int, Int) -> Unit
-pub fn Frame::get_pixel(Self, Int, Int) -> Int?
-pub fn Frame::new(Int, Int, fill? : Int) -> Self
-pub fn Frame::set_pixel(Self, Int, Int, Int) -> Unit
-pub fn Frame::to_ascii(Self) -> String
-pub impl Eq for Frame
-pub impl Show for Frame
-
-pub struct InputState {
-  flap : Bool
-  reset : Bool
-}
-pub impl Eq for InputState
-pub impl Show for InputState
-
-pub struct Palette {
-  name : String
-  colors : Array[String]
-}
-pub impl Eq for Palette
-pub impl Show for Palette
-
-pub struct Rect {
-  x : Int
-  y : Int
-  w : Int
-  h : Int
-}
-pub impl Eq for Rect
-pub impl Show for Rect
-
-pub struct RuntimeContext {
-  config : EngineConfig
-  input : InputState
-  frame : Int
-  dt_ms : Int
-}
-pub impl Eq for RuntimeContext
-pub impl Show for RuntimeContext
-
-pub struct Sprite {
-  name : String
-  width : Int
-  height : Int
-  pixels : Array[Int]
-}
-pub impl Eq for Sprite
-pub impl Show for Sprite
-
-pub struct Tilemap {
-  name : String
-  width : Int
-  height : Int
-  tiles : Array[Int]
-}
-pub impl Eq for Tilemap
-pub impl Show for Tilemap
 
 // Type aliases
+pub using @model {type AssetBundle}
+
+pub using @model {type Collider}
+
+pub using @driftbird {type DriftbirdGame}
+
+pub using @model {type DslError}
+
+pub using @model {type EngineConfig}
+
+pub using @model {type Frame}
+
+pub using @model {type InputState}
+
+pub using @model {type Palette}
+
+pub using @model {type Rect}
+
+pub using @model {type RuntimeContext}
+
+pub using @model {type Sprite}
+
+pub using @model {type Tilemap}
 
 // Traits
-pub trait Game {
-  init(Self, RuntimeContext) -> Self
-  update(Self, RuntimeContext) -> Self
-  draw(Self, RuntimeContext) -> Frame
-}
 

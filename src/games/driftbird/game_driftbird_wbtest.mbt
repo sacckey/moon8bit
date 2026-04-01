@@ -11,10 +11,10 @@ test "engine deterministic with identical inputs" {
 ///|
 test "reset input restores game state" {
   let inputs = [
-    input_none,
+    @model.input_none,
     InputState::{ flap: true, reset: false },
     InputState::{ flap: false, reset: true },
-    input_none,
+    @model.input_none,
   ]
 
   let (state, _) = run_driftbird(inputs)
@@ -28,8 +28,8 @@ test "rect intersection basics" {
   let b = Rect::{ x: 2, y: 2, w: 4, h: 4 }
   let c = Rect::{ x: 5, y: 5, w: 2, h: 2 }
 
-  assert_true(rect_intersects(a, b))
-  assert_true(!rect_intersects(a, c))
+  assert_true(@model.rect_intersects(a, b))
+  assert_true(!@model.rect_intersects(a, c))
 }
 
 ///|
@@ -40,7 +40,7 @@ test "collider API detects hits against multiple obstacles" {
     collider_box("pipe_bottom", 6, 6, 4, 4),
   ]
 
-  assert_true(collider_hits_any(bird, obstacles))
+  assert_true(@model.collider_hits_any(bird, obstacles))
   let hit = match collider_first_hit(bird, obstacles) {
     Some(v) => v
     None => panic()
@@ -54,15 +54,18 @@ test "collider API ignores empty collider boxes" {
   let empty = collider_box("pipe", 6, 6, 0, 4)
   let solid = collider_box("pipe", 20, 20, 4, 4)
 
-  assert_true(!collider_intersects(bird, empty))
-  assert_true(!collider_hits_any(bird, [empty, solid]))
+  assert_true(!@model.collider_intersects(bird, empty))
+  assert_true(!@model.collider_hits_any(bird, [empty, solid]))
   assert_eq(collider_first_hit(bird, [empty, solid]), None)
 }
 
 ///|
 test "engine step records pipe collision hit tag" {
   let config = default_engine_config()
-  let state = engine_init(new_driftbird_game(load_sample_assets()), config)
+  let state = @engine.engine_init(
+    new_driftbird_game(load_sample_assets()),
+    config,
+  )
 
   state.is_started = true
   state.bird_x = 8
@@ -75,7 +78,7 @@ test "engine step records pipe collision hit tag" {
   state.is_over = false
   state.last_hit_tag = None
 
-  let (next, _) = engine_step(state, config, input_none, 0)
+  let (next, _) = @engine.engine_step(state, config, @model.input_none, 0)
   assert_true(next.is_over())
   assert_eq(next.last_hit_tag(), Some("pipe_top"))
 }
@@ -83,7 +86,10 @@ test "engine step records pipe collision hit tag" {
 ///|
 test "engine step increments score when passing a pipe" {
   let config = default_engine_config()
-  let state = engine_init(new_driftbird_game(load_sample_assets()), config)
+  let state = @engine.engine_init(
+    new_driftbird_game(load_sample_assets()),
+    config,
+  )
 
   state.is_started = true
   state.is_over = false
@@ -97,7 +103,7 @@ test "engine step increments score when passing a pipe" {
   state.gap_height = 30
   state.pipe_scored = false
 
-  let (next, _) = engine_step(state, config, input_none, 0)
+  let (next, _) = @engine.engine_step(state, config, @model.input_none, 0)
   assert_eq(next.score(), 1)
   assert_true(next.pipe_scored)
 }

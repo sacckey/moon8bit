@@ -4,14 +4,14 @@ pub fn config(
   height : Int,
   fps? : Int = 30,
   scale? : Int = 4,
-  palette? : Palette = palette_default(),
+  palette? : @model.Palette = @model.palette_default(),
 ) -> EngineConfig {
   EngineConfig::{ width, height, fps, scale, palette }
 }
 
 ///|
 pub fn btn(flap : Bool, reset : Bool) -> InputState {
-  input_state(flap, reset)
+  @model.input_state(flap, reset)
 }
 
 ///|
@@ -56,6 +56,6 @@ pub fn rect(
 }
 
 ///|
-pub fn spr(frame : Frame, sprite : Sprite, x : Int, y : Int) -> Unit {
+pub fn spr(frame : Frame, sprite : @model.Sprite, x : Int, y : Int) -> Unit {
   frame.blit(sprite, x, y)
 }
