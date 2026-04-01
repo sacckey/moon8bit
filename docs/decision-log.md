@@ -70,3 +70,12 @@ Use one short entry per decision to prevent direction drift.
 - Decision: Switch driftbird control flow to press-to-start/restart with edge-triggered jump input and pass-through scoring.
 - Why: Prevent hold-to-fly behavior, improve game feel, and match retro loop expectations.
 - Impact: Added `is_started` state, one-press jump semantics, pipe pass scoring, and new tests for start/restart/score behavior.
+
+- Date: 2026-04-02
+- Decision: Adopt a two-layer feature delivery rule (`Primitive + Wrapper`) for all new engine capabilities.
+- Why: Prevent delayed API ergonomics and avoid relying on copied external implementations for each feature.
+- Impact:
+  - New features (e.g. audio/input helpers) must define both internal primitives and user-facing wrappers in the same change set.
+  - Wrapper additions are not postponed to a later refactor phase.
+  - Each feature change includes: behavior tests, deterministic/reproducibility checks (when applicable), and a minimal README usage example.
+  - External engines may be referenced for design ideas only; moon8bit implementation code remains original.
