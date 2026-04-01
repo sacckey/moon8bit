@@ -8,9 +8,9 @@
 
 ## Stage 1 Submission Gate
 
-- [ ] Google Form is submitted (target: 2026-04-01).
-- [ ] Submission timestamp is recorded in `docs/handoff.md`.
-- [ ] Final submitted text snapshot is preserved locally.
+- [x] Google Form is submitted (target: 2026-04-01).
+- [x] Submission timestamp is recorded in `docs/handoff.md`.
+- [x] Final submitted text snapshot is preserved locally.
 
 ## Messaging Safety Checks
 

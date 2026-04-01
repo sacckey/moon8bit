@@ -3,9 +3,13 @@
 ## 2026-04-01 Kickoff Note (SCC Stage 1)
 
 - Public kickoff status: active (repository is public and under active development)
-- Stage 1 form status: pending submission today
-- Submission timestamp: `TBD (record immediately after submit)`
+- Stage 1 form status: submitted
+- Submission timestamp: `2026-04-01 20:34 JST`
 - Submission text source: `docs/application-draft.md`
+- Submitted form summary:
+  - Project title: `moon8bit`
+  - Project description source: `docs/application-draft.md` (300+ words)
+  - Why MoonBit / About You: completed and submitted
 - Showcase alignment updates completed:
   - concrete scope fields added (goal/target users/architecture/feasibility)
   - README environment requirements clarified
