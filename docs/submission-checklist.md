@@ -92,3 +92,10 @@ Expected:
 2. Add wrapper equivalence tests (same behavior as existing APIs).
 3. Apply wrapper API usage to `game_driftbird.mbt` itself and verify behavior parity.
 4. Update README with concise API examples and reproducibility proof points.
+
+## Post-Submission Progress (2026-04-01)
+
+- [x] Thin ergonomic wrapper APIs were added with backward compatibility.
+- [x] Wrapper equivalence tests were added and passing.
+- [x] `game_driftbird.mbt` call sites were updated to use wrapper APIs where applicable.
+- [x] README now includes concise wrapper API examples and quickstart snippets.

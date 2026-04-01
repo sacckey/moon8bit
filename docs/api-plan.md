@@ -24,7 +24,7 @@
 All functions are wrappers over current APIs and should stay behavior-equivalent.
 
 ```mbt
-pub fn init(
+pub fn config(
   width : Int,
   height : Int,
   fps? : Int = 30,
@@ -65,7 +65,7 @@ pub fn spr(frame : Frame, sprite : Sprite, x : Int, y : Int) -> Unit
 
 ## Mapping to Existing APIs
 
-- `init` -> `EngineConfig::{ ... }` (same default values as `default_engine_config()`).
+- `config` -> `EngineConfig::{ ... }` (same default values as `default_engine_config()`).
 - `btn` -> `input_state(flap, reset)`.
 - `step` -> `engine_step(game, config, input, frame)`.
 - `run` -> `run_fixed_frames(game, config, inputs)`.
@@ -114,6 +114,6 @@ pub fn spr(frame : Frame, sprite : Sprite, x : Int, y : Int) -> Unit
 
 ## Open Questions to Resolve Before Merge
 
-- Should `init` also offer an overload that starts from `default_engine_config()` and only overrides selected fields?
+- Should `config` also offer an overload that starts from `default_engine_config()` and only overrides selected fields?
 - Should we expose tiny aliases for booleans (`btnf`, `btnr`) or keep only explicit `btn(flap, reset)`?
 - Should we expose a CLI/web toggle to compare classic calls vs wrapped calls in the same demo?

@@ -113,6 +113,38 @@ Print built-in sample DSL:
 moon run cmd/main -- sample-dsl
 ```
 
+## Wrapper API Quickstart
+
+The thin wrapper layer is available for shorter game code:
+
+- `config`: create `EngineConfig`
+- `btn`: create `InputState`
+- `step` / `run`: runtime stepping helpers
+- `cls` / `pset` / `rect` / `spr`: frame drawing helpers
+
+Minimal runtime example:
+
+```mbt
+fn quick_run() -> Unit {
+  let cfg = config(64, 48, fps=30, scale=4)
+  let game = new_driftbird_game(load_sample_assets())
+  let inputs = [btn(true, false), btn(false, false), btn(false, true)]
+  let (state, frames) = run(game, cfg, inputs)
+  println("score=\{state.score()} frames=\{frames.length()}")
+}
+```
+
+Minimal drawing example:
+
+```mbt
+fn draw_preview(frame : Frame, sprite : Sprite) -> Unit {
+  cls(frame, 0)
+  rect(frame, 0, 46, 64, 2, 3)
+  pset(frame, 1, 1, 6)
+  spr(frame, sprite, 8, 20)
+}
+```
+
 ## DSL v1
 
 ### Palette
