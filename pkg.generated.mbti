@@ -8,6 +8,10 @@ pub fn asset_bundle_to_json_string(AssetBundle) -> String
 
 pub fn assets_cli_output(String) -> String
 
+pub fn btn(Bool, Bool) -> InputState
+
+pub fn cls(Frame, Int) -> Unit
+
 pub fn collider(String, Rect) -> Collider
 
 pub fn collider_box(String, Int, Int, Int, Int) -> Collider
@@ -17,6 +21,8 @@ pub fn collider_first_hit(Collider, Array[Collider]) -> Collider?
 pub fn collider_hits_any(Collider, Array[Collider]) -> Bool
 
 pub fn collider_intersects(Collider, Collider) -> Bool
+
+pub fn config(Int, Int, fps? : Int, scale? : Int, palette? : Palette) -> EngineConfig
 
 pub fn default_engine_config() -> EngineConfig
 
@@ -46,7 +52,13 @@ pub fn parse_assets_dsl(String) -> Result[AssetBundle, DslError]
 
 pub fn parse_assets_dsl_to_json_string(String) -> Result[String, DslError]
 
+pub fn pset(Frame, Int, Int, Int) -> Unit
+
+pub fn rect(Frame, Int, Int, Int, Int, Int) -> Unit
+
 pub fn rect_intersects(Rect, Rect) -> Bool
+
+pub fn[T : Game] run(T, EngineConfig, Array[InputState]) -> (T, Array[Frame])
 
 pub fn run_driftbird(Array[InputState], config? : EngineConfig) -> (DriftbirdGame, Array[Frame])
 
@@ -58,9 +70,13 @@ pub fn sample_assets_dsl() -> String
 
 pub fn scripted_demo_inputs(Int) -> Array[InputState]
 
+pub fn spr(Frame, Sprite, Int, Int) -> Unit
+
 pub fn sprite_pixel(Sprite, Int, Int) -> Int?
 
 pub fn sprite_to_json(Sprite) -> Json
+
+pub fn[T : Game] step(T, EngineConfig, InputState, Int) -> (T, Frame)
 
 pub fn tile_at(Tilemap, Int, Int) -> Int?
 
