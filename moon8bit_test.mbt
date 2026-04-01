@@ -133,3 +133,11 @@ test "driftbird restarts from game over on flap input" {
   assert_true(state.is_started())
   assert_true(!state.is_over())
 }
+
+///|
+test "wrapped sample runs with wrapper API" {
+  let (state, frames) = run_wrapped_sample(30)
+  assert_eq(frames.length(), 30)
+  assert_true(state.tick >= 0)
+  assert_true(frames[0].to_ascii().length() > 0)
+}
