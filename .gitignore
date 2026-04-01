@@ -2,3 +2,5 @@
 _build/
 .mooncakes/
 .moonagent/
+web.js
+web.js.map
