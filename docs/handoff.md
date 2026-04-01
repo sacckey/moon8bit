@@ -59,3 +59,9 @@ moon test
 moon build --target js cmd/web
 python3 -m http.server 8000
 ```
+
+## 2026-04-01 End-of-Day TODO Snapshot
+
+- Next focus: logic-shrinking API layer on top of current wrappers.
+- Candidate helpers: input edge (`btnp`), deterministic timer/spawn helpers, lightweight collision helpers, minimal UI helpers.
+- Refactor policy: apply to `game_driftbird` incrementally with behavior parity tests (score/collision/reset).

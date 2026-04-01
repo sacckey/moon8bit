@@ -99,3 +99,12 @@ Expected:
 - [x] Wrapper equivalence tests were added and passing.
 - [x] `game_driftbird.mbt` call sites were updated to use wrapper APIs where applicable.
 - [x] README now includes concise wrapper API examples and quickstart snippets.
+
+## Next API TODO (Logic-Shrinking Layer)
+
+- [ ] Add an input edge helper API (candidate: `btnp`) to reduce per-game "just pressed" boilerplate.
+- [ ] Add deterministic spawn/timer helpers (candidate: `every` or small timer utility).
+- [ ] Add lightweight collision helpers for common AABB workflows used in side-scrollers.
+- [ ] Add minimal UI helpers for overlays/text placement used by game state screens.
+- [ ] Refactor `game_driftbird` incrementally to use the new helpers while preserving behavior parity.
+- [ ] Add parity tests proving the refactor keeps score/collision/reset behavior unchanged.
