@@ -1,5 +1,16 @@
 # Handoff
 
+## 2026-04-01 Kickoff Note (SCC Stage 1)
+
+- Public kickoff status: active (repository is public and under active development)
+- Stage 1 form status: pending submission today
+- Submission timestamp: `TBD (record immediately after submit)`
+- Submission text source: `docs/application-draft.md`
+- Showcase alignment updates completed:
+  - concrete scope fields added (goal/target users/architecture/feasibility)
+  - README environment requirements clarified
+  - checklist expanded with showcase readiness checks
+
 ## Session End Summary
 
 - Date: 2026-03-28

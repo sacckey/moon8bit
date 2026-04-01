@@ -7,6 +7,20 @@ The core idea is simple:
 - Keep gameplay deterministic (fixed-step update).
 - Keep output portable (MoonBit + Web/Wasm-ready runtime model).
 
+## SCC Scope Snapshot
+
+- Engineering Goal: make AI-assisted retro game iteration practical in MoonBit.
+- Target Users: solo developers/small teams building pixel-style prototypes and learners exploring MoonBit systems code.
+- Architecture Idea: `DSL parser -> runtime model -> renderer -> web demo`, with CLI and tests wired to the same core package.
+- Feasibility Today: playable driftbird demo, reproducible commands, parser/error tests, runtime determinism tests.
+
+## Environment Requirements
+
+- OS: macOS/Linux (current local verification environment: macOS/Darwin)
+- MoonBit toolchain: `moon 0.1.20260209`
+- Python: `Python 3.9.6` (for `python3 -m http.server`)
+- Browser: a modern browser with Canvas 2D support (Chrome/Safari/Edge class)
+
 ## Current MVP
 
 Implemented in this repository:

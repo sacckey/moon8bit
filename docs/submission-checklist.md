@@ -4,7 +4,7 @@
 
 - Submission target: MoonBit SCC 2026
 - Deadline: 2026-04-21
-- Current status date: 2026-03-31
+- Current status date: 2026-04-01
 
 ## Stage 1 Submission Gate
 
@@ -17,6 +17,14 @@
 - [ ] Claims are evidence-based (implementation facts only).
 - [ ] No "first/only/better than X" uniqueness claims without proof.
 - [ ] Competitor comparison is optional and not required for this submission.
+
+## Showcase Readiness Checks
+
+- [ ] Application text explicitly states: engineering goal, target users, architecture idea, feasibility.
+- [ ] Public kickoff evidence is visible (active public repo + ongoing commit history).
+- [ ] README includes goals, scope, usage, and environment requirements.
+- [ ] README includes reproducible run/build/test path.
+- [ ] Core-path tests and edge-case validation are documented.
 
 ## Required Artifacts
 

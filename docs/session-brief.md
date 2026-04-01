@@ -2,20 +2,20 @@
 
 ## Session
 
-- Date: 2026-03-31
-- Timebox: 1-2 hours
+- Date: 2026-04-01
+- Timebox: 1 hour
 - Branch: `main`
 
 ## Today Focus (max 2)
 
-1. Lock submission messaging (evidence-based claims, no uniqueness overreach).
-2. Finalize Stage 1 submission gate and post-submission implementation order.
+1. Submit Stage 1 form and record timestamp/evidence.
+2. Ensure docs match showcase-style project information structure.
 
 ## Done Definition
 
-- `docs/application-draft.md` wording is aligned with evidence-based positioning.
-- `docs/submission-checklist.md` includes Stage 1 gate and execution order.
-- `docs/north-star.md` includes positioning guardrails.
+- Stage 1 form is submitted and timestamp is recorded in `docs/handoff.md`.
+- `application-draft`, `README`, and checklist all include scope/target/architecture/feasibility.
+- Reproducibility and environment requirements are explicit and current.
 
 ## Explicitly Out of Scope Today
 

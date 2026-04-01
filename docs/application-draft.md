@@ -4,6 +4,13 @@ moon8bit is a retro 2D game engine prototype built in MoonBit with a clear produ
 
 The core problem is simple. LLMs can generate gameplay code quickly, but assets and debugging loops often slow iteration. moon8bit focuses on reducing that loop cost in MoonBit: palettes, sprites, and tilemaps are authored in a compact DSL, parsed with line-numbered diagnostics, and converted into runtime data (or JSON for inspection). The contribution of moon8bit is a reproducible MoonBit workflow that integrates text-first assets, deterministic runtime behavior, and line-numbered diagnostics for fast AI-assisted iteration.
 
+Concrete scope for this submission:
+
+- Engineering goal: deliver a compact MoonBit retro 2D engine that keeps AI-assisted iteration practical and reproducible.
+- Target users: solo developers and small teams building pixel-style prototypes with AI assistance, plus learners who want an inspectable MoonBit game-engine codebase.
+- Architecture idea: a layered flow of `assets DSL -> parser/validation -> runtime state transition -> renderer -> web demo`, with CLI and tests sharing the same core package.
+- Feasibility: the repository already includes a playable driftbird web demo, CLI commands, parser diagnostics, deterministic runtime tests, and reproducible local run steps.
+
 Current implementation includes five integrated parts:
 
 1. Engine core with explicit `init/update/draw` phases and fixed-step runtime.
