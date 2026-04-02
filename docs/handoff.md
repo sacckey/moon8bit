@@ -1,5 +1,16 @@
 # Handoff
 
+## 2026-04-02 Acceptance Note (SCC Stage 1)
+
+- Application status: accepted.
+- Acceptance summary: "no major issues", development can proceed.
+- Organizer expectations to track in implementation/docs:
+  - MoonBit remains central in system logic/architecture/runtime.
+  - Final delivery should be a complete runnable application.
+  - Final submission should include E2E runnable examples and clear build/run/test docs.
+  - Practical distribution path should be explicit (GitHub Pages / Releases / install channel).
+- Source: acceptance email received on 2026-04-02.
+
 ## 2026-04-01 Kickoff Note (SCC Stage 1)
 
 - Public kickoff status: active (repository is public and under active development)

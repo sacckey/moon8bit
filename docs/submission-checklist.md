@@ -4,13 +4,21 @@
 
 - Submission target: MoonBit SCC 2026
 - Deadline: 2026-04-21
-- Current status date: 2026-04-01
+- Current status date: 2026-04-02
 
 ## Stage 1 Submission Gate
 
 - [x] Google Form is submitted (target: 2026-04-01).
 - [x] Submission timestamp is recorded in `docs/handoff.md`.
 - [x] Final submitted text snapshot is preserved locally.
+
+## Stage 1 Acceptance Gate (2026-04-02)
+
+- [x] Acceptance mail received ("no major issues", proceed with development).
+- [ ] MoonBit central role is visible in architecture and runtime logic (not peripheral use).
+- [ ] Final target is tracked as a complete runnable application (not partial prototype only).
+- [ ] E2E runnable example path is documented and maintained.
+- [ ] Distribution path is explicit (GitHub Pages now; release/install channel plan documented).
 
 ## Messaging Safety Checks
 
