@@ -52,7 +52,7 @@ fn parse_int_token(
   line : Int,
   field : String,
 ) -> Result[Int, DslError] {
-  try @strconv.parse_int(token) |> Ok catch {
+  try @string.parse_int(token[:]) |> Ok catch {
     _ => err(line, "invalid integer for \{field}: \{token}")
   }
 }

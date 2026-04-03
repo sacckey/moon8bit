@@ -45,7 +45,7 @@ fn extract_command_tokens(args : Array[String]) -> Array[String] {
 
 ///|
 fn parse_int_or_default(text : String, default_value : Int) -> Int {
-  @strconv.parse_int(text) catch {
+  @string.parse_int(text[:]) catch {
     _ => default_value
   }
 }
