@@ -3,8 +3,16 @@
   "source": "src",
   "version": "0.1.0",
   "readme": "README.mbt.md",
-  "repository": "",
+  "repository": "https://github.com/sacckey/moon8bit",
   "license": "Apache-2.0",
-  "keywords": [],
-  "description": ""
+  "keywords": [
+    "moonbit",
+    "game-engine",
+    "retro",
+    "2d",
+    "text-first-assets",
+    "ai-friendly"
+  ],
+  "description": "A minimal retro 2D game engine for MoonBit with text-first assets, deterministic runtime, and compact APIs for fast human/AI iteration.",
+  "homepage": "https://sacckey.github.io/moon8bit/"
 }
