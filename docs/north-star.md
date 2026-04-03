@@ -62,3 +62,56 @@ Build `moon8bit` as a retro 2D engine that is easy for both humans and AI to use
 - One playable driftbird side-scroller demo on Web.
 - Clear docs for architecture decisions and AI usage.
 - Sufficient tests covering core paths and edge cases.
+
+## Locked Definition (2026-04-04)
+
+This section is the fixed planning baseline for remaining SCC work.
+
+### Product Goal (Fixed)
+
+- Deliver a complete and runnable MoonBit-centered retro engine application by 2026-04-21.
+- Keep the engine minimal while still practical for real game authoring.
+- Keep game authoring short, readable, and AI-assisted-friendly.
+
+### Core Value We Must Prove
+
+1. Minimal engine surface (small API, small conceptual cost).
+2. Short game code (wrapper-driven authoring with low boilerplate).
+3. Small text-first assets (diff-friendly, AI-editable).
+4. Fast debug/iteration loop (line-number diagnostics + deterministic behavior).
+
+### Differentiation vs Selene (Comparison Axis)
+
+- We do not compete on total engine breadth (ECS/3D/full editor scope).
+- We compete on focused retro iteration speed and simplicity.
+- We emphasize measurable AI/human iteration efficiency:
+  - fewer steps to first playable result
+  - shorter sample code
+  - deterministic replay/testing
+  - clearer parser/runtime error feedback
+
+### Required Capability Tracks
+
+- Baseline track (must exist in runnable form):
+  - WebGPU path with minimum practical parity for current frame primitives
+  - Sound path with BGM + core SFX
+  - Browser GUI authoring for sprite + sound
+  - Browser editing + local rebuild workflow for practical iteration
+- moon8bit unique track (must remain central):
+  - text-first asset workflow
+  - deterministic runtime + reproducible validation
+  - AI-friendly diagnostics and compact wrappers
+
+### Delivery Rule for New Features
+
+- Every new capability is shipped as one set:
+  - Primitive runtime implementation
+  - User-facing wrapper API
+  - tests (including reproducibility/parity where applicable)
+  - README usage example
+- No delayed "wrapper later" feature delivery.
+
+### Non-Goals (Fixed)
+
+- Chasing full-feature parity with broad ECS/3D engines.
+- Expanding into large generalized framework scope before completing core minimal goals.
