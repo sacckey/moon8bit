@@ -1,0 +1,20 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "sacckey/moon8bit/font"
+
+import {
+  "sacckey/moon8bit/model",
+}
+
+// Values
+pub fn draw_text(@model.Frame, Int, Int, String, Int, scale? : Int) -> Unit
+
+pub fn text_width(String, scale? : Int) -> Int
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+

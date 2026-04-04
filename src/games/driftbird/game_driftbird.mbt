@@ -313,7 +313,7 @@ fn hit_code(tag : String?) -> Int {
 
 ///|
 fn draw_hud(frame : Frame, game : DriftbirdGame, config : EngineConfig) -> Unit {
-  ui_panel(frame, 0, 0, config.width, 7, 0)
+  ui_panel(frame, 0, 0, config.width, 9, 0)
   let hud = "S\{game.score} F\{game.tick} H\{hit_code(game.last_hit_tag)}"
   ui_text(frame, 1, 1, hud, 6)
 }
@@ -329,7 +329,7 @@ fn draw_state_overlay(
   let line1_w = ui_text_width(line1)
   let line2_w = ui_text_width(line2)
   let content_w = if line1_w > line2_w { line1_w } else { line2_w }
-  let content_h = if line2 == "" { 5 } else { 11 }
+  let content_h = if line2 == "" { 7 } else { 15 }
   let panel_w = content_w + 4
   let panel_h = content_h + 4
   let panel_x = ui_center_x(config.width, panel_w)
@@ -349,7 +349,7 @@ fn draw_state_overlay(
     ui_text(
       frame,
       panel_x + 2 + (content_w - line2_w) / 2,
-      panel_y + 8,
+      panel_y + 10,
       line2,
       text_color,
     )

@@ -99,51 +99,8 @@ pub fn ui_panel(
 }
 
 ///|
-fn glyph_rows_3x5(ch : Char) -> Array[String]? {
-  match ch {
-    '0' => Some(["###", "#.#", "#.#", "#.#", "###"])
-    '1' => Some([".#.", "##.", ".#.", ".#.", "###"])
-    '2' => Some(["###", "..#", "###", "#..", "###"])
-    '3' => Some(["###", "..#", "###", "..#", "###"])
-    '4' => Some(["#.#", "#.#", "###", "..#", "..#"])
-    '5' => Some(["###", "#..", "###", "..#", "###"])
-    '6' => Some(["###", "#..", "###", "#.#", "###"])
-    '7' => Some(["###", "..#", "..#", "..#", "..#"])
-    '8' => Some(["###", "#.#", "###", "#.#", "###"])
-    '9' => Some(["###", "#.#", "###", "..#", "###"])
-    'A' => Some([".#.", "#.#", "###", "#.#", "#.#"])
-    'C' => Some(["###", "#..", "#..", "#..", "###"])
-    'E' => Some(["###", "#..", "###", "#..", "###"])
-    'F' => Some(["###", "#..", "##.", "#..", "#.."])
-    'G' => Some(["###", "#..", "#.#", "#.#", "###"])
-    'H' => Some(["#.#", "#.#", "###", "#.#", "#.#"])
-    'M' => Some(["#.#", "###", "#.#", "#.#", "#.#"])
-    'O' => Some(["###", "#.#", "#.#", "#.#", "###"])
-    'P' => Some(["###", "#.#", "###", "#..", "#.."])
-    'R' => Some(["##.", "#.#", "##.", "#.#", "#.#"])
-    'S' => Some(["###", "#..", "###", "..#", "###"])
-    'V' => Some(["#.#", "#.#", "#.#", "#.#", ".#."])
-    ' ' => Some(["...", "...", "...", "...", "..."])
-    _ => None
-  }
-}
-
-///|
 pub fn ui_text_width(text : String, scale? : Int = 1) -> Int {
-  if scale <= 0 {
-    return 0
-  }
-
-  let mut count = 0
-  for _ in text {
-    count += 1
-  }
-
-  if count <= 0 {
-    0
-  } else {
-    count * 4 * scale - scale
-  }
+  @font.text_width(text, scale~)
 }
 
 ///|
@@ -155,31 +112,7 @@ pub fn ui_text(
   color : Int,
   scale? : Int = 1,
 ) -> Unit {
-  if scale <= 0 {
-    return
-  }
-
-  let mut pen_x = x
-  for ch in text {
-    match glyph_rows_3x5(ch) {
-      Some(rows) =>
-        for dy, row in rows {
-          for dx, pixel in row {
-            if pixel == '#' {
-              frame.draw_rect(
-                pen_x + dx * scale,
-                y + dy * scale,
-                scale,
-                scale,
-                color,
-              )
-            }
-          }
-        }
-      None => ()
-    }
-    pen_x += 4 * scale
-  }
+  @font.draw_text(frame, x, y, text, color, scale~)
 }
 
 ///|
