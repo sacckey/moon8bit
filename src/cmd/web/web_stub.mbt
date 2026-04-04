@@ -68,6 +68,21 @@ fn web_download_text(filename : String, text : String) -> Unit {
 }
 
 ///|
+fn web_audio_start_bgm() -> Unit {
+
+}
+
+///|
+fn web_audio_stop_bgm() -> Unit {
+
+}
+
+///|
+fn web_audio_play_sfx(kind : String) -> Unit {
+  ignore(kind)
+}
+
+///|
 fn web_start_loop(cb : () -> Unit, fps : Int) -> Unit {
   ignore(fps)
   cb()

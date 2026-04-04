@@ -217,7 +217,7 @@ This structure makes generated game code easy for AI to produce and refactor.
 
 - Baseline capabilities we are pursuing as a practical engine:
   - playable rendering paths (Canvas now, WebGPU path as next milestone)
-  - practical audio path (BGM + SFX in web demo; broader runtime path is next)
+  - practical audio path (BGM + SFX in web demo)
   - minimal GUI authoring path (sprite + sound)
 - moon8bit-specific value:
   - text-first asset workflow for AI iteration

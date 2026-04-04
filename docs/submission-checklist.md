@@ -37,7 +37,7 @@
 ## Baseline Capability Track (toward final deadline)
 
 - [ ] WebGPU path reaches minimum playable parity with current Canvas frame primitives.
-- [x] Audio path supports practical BGM + SFX playback (current: web demo path).
+- [x] Audio path supports practical BGM + SFX playback.
 - [ ] Minimal GUI authoring path exists for sprite editing and sound editing.
 
 ## moon8bit Unique Value Track

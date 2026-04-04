@@ -29,6 +29,9 @@ let flap_prev_ref : Ref[Bool] = @ref.new(false)
 let reset_prev_ref : Ref[Bool] = @ref.new(false)
 
 ///|
+let bgm_playing_ref : Ref[Bool] = @ref.new(false)
+
+///|
 fn palette_color(index : Int) -> String {
   let palette = palette_ref.val
   if index >= 0 && index < palette.colors.length() {
@@ -66,15 +69,51 @@ fn draw_frame(frame : @lib.Frame) -> Unit {
 }
 
 ///|
+fn stop_bgm_if_playing() -> Unit {
+  if bgm_playing_ref.val {
+    web_audio_stop_bgm()
+    bgm_playing_ref.val = false
+  }
+}
+
+///|
+fn start_bgm_if_needed() -> Unit {
+  if !bgm_playing_ref.val {
+    web_audio_start_bgm()
+    bgm_playing_ref.val = true
+  }
+}
+
+///|
 fn tick() -> Unit {
   let frame_index = frame_ref.val
   let input = poll_input()
+  let prev_started = state_ref.val.is_started()
+  let prev_over = state_ref.val.is_over()
   let (next, rendered) = @lib.engine_step(
     state_ref.val,
     config,
     input,
     frame_index,
   )
+
+  if input.flap {
+    web_audio_play_sfx("flap")
+  }
+  if input.reset {
+    web_audio_play_sfx("reset")
+    stop_bgm_if_playing()
+  }
+  if !prev_started && next.is_started() {
+    start_bgm_if_needed()
+  }
+  if prev_over && !next.is_over() && next.is_started() {
+    start_bgm_if_needed()
+  }
+  if !prev_over && next.is_over() {
+    web_audio_play_sfx("hit")
+    stop_bgm_if_playing()
+  }
 
   state_ref.val = next
   frame_ref.val = frame_index + 1
@@ -98,6 +137,7 @@ fn apply_dsl_text(dsl_text : String) -> Unit {
   state_ref.val = @lib.engine_init(@lib.new_driftbird_game(bundle), config)
   palette_ref.val = bundle.palette
   frame_ref.val = 0
+  stop_bgm_if_playing()
 
   web_set_editor_feedback("Applied DSL successfully", false)
   tick()
@@ -125,7 +165,7 @@ fn on_import(dsl_text : String) -> Unit {
 fn main {
   web_init_canvas(config.width, config.height, display_scale)
   web_set_status(
-    "HUD is rendered in-canvas (S=score F=frame H=hit-code). Controls: Space/ArrowUp flap, R reset.",
+    "HUD is in-canvas (S/F/H). Audio: flap/reset/hit SFX. BGM path is enabled but muted (volume=0).",
   )
 
   web_set_editor_text(@lib.sample_assets_dsl())

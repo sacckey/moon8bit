@@ -31,8 +31,25 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   ctx.imageSmoothingEnabled = false;
   #|   globalThis.__moon8bit_ctx = ctx;
   #|   globalThis.__moon8bit_keys = new Set();
+  #|   if (!globalThis.__moon8bit_ensure_audio) {
+  #|     globalThis.__moon8bit_ensure_audio = () => {
+  #|       const AudioCtx = globalThis.AudioContext || globalThis.webkitAudioContext;
+  #|       if (!AudioCtx) return null;
+  #|       if (!globalThis.__moon8bit_audio_ctx) {
+  #|         globalThis.__moon8bit_audio_ctx = new AudioCtx();
+  #|       }
+  #|       const ctx = globalThis.__moon8bit_audio_ctx;
+  #|       if (ctx.state === "suspended") {
+  #|         ctx.resume().catch(() => {});
+  #|       }
+  #|       return ctx;
+  #|     };
+  #|   }
   #|   globalThis.addEventListener("keydown", (e) => {
   #|     globalThis.__moon8bit_keys.add(e.code);
+  #|     if (globalThis.__moon8bit_ensure_audio) {
+  #|       globalThis.__moon8bit_ensure_audio();
+  #|     }
   #|   });
   #|   globalThis.addEventListener("keyup", (e) => {
   #|     globalThis.__moon8bit_keys.delete(e.code);
@@ -304,6 +321,114 @@ extern "js" fn web_download_text(filename : String, text : String) -> Unit =
   #|   link.click();
   #|   document.body.removeChild(link);
   #|   URL.revokeObjectURL(url);
+  #| }
+
+///|
+extern "js" fn web_audio_start_bgm() -> Unit =
+  #| () => {
+  #|   const ensure = globalThis.__moon8bit_ensure_audio;
+  #|   if (!ensure || globalThis.__moon8bit_bgm_nodes) return;
+  #|   const ctx = ensure();
+  #|   if (!ctx) return;
+  #|
+  #|   const osc = ctx.createOscillator();
+  #|   osc.type = "square";
+  #|   osc.frequency.value = 110;
+  #|
+  #|   const lfo = ctx.createOscillator();
+  #|   lfo.type = "sine";
+  #|   lfo.frequency.value = 0.35;
+  #|
+  #|   const lfoGain = ctx.createGain();
+  #|   lfoGain.gain.value = 2.5;
+  #|
+  #|   const gain = ctx.createGain();
+  #|   gain.gain.value = 0.0;
+  #|
+  #|   lfo.connect(lfoGain);
+  #|   lfoGain.connect(osc.frequency);
+  #|   osc.connect(gain);
+  #|   gain.connect(ctx.destination);
+  #|
+  #|   const now = ctx.currentTime;
+  #|   osc.start(now);
+  #|   lfo.start(now);
+  #|
+  #|   globalThis.__moon8bit_bgm_nodes = { osc, lfo, lfoGain, gain };
+  #| }
+
+///|
+extern "js" fn web_audio_stop_bgm() -> Unit =
+  #| () => {
+  #|   const nodes = globalThis.__moon8bit_bgm_nodes;
+  #|   if (!nodes) return;
+  #|   const now = (globalThis.__moon8bit_audio_ctx && globalThis.__moon8bit_audio_ctx.currentTime) || 0;
+  #|   try { nodes.gain.gain.setTargetAtTime(0.0001, now, 0.05); } catch (_) {}
+  #|   try { nodes.osc.stop(now + 0.08); } catch (_) {}
+  #|   try { nodes.lfo.stop(now + 0.08); } catch (_) {}
+  #|   setTimeout(() => {
+  #|     try { nodes.osc.disconnect(); } catch (_) {}
+  #|     try { nodes.lfo.disconnect(); } catch (_) {}
+  #|     try { nodes.lfoGain.disconnect(); } catch (_) {}
+  #|     try { nodes.gain.disconnect(); } catch (_) {}
+  #|   }, 120);
+  #|   globalThis.__moon8bit_bgm_nodes = null;
+  #| }
+
+///|
+extern "js" fn web_audio_play_sfx(kind : String) -> Unit =
+  #| (kind) => {
+  #|   const ensure = globalThis.__moon8bit_ensure_audio;
+  #|   if (!ensure) return;
+  #|   const ctx = ensure();
+  #|   if (!ctx) return;
+  #|
+  #|   const osc = ctx.createOscillator();
+  #|   const gain = ctx.createGain();
+  #|   osc.connect(gain);
+  #|   gain.connect(ctx.destination);
+  #|
+  #|   const now = ctx.currentTime;
+  #|   let attack = 0.004;
+  #|   let decay = 0.12;
+  #|   let peak = 0.08;
+  #|   let f0 = 520;
+  #|   let f1 = 420;
+  #|   let type = "square";
+  #|
+  #|   if (kind === "flap") {
+  #|     attack = 0.001; decay = 0.06; peak = 0.12; f0 = 900; f1 = 620; type = "triangle";
+  #|   } else if (kind === "hit") {
+  #|     attack = 0.003; decay = 0.12; peak = 0.045; f0 = 440; f1 = 220; type = "square";
+  #|   } else if (kind === "reset") {
+  #|     attack = 0.003; decay = 0.1; peak = 0.06; f0 = 420; f1 = 620; type = "sine";
+  #|   }
+  #|
+  #|   osc.type = type;
+  #|   osc.frequency.setValueAtTime(f0, now);
+  #|   osc.frequency.exponentialRampToValueAtTime(Math.max(40, f1), now + decay);
+  #|
+  #|   gain.gain.setValueAtTime(0.0001, now);
+  #|   gain.gain.linearRampToValueAtTime(peak, now + attack);
+  #|   gain.gain.exponentialRampToValueAtTime(0.0001, now + decay);
+  #|
+  #|   if (kind === "hit") {
+  #|     const osc2 = ctx.createOscillator();
+  #|     const gain2 = ctx.createGain();
+  #|     osc2.type = "triangle";
+  #|     osc2.frequency.setValueAtTime(660, now);
+  #|     osc2.frequency.exponentialRampToValueAtTime(330, now + 0.09);
+  #|     gain2.gain.setValueAtTime(0.0001, now);
+  #|     gain2.gain.linearRampToValueAtTime(0.03, now + 0.002);
+  #|     gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+  #|     osc2.connect(gain2);
+  #|     gain2.connect(ctx.destination);
+  #|     osc2.start(now);
+  #|     osc2.stop(now + 0.11);
+  #|   }
+  #|
+  #|   osc.start(now);
+  #|   osc.stop(now + decay + 0.02);
   #| }
 
 ///|
