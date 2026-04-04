@@ -11,19 +11,119 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     document.body.appendChild(root);
   #|   }
   #|
+  #|   const viewWidth = width * scale;
+  #|
+  #|   let tabButtons = document.getElementById("moon8bit-tab-buttons");
+  #|   if (!tabButtons) {
+  #|     tabButtons = document.createElement("div");
+  #|     tabButtons.id = "moon8bit-tab-buttons";
+  #|     tabButtons.style.display = "flex";
+  #|     tabButtons.style.flexWrap = "wrap";
+  #|     tabButtons.style.gap = "6px";
+  #|     tabButtons.style.width = `${viewWidth}px`;
+  #|     root.appendChild(tabButtons);
+  #|   }
+  #|   tabButtons.style.width = `${viewWidth}px`;
+  #|
+  #|   let tabPanels = document.getElementById("moon8bit-tab-panels");
+  #|   if (!tabPanels) {
+  #|     tabPanels = document.createElement("div");
+  #|     tabPanels.id = "moon8bit-tab-panels";
+  #|     tabPanels.style.width = `${viewWidth}px`;
+  #|     root.appendChild(tabPanels);
+  #|   }
+  #|   tabPanels.style.width = `${viewWidth}px`;
+  #|
+  #|   const tabs = [
+  #|     { key: "game", label: "Game" },
+  #|     { key: "dsl", label: "DSL" },
+  #|     { key: "sprite", label: "Sprite" },
+  #|     { key: "sound", label: "Sound" },
+  #|   ];
+  #|
+  #|   const ensureTab = (key, label) => {
+  #|     const buttonId = `moon8bit-tab-btn-${key}`;
+  #|     const panelId = `moon8bit-tab-panel-${key}`;
+  #|
+  #|     let button = document.getElementById(buttonId);
+  #|     if (!button) {
+  #|       button = document.createElement("button");
+  #|       button.id = buttonId;
+  #|       button.textContent = label;
+  #|       button.style.padding = "6px 10px";
+  #|       button.style.cursor = "pointer";
+  #|       button.style.border = "1px solid #486581";
+  #|       button.style.background = "#274060";
+  #|       button.style.color = "#f6f7eb";
+  #|       tabButtons.appendChild(button);
+  #|     }
+  #|
+  #|     let panel = document.getElementById(panelId);
+  #|     if (!panel) {
+  #|       panel = document.createElement("div");
+  #|       panel.id = panelId;
+  #|       panel.style.display = "none";
+  #|       panel.style.width = "100%";
+  #|       panel.style.boxSizing = "border-box";
+  #|       panel.style.gap = "8px";
+  #|       panel.style.alignItems = "start";
+  #|       tabPanels.appendChild(panel);
+  #|     }
+  #|     return { button, panel };
+  #|   };
+  #|
+  #|   const tabUi = {};
+  #|   tabs.forEach((tab) => {
+  #|     tabUi[tab.key] = ensureTab(tab.key, tab.label);
+  #|   });
+  #|
+  #|   const setActiveTab = (key) => {
+  #|     const active = tabs.some((tab) => tab.key === key) ? key : "game";
+  #|     tabs.forEach((tab) => {
+  #|       const isActive = tab.key === active;
+  #|       tabUi[tab.key].panel.style.display = isActive ? "grid" : "none";
+  #|       tabUi[tab.key].button.style.background = isActive ? "#2e8b57" : "#274060";
+  #|       tabUi[tab.key].button.style.borderColor = isActive ? "#4aa96c" : "#486581";
+  #|     });
+  #|     globalThis.__moon8bit_active_tab = active;
+  #|   };
+  #|
+  #|   tabs.forEach((tab) => {
+  #|     const button = tabUi[tab.key].button;
+  #|     if (button.dataset.bound !== "1") {
+  #|       button.dataset.bound = "1";
+  #|       button.addEventListener("click", () => setActiveTab(tab.key));
+  #|     }
+  #|   });
+  #|   setActiveTab(globalThis.__moon8bit_active_tab || "game");
+  #|
   #|   const id = "moon8bit-canvas";
   #|   let canvas = document.getElementById(id);
   #|   if (!canvas) {
   #|     canvas = document.createElement("canvas");
   #|     canvas.id = id;
-  #|     root.appendChild(canvas);
+  #|   }
+  #|   if (canvas.parentElement !== tabUi.game.panel) {
+  #|     tabUi.game.panel.appendChild(canvas);
   #|   }
   #|   canvas.width = width;
   #|   canvas.height = height;
-  #|   canvas.style.width = `${width * scale}px`;
+  #|   canvas.style.width = `${viewWidth}px`;
   #|   canvas.style.height = `${height * scale}px`;
   #|   canvas.style.imageRendering = "pixelated";
   #|   canvas.style.border = "2px solid #333";
+  #|
+  #|   let status = document.getElementById("moon8bit-status");
+  #|   if (!status) {
+  #|     status = document.createElement("div");
+  #|     status.id = "moon8bit-status";
+  #|     status.style.fontFamily = "monospace";
+  #|     status.style.color = "#d9e2ec";
+  #|   }
+  #|   if (status.parentElement !== tabUi.game.panel) {
+  #|     tabUi.game.panel.appendChild(status);
+  #|   }
+  #|
   #|   const ctx = canvas.getContext("2d", { alpha: false });
   #|   if (!ctx) {
   #|     throw new Error("2d context is unavailable");
@@ -31,6 +131,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   ctx.imageSmoothingEnabled = false;
   #|   globalThis.__moon8bit_ctx = ctx;
   #|   globalThis.__moon8bit_keys = new Set();
+  #|
   #|   if (!globalThis.__moon8bit_ensure_audio) {
   #|     globalThis.__moon8bit_ensure_audio = () => {
   #|       const AudioCtx = globalThis.AudioContext || globalThis.webkitAudioContext;
@@ -45,6 +146,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       return ctx;
   #|     };
   #|   }
+  #|
   #|   globalThis.addEventListener("keydown", (e) => {
   #|     const target = e.target;
   #|     const editable = target && (
@@ -70,8 +172,10 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     editor.id = "moon8bit-editor";
   #|     editor.style.display = "grid";
   #|     editor.style.gap = "6px";
-  #|     editor.style.width = `${width * scale}px`;
-  #|     root.appendChild(editor);
+  #|     editor.style.width = "100%";
+  #|   }
+  #|   if (editor.parentElement !== tabUi.dsl.panel) {
+  #|     tabUi.dsl.panel.appendChild(editor);
   #|   }
   #|
   #|   let textarea = document.getElementById("moon8bit-dsl-input");
@@ -170,6 +274,42 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     feedback.style.color = "#9fb3c8";
   #|     editor.appendChild(feedback);
   #|   }
+  #|
+  #|   let soundEditor = document.getElementById("moon8bit-sound-editor");
+  #|   if (!soundEditor) {
+  #|     soundEditor = document.createElement("div");
+  #|     soundEditor.id = "moon8bit-sound-editor";
+  #|     soundEditor.style.display = "grid";
+  #|     soundEditor.style.gap = "8px";
+  #|     soundEditor.style.padding = "8px";
+  #|     soundEditor.style.border = "1px solid #334e68";
+  #|     soundEditor.style.background = "#111827";
+  #|     tabUi.sound.panel.appendChild(soundEditor);
+  #|   }
+  #|   if (soundEditor.parentElement !== tabUi.sound.panel) {
+  #|     tabUi.sound.panel.appendChild(soundEditor);
+  #|   }
+  #|
+  #|   let soundTitle = document.getElementById("moon8bit-sound-title");
+  #|   if (!soundTitle) {
+  #|     soundTitle = document.createElement("div");
+  #|     soundTitle.id = "moon8bit-sound-title";
+  #|     soundTitle.textContent = "Sound Editor";
+  #|     soundTitle.style.fontWeight = "600";
+  #|     soundTitle.style.fontFamily = "monospace";
+  #|     soundEditor.appendChild(soundTitle);
+  #|   }
+  #|
+  #|   let soundHint = document.getElementById("moon8bit-sound-hint");
+  #|   if (!soundHint) {
+  #|     soundHint = document.createElement("div");
+  #|     soundHint.id = "moon8bit-sound-hint";
+  #|     soundHint.textContent = "Sound editor UI is reserved here. Current runtime uses procedural WebAudio SFX/BGM.";
+  #|     soundHint.style.fontFamily = "monospace";
+  #|     soundHint.style.fontSize = "12px";
+  #|     soundHint.style.color = "#9fb3c8";
+  #|     soundEditor.appendChild(soundHint);
+  #|   }
   #| }
 
 ///|
@@ -208,13 +348,19 @@ extern "js" fn web_set_status(text : String) -> Unit =
   #|   if (!el) {
   #|     el = document.createElement("div");
   #|     el.id = id;
-  #|     el.style.marginTop = "8px";
   #|     el.style.fontFamily = "monospace";
   #|     el.style.color = "#d9e2ec";
+  #|   }
+  #|   const gamePanel = document.getElementById("moon8bit-tab-panel-game");
+  #|   if (gamePanel) {
+  #|     if (el.parentElement !== gamePanel) {
+  #|       gamePanel.appendChild(el);
+  #|     }
+  #|   } else {
   #|     const root = document.getElementById("moon8bit-root");
-  #|     if (root) {
+  #|     if (root && el.parentElement !== root) {
   #|       root.appendChild(el);
-  #|     } else {
+  #|     } else if (!root && !el.parentElement) {
   #|       document.body.appendChild(el);
   #|     }
   #|   }
@@ -335,7 +481,7 @@ extern "js" fn web_download_text(filename : String, text : String) -> Unit =
 ///|
 extern "js" fn web_init_sprite_editor() -> Unit =
   #| () => {
-  #|   const editor = document.getElementById("moon8bit-editor");
+  #|   const editor = document.getElementById("moon8bit-tab-panel-sprite") || document.getElementById("moon8bit-editor");
   #|   const textarea = document.getElementById("moon8bit-dsl-input");
   #|   if (!editor || !textarea) return;
   #|
