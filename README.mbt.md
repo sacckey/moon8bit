@@ -18,7 +18,7 @@ The core idea is simple:
 
 - OS: macOS/Linux (current local verification environment: macOS/Darwin)
 - MoonBit toolchain: `moon 0.1.20260209`
-- Python: `Python 3.9.6` (for `python3 -m http.server`)
+- Python: `Python 3.9.6` (for `python3 -m http.server --directory site`)
 - Browser: a modern browser with Canvas 2D support (Chrome/Safari/Edge class)
 
 ## Current MVP
@@ -38,6 +38,7 @@ Implemented in this repository:
   - flap/reset input
   - collision detection and scrolling obstacles
   - engine-level `Collider` API usage for overlap detection
+  - web demo audio cues (BGM + flap/reset/hit SFX)
 - CLI:
   - `demo`
   - `sample-dsl`
@@ -48,7 +49,7 @@ Implemented in this repository:
 ```bash
 moon check
 moon test
-moon run cmd/main -- demo 60
+moon run src/cmd/main -- demo 60
 ```
 
 ## Evaluator Quickstart (3-5 min)
@@ -56,22 +57,22 @@ moon run cmd/main -- demo 60
 ```bash
 moon check
 moon test
-moon build --target js cmd/web
-python3 -m http.server 8000
-# open http://localhost:8000/demo/
+moon build --target js src/cmd/web
+python3 -m http.server 8000 --directory site
+# open http://localhost:8000/
 ```
 
 Then in browser:
 
 1. Press `Space` to start and flap.
 2. Edit a tile value in DSL and click `Apply DSL`.
-3. Confirm the scene changes and status line updates (`score`, `frame`, `hit`).
+3. Confirm the scene changes and in-canvas HUD updates (`S`/`F`/`H`).
 
 Run browser demo (Canvas 2D):
 
 ```bash
-moon build --target js cmd/web
-python3 -m http.server 8000
+moon build --target js src/cmd/web
+python3 -m http.server 8000 --directory site
 # open http://localhost:8000/demo/
 ```
 
@@ -93,24 +94,24 @@ Controls:
 - edit DSL in the textarea and click `Apply DSL` (or `Ctrl/Cmd + Enter`)
 - `Export DSL`: download current editor text as `moon8bit_assets.dsl`
 - `Import DSL`: load a local `.dsl`/`.txt` file into the editor and apply it
-- status line shows `hit=<tag>` after collisions (`ground`, `ceiling`, `pipe_top`, `pipe_bottom`)
+- HUD is rendered in-canvas (`S=score F=frame H=hit-code`)
 
 Convert DSL text to JSON:
 
 ```bash
-moon run cmd/main -- assets "sprite hero 2 1\\n11\\nend"
+moon run src/cmd/main -- assets "sprite hero 8 8\\n1.......\\n........\\n........\\n........\\n........\\n........\\n........\\n........\\nend"
 ```
 
 Convert DSL file to JSON file (`--target js`):
 
 ```bash
-moon run cmd/main --target js -- assets-file assets.dsl assets.json
+moon run src/cmd/main --target js -- assets-file assets.dsl assets.json
 ```
 
 Print built-in sample DSL:
 
 ```bash
-moon run cmd/main -- sample-dsl
+moon run src/cmd/main -- sample-dsl
 ```
 
 ## Wrapper API Quickstart
@@ -126,7 +127,7 @@ Minimal runtime example:
 
 ```mbt
 fn quick_run() -> Unit {
-  let cfg = config(64, 48, fps=30, scale=4)
+  let cfg = config(256, 144, fps=60, scale=4)
   let game = new_driftbird_game(load_sample_assets())
   let inputs = [btn(true, false), btn(false, false), btn(false, true)]
   let (state, frames) = run(game, cfg, inputs)
@@ -139,11 +140,17 @@ Minimal drawing example:
 ```mbt
 fn draw_preview(frame : Frame, sprite : Sprite) -> Unit {
   cls(frame, 0)
-  rect(frame, 0, 46, 64, 2, 3)
+  rect(frame, 0, 142, 256, 2, 3)
   pset(frame, 1, 1, 6)
   spr(frame, sprite, 8, 20)
 }
 ```
+
+## Current Defaults and Constraints
+
+- Default config: `256 x 144`, `60 fps`, `scale=4`.
+- Sprite dimensions: each axis must be one of `8`, `16`, `32` (DSL validation).
+- UI text rendering: 8x8 cell layout per character (top/left padding included in cell).
 
 ## DSL v1
 
@@ -159,10 +166,15 @@ end
 ### Sprite
 
 ```text
-sprite bird 5 3
-.666.
-64646
-.666.
+sprite bird 8 8
+........
+...33...
+..33334.
+.3336334
+.3353334
+..33333.
+...33...
+........
 end
 ```
 
@@ -205,7 +217,7 @@ This structure makes generated game code easy for AI to produce and refactor.
 
 - Baseline capabilities we are pursuing as a practical engine:
   - playable rendering paths (Canvas now, WebGPU path as next milestone)
-  - practical audio path (BGM + SFX)
+  - practical audio path (BGM + SFX in web demo; broader runtime path is next)
   - minimal GUI authoring path (sprite + sound)
 - moon8bit-specific value:
   - text-first asset workflow for AI iteration

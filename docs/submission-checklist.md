@@ -4,7 +4,7 @@
 
 - Submission target: MoonBit SCC 2026
 - Deadline: 2026-04-21
-- Current status date: 2026-04-02
+- Current status date: 2026-04-04
 
 ## Stage 1 Submission Gate
 
@@ -17,8 +17,8 @@
 - [x] Acceptance mail received ("no major issues", proceed with development).
 - [ ] MoonBit central role is visible in architecture and runtime logic (not peripheral use).
 - [ ] Final target is tracked as a complete runnable application (not partial prototype only).
-- [ ] E2E runnable example path is documented and maintained.
-- [ ] Distribution path is explicit (GitHub Pages now; release/install channel plan documented).
+- [x] E2E runnable example path is documented and maintained.
+- [x] Distribution path is explicit (GitHub Pages now; release/install channel plan documented).
 
 ## Messaging Safety Checks
 
@@ -30,38 +30,38 @@
 
 - [ ] Application text explicitly states: engineering goal, target users, architecture idea, feasibility.
 - [ ] Public kickoff evidence is visible (active public repo + ongoing commit history).
-- [ ] README includes goals, scope, usage, and environment requirements.
-- [ ] README includes reproducible run/build/test path.
-- [ ] Core-path tests and edge-case validation are documented.
+- [x] README includes goals, scope, usage, and environment requirements.
+- [x] README includes reproducible run/build/test path.
+- [x] Core-path tests and edge-case validation are documented.
 
 ## Baseline Capability Track (toward final deadline)
 
 - [ ] WebGPU path reaches minimum playable parity with current Canvas frame primitives.
-- [ ] Audio path supports practical BGM + SFX playback.
+- [x] Audio path supports practical BGM + SFX playback (current: web demo path).
 - [ ] Minimal GUI authoring path exists for sprite editing and sound editing.
 
 ## moon8bit Unique Value Track
 
-- [ ] Text-first asset workflow remains central (not replaced by binary-only tooling).
-- [ ] Deterministic runtime behavior remains testable and reproducible.
-- [ ] Diagnostics stay AI-loop-friendly (line-numbered parser feedback + clear errors).
-- [ ] Public docs explain baseline capabilities and moon8bit-specific value separately.
+- [x] Text-first asset workflow remains central (not replaced by binary-only tooling).
+- [x] Deterministic runtime behavior remains testable and reproducible.
+- [x] Diagnostics stay AI-loop-friendly (line-numbered parser feedback + clear errors).
+- [x] Public docs explain baseline capabilities and moon8bit-specific value separately.
 
 ## Required Artifacts
 
 - [ ] Repository URL is final and accessible.
 - [ ] Application text (300+ words) is finalized.
 - [ ] AI usage / retrospective note is finalized.
-- [ ] README has reproducible run steps.
+- [x] README has reproducible run steps.
 - [ ] Demo video or GIF is ready and viewable.
 
 ## Repository Docs to Confirm
 
-- [ ] `README.mbt.md`
-- [ ] `docs/application-draft.md`
-- [ ] `docs/ai-usage-log.md`
-- [ ] `docs/decision-log.md`
-- [ ] `docs/demo-script.md`
+- [x] `README.mbt.md`
+- [x] `docs/application-draft.md`
+- [x] `docs/ai-usage-log.md`
+- [x] `docs/decision-log.md`
+- [x] `docs/demo-script.md`
 
 ## Reproducibility Checks
 
@@ -70,13 +70,13 @@ Run from module root:
 ```bash
 moon check
 moon test
-moon build --target js cmd/web
-python3 -m http.server 8000
+moon build --target js src/cmd/web
+python3 -m http.server 8000 --directory site
 ```
 
 Open:
 
-- `http://localhost:8000/demo/`
+- `http://localhost:8000/` (or `http://localhost:8000/demo/`)
 
 Expected:
 
@@ -84,7 +84,7 @@ Expected:
 - [ ] DSL `Apply` updates screen output.
 - [ ] `Import DSL` loads local file and applies.
 - [ ] `Export DSL` downloads current editor text.
-- [ ] Status line updates (`score`, `frame`, `hit`).
+- [ ] In-canvas HUD updates (`S=score`, `F=frame`, `H=hit-code`).
 
 ## Final Submission Pass
 
