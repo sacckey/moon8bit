@@ -59,6 +59,46 @@ pub fn aabb_hit_tag(
 }
 
 ///|
+pub fn ui_center_x(total_width : Int, item_width : Int) -> Int {
+  if total_width <= item_width {
+    0
+  } else {
+    (total_width - item_width) / 2
+  }
+}
+
+///|
+pub fn ui_center_y(total_height : Int, item_height : Int) -> Int {
+  if total_height <= item_height {
+    0
+  } else {
+    (total_height - item_height) / 2
+  }
+}
+
+///|
+pub fn ui_panel(
+  frame : Frame,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+  fill : Int,
+  border? : Int = -1,
+) -> Unit {
+  if w <= 0 || h <= 0 {
+    return
+  }
+  frame.draw_rect(x, y, w, h, fill)
+  if border >= 0 && w > 2 && h > 2 {
+    frame.draw_rect(x, y, w, 1, border)
+    frame.draw_rect(x, y + h - 1, w, 1, border)
+    frame.draw_rect(x, y, 1, h, border)
+    frame.draw_rect(x + w - 1, y, 1, h, border)
+  }
+}
+
+///|
 pub fn[T : Game] step(
   game : T,
   config : EngineConfig,

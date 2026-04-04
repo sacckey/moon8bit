@@ -36,6 +36,12 @@ pub fn spr(@model.Frame, @model.Sprite, Int, Int) -> Unit
 
 pub fn[T : Game] step(T, @model.EngineConfig, @model.InputState, Int) -> (T, @model.Frame)
 
+pub fn ui_center_x(Int, Int) -> Int
+
+pub fn ui_center_y(Int, Int) -> Int
+
+pub fn ui_panel(@model.Frame, Int, Int, Int, Int, Int, border? : Int) -> Unit
+
 // Errors
 
 // Types and methods

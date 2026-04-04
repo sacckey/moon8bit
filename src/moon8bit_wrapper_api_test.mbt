@@ -79,3 +79,15 @@ test "root wrapper re-exports collision utility helpers" {
   assert_eq(aabb_hit_tag(1, 1, 3, 3, obstacles), Some("pipe_top"))
   assert_eq(aabb_hit_tag(50, 50, 2, 2, obstacles), None)
 }
+
+///|
+test "root wrapper re-exports ui utility helpers" {
+  assert_eq(ui_center_x(20, 6), 7)
+  assert_eq(ui_center_y(11, 5), 3)
+  assert_eq(ui_center_y(3, 9), 0)
+
+  let frame = Frame::new(10, 8, fill=-1)
+  ui_panel(frame, 2, 1, 5, 4, 3, border=7)
+  assert_eq(frame.get_pixel(2, 1), Some(7))
+  assert_eq(frame.get_pixel(4, 2), Some(3))
+}

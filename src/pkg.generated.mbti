@@ -96,6 +96,12 @@ pub fn tile_at(@model.Tilemap, Int, Int) -> Int?
 
 pub fn tilemap_to_json(@model.Tilemap) -> Json
 
+pub fn ui_center_x(Int, Int) -> Int
+
+pub fn ui_center_y(Int, Int) -> Int
+
+pub fn ui_panel(@model.Frame, Int, Int, Int, Int, Int, border? : Int) -> Unit
+
 pub fn version_tag() -> String
 
 // Errors

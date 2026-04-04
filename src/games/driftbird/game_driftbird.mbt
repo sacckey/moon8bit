@@ -67,6 +67,29 @@ fn aabb_hit_tag(
 }
 
 ///|
+fn ui_center_x(total_width : Int, item_width : Int) -> Int {
+  @engine.ui_center_x(total_width, item_width)
+}
+
+///|
+fn ui_center_y(total_height : Int, item_height : Int) -> Int {
+  @engine.ui_center_y(total_height, item_height)
+}
+
+///|
+fn ui_panel(
+  frame : Frame,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+  fill : Int,
+  border? : Int = -1,
+) -> Unit {
+  @engine.ui_panel(frame, x, y, w, h, fill, border~)
+}
+
+///|
 fn default_engine_config() -> EngineConfig {
   @model.default_engine_config()
 }
@@ -491,10 +514,13 @@ pub impl @engine.Game for DriftbirdGame with draw(self, ctx) {
   }
   spr(frame, sprite, self.bird_x, bird_y_px(self))
 
-  if !self.is_started {
-    rect(frame, 0, 0, ctx.config.width, 1, 6)
-  } else if self.is_over {
-    rect(frame, 0, 0, ctx.config.width, 1, 4)
+  if !self.is_started || self.is_over {
+    let panel_w = 22
+    let panel_h = 5
+    let panel_x = ui_center_x(ctx.config.width, panel_w)
+    let panel_y = ui_center_y(ctx.config.height, panel_h)
+    let fill = if self.is_over { 4 } else { 6 }
+    ui_panel(frame, panel_x, panel_y, panel_w, panel_h, fill, border=0)
   }
 
   frame

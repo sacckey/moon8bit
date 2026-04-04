@@ -142,6 +142,29 @@ pub fn aabb_hit_tag(
 }
 
 ///|
+pub fn ui_center_x(total_width : Int, item_width : Int) -> Int {
+  @engine.ui_center_x(total_width, item_width)
+}
+
+///|
+pub fn ui_center_y(total_height : Int, item_height : Int) -> Int {
+  @engine.ui_center_y(total_height, item_height)
+}
+
+///|
+pub fn ui_panel(
+  frame : Frame,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+  fill : Int,
+  border? : Int = -1,
+) -> Unit {
+  @engine.ui_panel(frame, x, y, w, h, fill, border~)
+}
+
+///|
 pub fn parse_assets_dsl(input : String) -> Result[AssetBundle, DslError] {
   @assets.parse_assets_dsl(input)
 }

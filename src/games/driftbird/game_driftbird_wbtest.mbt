@@ -107,3 +107,65 @@ test "engine step increments score when passing a pipe" {
   assert_eq(next.score(), 1)
   assert_true(next.pipe_scored)
 }
+
+///|
+test "parity score baseline increments once per pipe pass" {
+  let config = default_engine_config()
+  let state = @engine.engine_init(
+    new_driftbird_game(load_sample_assets()),
+    config,
+  )
+  state.is_started = true
+  state.is_over = false
+  state.score = 0
+  state.bird_x = 20
+  state.bird_y = 20.0
+  state.bird_vy = 0.0
+  state.pipe_x = state.bird_x - state.pipe_width
+  state.pipe_gap_y = 0
+  state.gap_height = 30
+  state.pipe_scored = false
+
+  let (next1, _) = @engine.engine_step(state, config, @model.input_none, 0)
+  let (next2, _) = @engine.engine_step(next1, config, @model.input_none, 1)
+  assert_eq(next1.score(), 1)
+  assert_eq(next2.score(), 1)
+  assert_true(next2.pipe_scored)
+}
+
+///|
+test "parity collision baseline reports ground hit" {
+  let config = default_engine_config()
+  let state = @engine.engine_init(
+    new_driftbird_game(load_sample_assets()),
+    config,
+  )
+
+  state.is_started = true
+  state.bird_y = Double::from_int(config.height - 4)
+  state.bird_vy = 0.0
+  state.is_over = false
+  state.last_hit_tag = None
+
+  let (next, _) = @engine.engine_step(state, config, @model.input_none, 0)
+  assert_true(next.is_over())
+  assert_eq(next.last_hit_tag(), Some("ground"))
+}
+
+///|
+test "parity reset baseline restores zeroed run state" {
+  let inputs = [
+    @model.input_state(true, false),
+    @model.input_none,
+    @model.input_state(false, true),
+    @model.input_none,
+  ]
+  let config = default_engine_config()
+  let (state, _) = run_driftbird(inputs, config~)
+
+  assert_true(!state.is_started())
+  assert_true(!state.is_over())
+  assert_eq(state.score(), 0)
+  assert_eq(state.tick, 0)
+  assert_eq(state.last_hit_tag(), None)
+}

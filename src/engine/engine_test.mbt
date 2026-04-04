@@ -102,3 +102,17 @@ test "wrapper collision helpers cover common AABB workflows" {
   assert_eq(@engine.aabb_hit_tag(1, 1, 3, 3, obstacles), Some("pipe_top"))
   assert_eq(@engine.aabb_hit_tag(50, 50, 2, 2, obstacles), None)
 }
+
+///|
+test "wrapper ui helpers provide centered layout and panel drawing" {
+  assert_eq(@engine.ui_center_x(20, 6), 7)
+  assert_eq(@engine.ui_center_y(11, 5), 3)
+  assert_eq(@engine.ui_center_x(4, 8), 0)
+
+  let frame = @model.Frame::new(10, 8, fill=-1)
+  @engine.ui_panel(frame, 2, 1, 5, 4, 3, border=7)
+
+  assert_eq(frame.get_pixel(2, 1), Some(7))
+  assert_eq(frame.get_pixel(4, 2), Some(3))
+  assert_eq(frame.get_pixel(6, 4), Some(7))
+}
