@@ -68,6 +68,16 @@ fn web_download_text(filename : String, text : String) -> Unit {
 }
 
 ///|
+fn web_init_sprite_editor() -> Unit {
+
+}
+
+///|
+fn web_sprite_editor_refresh() -> Unit {
+
+}
+
+///|
 fn web_audio_start_bgm() -> Unit {
 
 }

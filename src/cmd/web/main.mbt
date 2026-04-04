@@ -23,6 +23,9 @@ let frame_ref : Ref[Int] = @ref.new(0)
 let palette_ref : Ref[@lib.Palette] = @ref.new(initial_bundle.palette)
 
 ///|
+let default_palette : @lib.Palette = @lib.palette_default()
+
+///|
 let flap_prev_ref : Ref[Bool] = @ref.new(false)
 
 ///|
@@ -36,6 +39,8 @@ fn palette_color(index : Int) -> String {
   let palette = palette_ref.val
   if index >= 0 && index < palette.colors.length() {
     palette.colors[index]
+  } else if index >= 0 && index < default_palette.colors.length() {
+    default_palette.colors[index]
   } else {
     "#101820"
   }
@@ -158,6 +163,7 @@ fn on_export() -> Unit {
 ///|
 fn on_import(dsl_text : String) -> Unit {
   web_set_editor_text(dsl_text)
+  web_sprite_editor_refresh()
   apply_dsl_text(dsl_text)
 }
 
@@ -172,6 +178,8 @@ fn main {
   web_bind_apply(on_apply)
   web_bind_export(on_export)
   web_bind_import(on_import)
+  web_init_sprite_editor()
+  web_sprite_editor_refresh()
   on_apply()
 
   web_start_loop(tick, config.fps)
