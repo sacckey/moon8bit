@@ -25,6 +25,40 @@ pub fn every(frame : Int, interval : Int) -> Bool {
 }
 
 ///|
+pub fn aabb(
+  x1 : Int,
+  y1 : Int,
+  w1 : Int,
+  h1 : Int,
+  x2 : Int,
+  y2 : Int,
+  w2 : Int,
+  h2 : Int,
+) -> Bool {
+  @model.rect_intersects(@model.Rect::{ x: x1, y: y1, w: w1, h: h1 }, @model.Rect::{
+    x: x2,
+    y: y2,
+    w: w2,
+    h: h2,
+  })
+}
+
+///|
+pub fn aabb_hit_tag(
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+  obstacles : Array[@model.Collider],
+) -> String? {
+  let target = @model.collider_box("_target", x, y, w, h)
+  match @model.collider_first_hit(target, obstacles) {
+    Some(hit) => Some(hit.tag)
+    None => None
+  }
+}
+
+///|
 pub fn[T : Game] step(
   game : T,
   config : EngineConfig,

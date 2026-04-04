@@ -6,6 +6,10 @@ import {
 }
 
 // Values
+pub fn aabb(Int, Int, Int, Int, Int, Int, Int, Int) -> Bool
+
+pub fn aabb_hit_tag(Int, Int, Int, Int, Array[@model.Collider]) -> String?
+
 pub fn btn(Bool, Bool) -> @model.InputState
 
 pub fn btnp(Bool, Bool) -> Bool

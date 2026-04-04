@@ -24,9 +24,9 @@ test "reset input restores game state" {
 
 ///|
 test "rect intersection basics" {
-  let a = Rect::{ x: 0, y: 0, w: 4, h: 4 }
-  let b = Rect::{ x: 2, y: 2, w: 4, h: 4 }
-  let c = Rect::{ x: 5, y: 5, w: 2, h: 2 }
+  let a = @model.Rect::{ x: 0, y: 0, w: 4, h: 4 }
+  let b = @model.Rect::{ x: 2, y: 2, w: 4, h: 4 }
+  let c = @model.Rect::{ x: 5, y: 5, w: 2, h: 2 }
 
   assert_true(@model.rect_intersects(a, b))
   assert_true(!@model.rect_intersects(a, c))
@@ -41,7 +41,7 @@ test "collider API detects hits against multiple obstacles" {
   ]
 
   assert_true(@model.collider_hits_any(bird, obstacles))
-  let hit = match collider_first_hit(bird, obstacles) {
+  let hit = match @model.collider_first_hit(bird, obstacles) {
     Some(v) => v
     None => panic()
   }
@@ -56,7 +56,7 @@ test "collider API ignores empty collider boxes" {
 
   assert_true(!@model.collider_intersects(bird, empty))
   assert_true(!@model.collider_hits_any(bird, [empty, solid]))
-  assert_eq(collider_first_hit(bird, [empty, solid]), None)
+  assert_eq(@model.collider_first_hit(bird, [empty, solid]), None)
 }
 
 ///|

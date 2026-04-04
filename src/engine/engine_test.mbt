@@ -89,3 +89,16 @@ test "wrapper input helpers detect edges and intervals" {
   assert_true(!@engine.every(15, 8))
   assert_true(!@engine.every(3, 0))
 }
+
+///|
+test "wrapper collision helpers cover common AABB workflows" {
+  assert_true(@engine.aabb(1, 1, 3, 3, 3, 2, 4, 4))
+  assert_true(!@engine.aabb(1, 1, 2, 2, 4, 4, 2, 2))
+
+  let obstacles = [
+    @model.collider_box("miss", 20, 20, 3, 3),
+    @model.collider_box("pipe_top", 3, 2, 4, 4),
+  ]
+  assert_eq(@engine.aabb_hit_tag(1, 1, 3, 3, obstacles), Some("pipe_top"))
+  assert_eq(@engine.aabb_hit_tag(50, 50, 2, 2, obstacles), None)
+}

@@ -11,9 +11,6 @@ type Tilemap = @model.Tilemap
 type AssetBundle = @model.AssetBundle
 
 ///|
-type Rect = @model.Rect
-
-///|
 type Collider = @model.Collider
 
 ///|
@@ -54,18 +51,19 @@ fn tile_at(tilemap : Tilemap, x : Int, y : Int) -> Int? {
 }
 
 ///|
-fn collider(tag : String, rect : Rect) -> Collider {
-  @model.collider(tag, rect)
-}
-
-///|
 fn collider_box(tag : String, x : Int, y : Int, w : Int, h : Int) -> Collider {
   @model.collider_box(tag, x, y, w, h)
 }
 
 ///|
-fn collider_first_hit(target : Collider, others : Array[Collider]) -> Collider? {
-  @model.collider_first_hit(target, others)
+fn aabb_hit_tag(
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+  obstacles : Array[Collider],
+) -> String? {
+  @engine.aabb_hit_tag(x, y, w, h, obstacles)
 }
 
 ///|
@@ -237,11 +235,6 @@ fn reset_driftbird(
 }
 
 ///|
-fn bird_rect(game : DriftbirdGame) -> Rect {
-  Rect::{ x: game.bird_x, y: bird_y_px(game), w: 5, h: 3 }
-}
-
-///|
 fn draw_scrolling_tilemap_rows(
   frame : Frame,
   tilemap : Tilemap,
@@ -298,22 +291,19 @@ fn pipe_colliders(
 ///|
 fn detect_collision_tag(game : DriftbirdGame, config : EngineConfig) -> String? {
   let ground_y = config.height - 2
-  let bird = bird_rect(game)
   let bird_top = bird_y_px(game)
+  let bird_x = game.bird_x
+  let bird_w = 5
+  let bird_h = 3
 
   if game.bird_y < 0.0 {
     return Some("ceiling")
   }
-  if bird_top + bird.h > ground_y {
+  if bird_top + bird_h > ground_y {
     return Some("ground")
   }
 
-  let bird_collider = collider("bird", bird)
-  let obstacles = pipe_colliders(game, config)
-  match collider_first_hit(bird_collider, obstacles) {
-    Some(hit) => Some(hit.tag)
-    None => None
-  }
+  aabb_hit_tag(bird_x, bird_top, bird_w, bird_h, pipe_colliders(game, config))
 }
 
 ///|

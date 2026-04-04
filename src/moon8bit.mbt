@@ -117,6 +117,31 @@ pub fn collider_first_hit(
 }
 
 ///|
+pub fn aabb(
+  x1 : Int,
+  y1 : Int,
+  w1 : Int,
+  h1 : Int,
+  x2 : Int,
+  y2 : Int,
+  w2 : Int,
+  h2 : Int,
+) -> Bool {
+  @engine.aabb(x1, y1, w1, h1, x2, y2, w2, h2)
+}
+
+///|
+pub fn aabb_hit_tag(
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+  obstacles : Array[Collider],
+) -> String? {
+  @engine.aabb_hit_tag(x, y, w, h, obstacles)
+}
+
+///|
 pub fn parse_assets_dsl(input : String) -> Result[AssetBundle, DslError] {
   @assets.parse_assets_dsl(input)
 }

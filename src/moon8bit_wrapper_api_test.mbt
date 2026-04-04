@@ -66,3 +66,16 @@ test "root wrapper re-exports input utility helpers" {
   assert_true(!every(9, 4))
   assert_true(!every(9, -1))
 }
+
+///|
+test "root wrapper re-exports collision utility helpers" {
+  assert_true(aabb(1, 1, 3, 3, 3, 2, 4, 4))
+  assert_true(!aabb(1, 1, 2, 2, 4, 4, 2, 2))
+
+  let obstacles = [
+    collider_box("miss", 20, 20, 3, 3),
+    collider_box("pipe_top", 3, 2, 4, 4),
+  ]
+  assert_eq(aabb_hit_tag(1, 1, 3, 3, obstacles), Some("pipe_top"))
+  assert_eq(aabb_hit_tag(50, 50, 2, 2, obstacles), None)
+}
