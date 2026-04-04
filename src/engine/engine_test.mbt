@@ -77,3 +77,15 @@ test "wrapper run matches run_fixed_frames for deterministic inputs" {
   assert_eq(wrapped_frames, base_frames)
   assert_eq(wrapped_frames.length(), 3)
 }
+
+///|
+test "wrapper input helpers detect edges and intervals" {
+  assert_true(@engine.btnp(true, false))
+  assert_true(!@engine.btnp(true, true))
+  assert_true(!@engine.btnp(false, false))
+
+  assert_true(@engine.every(0, 8))
+  assert_true(@engine.every(16, 8))
+  assert_true(!@engine.every(15, 8))
+  assert_true(!@engine.every(3, 0))
+}

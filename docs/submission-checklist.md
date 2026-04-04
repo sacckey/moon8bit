@@ -110,8 +110,8 @@ Expected:
 
 ## Next API TODO (Logic-Shrinking Layer)
 
-- [ ] Add an input edge helper API (candidate: `btnp`) to reduce per-game "just pressed" boilerplate.
-- [ ] Add deterministic spawn/timer helpers (candidate: `every` or small timer utility).
+- [x] Add an input edge helper API (candidate: `btnp`) to reduce per-game "just pressed" boilerplate.
+- [x] Add deterministic spawn/timer helpers (candidate: `every` or small timer utility).
 - [ ] Add lightweight collision helpers for common AABB workflows used in side-scrollers.
 - [ ] Add minimal UI helpers for overlays/text placement used by game state screens.
 - [ ] Refactor `game_driftbird` incrementally to use the new helpers while preserving behavior parity.

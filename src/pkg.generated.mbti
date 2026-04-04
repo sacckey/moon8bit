@@ -16,6 +16,8 @@ pub fn assets_cli_output(String) -> String
 
 pub fn btn(Bool, Bool) -> @model.InputState
 
+pub fn btnp(Bool, Bool) -> Bool
+
 pub fn cls(@model.Frame, Int) -> Unit
 
 pub fn collider(String, @model.Rect) -> @model.Collider
@@ -37,6 +39,8 @@ pub fn demo_snapshot(Int) -> String
 pub fn[T : @engine.Game] engine_init(T, @model.EngineConfig) -> T
 
 pub fn[T : @engine.Game] engine_step(T, @model.EngineConfig, @model.InputState, Int) -> (T, @model.Frame)
+
+pub fn every(Int, Int) -> Bool
 
 pub fn find_sprite(@model.AssetBundle, String) -> @model.Sprite?
 

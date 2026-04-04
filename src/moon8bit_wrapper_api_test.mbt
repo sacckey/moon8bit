@@ -54,3 +54,15 @@ test "root wrapper frame helpers remain equivalent to Frame methods" {
 
   assert_eq(wrapped, base)
 }
+
+///|
+test "root wrapper re-exports input utility helpers" {
+  assert_true(btnp(true, false))
+  assert_true(!btnp(true, true))
+  assert_true(!btnp(false, false))
+
+  assert_true(every(0, 4))
+  assert_true(every(8, 4))
+  assert_true(!every(9, 4))
+  assert_true(!every(9, -1))
+}

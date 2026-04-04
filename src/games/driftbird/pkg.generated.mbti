@@ -38,13 +38,12 @@ pub struct DriftbirdGame {
   mut is_over : Bool
   mut last_hit_tag : String?
   mut pipe_scored : Bool
-}
+  mut prev_input : @model.InputState
+} derive(Eq, Show)
 pub fn DriftbirdGame::is_over(Self) -> Bool
 pub fn DriftbirdGame::is_started(Self) -> Bool
 pub fn DriftbirdGame::last_hit_tag(Self) -> String?
 pub fn DriftbirdGame::score(Self) -> Int
-pub impl Eq for DriftbirdGame
-pub impl Show for DriftbirdGame
 pub impl @engine.Game for DriftbirdGame
 
 // Type aliases

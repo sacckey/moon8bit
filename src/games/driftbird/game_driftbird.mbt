@@ -79,6 +79,16 @@ fn btn(flap : Bool, reset : Bool) -> InputState {
 }
 
 ///|
+fn btnp(current : Bool, previous : Bool) -> Bool {
+  @engine.btnp(current, previous)
+}
+
+///|
+fn every(frame : Int, interval : Int) -> Bool {
+  @engine.every(frame, interval)
+}
+
+///|
 fn pset(frame : Frame, x : Int, y : Int, color : Int) -> Unit {
   @engine.pset(frame, x, y, color)
 }
@@ -154,6 +164,7 @@ pub struct DriftbirdGame {
   mut is_over : Bool
   mut last_hit_tag : String?
   mut pipe_scored : Bool
+  mut prev_input : InputState
 } derive(Eq, Show)
 
 ///|
@@ -221,6 +232,7 @@ fn reset_driftbird(
   game.is_over = false
   game.last_hit_tag = None
   game.pipe_scored = false
+  game.prev_input = @model.input_none
   game
 }
 
@@ -322,6 +334,7 @@ pub fn new_driftbird_game(bundle : AssetBundle) -> DriftbirdGame {
     is_over: false,
     last_hit_tag: None,
     pipe_scored: false,
+    prev_input: @model.input_none,
   }
 }
 
@@ -346,7 +359,11 @@ pub fn DriftbirdGame::last_hit_tag(self : DriftbirdGame) -> String? {
 }
 
 ///|
-fn step_running(game : DriftbirdGame, ctx : RuntimeContext) -> DriftbirdGame {
+fn step_running(
+  game : DriftbirdGame,
+  ctx : RuntimeContext,
+  flap_pressed : Bool,
+) -> DriftbirdGame {
   let flap_impulse : Double = -2.5
   let gravity_up : Double = 0.42
   let gravity_base_down : Double = 0.16
@@ -355,7 +372,7 @@ fn step_running(game : DriftbirdGame, ctx : RuntimeContext) -> DriftbirdGame {
   let min_vy : Double = -2.35
   let max_vy : Double = 4.8
 
-  if ctx.input.flap {
+  if flap_pressed {
     game.bird_vy = flap_impulse
   }
 
@@ -404,27 +421,30 @@ pub impl @engine.Game for DriftbirdGame with init(self, ctx) {
 
 ///|
 pub impl @engine.Game for DriftbirdGame with update(self, ctx) {
-  if ctx.input.reset {
-    return reset_driftbird(self, ctx.config)
-  }
+  let flap_pressed = btnp(ctx.input.flap, self.prev_input.flap)
+  let reset_pressed = btnp(ctx.input.reset, self.prev_input.reset)
 
-  if self.is_over {
-    if !ctx.input.flap {
-      return self
+  let next = if reset_pressed {
+    reset_driftbird(self, ctx.config)
+  } else if self.is_over {
+    if !flap_pressed {
+      self
+    } else {
+      let restarted = reset_driftbird(self, ctx.config)
+      restarted.is_started = true
+      step_running(restarted, ctx, flap_pressed)
     }
-    let restarted = reset_driftbird(self, ctx.config)
-    restarted.is_started = true
-    return step_running(restarted, ctx)
-  }
-
-  if !self.is_started {
-    if !ctx.input.flap {
-      return self
+  } else if !self.is_started && !flap_pressed {
+    self
+  } else {
+    if !self.is_started {
+      self.is_started = true
     }
-    self.is_started = true
+    step_running(self, ctx, flap_pressed)
   }
 
-  step_running(self, ctx)
+  next.prev_input = ctx.input
+  next
 }
 
 ///|
@@ -494,7 +514,7 @@ pub impl @engine.Game for DriftbirdGame with draw(self, ctx) {
 pub fn scripted_demo_inputs(frame_count : Int) -> Array[InputState] {
   let inputs : Array[InputState] = []
   for i in 0..<frame_count {
-    let flap = i % 8 == 0 || i % 13 == 0
+    let flap = every(i, 8) || every(i, 13)
     inputs.push(btn(flap, false))
   }
   inputs

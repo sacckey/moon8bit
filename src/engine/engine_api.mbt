@@ -15,6 +15,16 @@ pub fn btn(flap : Bool, reset : Bool) -> InputState {
 }
 
 ///|
+pub fn btnp(current : Bool, previous : Bool) -> Bool {
+  current && !previous
+}
+
+///|
+pub fn every(frame : Int, interval : Int) -> Bool {
+  interval > 0 && frame % interval == 0
+}
+
+///|
 pub fn[T : Game] step(
   game : T,
   config : EngineConfig,

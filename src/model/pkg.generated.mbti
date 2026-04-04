@@ -37,23 +37,17 @@ pub(all) struct AssetBundle {
   palette : Palette
   sprites : Array[Sprite]
   tilemaps : Array[Tilemap]
-}
-pub impl Eq for AssetBundle
-pub impl Show for AssetBundle
+} derive(Eq, Show)
 
 pub(all) struct Collider {
   tag : String
   rect : Rect
-}
-pub impl Eq for Collider
-pub impl Show for Collider
+} derive(Eq, Show)
 
 pub(all) struct DslError {
   line : Int
   message : String
-}
-pub impl Eq for DslError
-pub impl Show for DslError
+} derive(Eq, Show)
 
 pub(all) struct EngineConfig {
   width : Int
@@ -61,15 +55,13 @@ pub(all) struct EngineConfig {
   fps : Int
   scale : Int
   palette : Palette
-}
-pub impl Eq for EngineConfig
-pub impl Show for EngineConfig
+} derive(Eq, Show)
 
 pub(all) struct Frame {
   width : Int
   height : Int
   pixels : Array[Int]
-}
+} derive(Eq, Show)
 pub fn Frame::blit(Self, Sprite, Int, Int) -> Unit
 pub fn Frame::clear(Self, Int) -> Unit
 pub fn Frame::draw_rect(Self, Int, Int, Int, Int, Int) -> Unit
@@ -77,58 +69,44 @@ pub fn Frame::get_pixel(Self, Int, Int) -> Int?
 pub fn Frame::new(Int, Int, fill? : Int) -> Self
 pub fn Frame::set_pixel(Self, Int, Int, Int) -> Unit
 pub fn Frame::to_ascii(Self) -> String
-pub impl Eq for Frame
-pub impl Show for Frame
 
 pub(all) struct InputState {
   flap : Bool
   reset : Bool
-}
-pub impl Eq for InputState
-pub impl Show for InputState
+} derive(Eq, Show)
 
 pub(all) struct Palette {
   name : String
   colors : Array[String]
-}
-pub impl Eq for Palette
-pub impl Show for Palette
+} derive(Eq, Show)
 
 pub(all) struct Rect {
   x : Int
   y : Int
   w : Int
   h : Int
-}
-pub impl Eq for Rect
-pub impl Show for Rect
+} derive(Eq, Show)
 
 pub(all) struct RuntimeContext {
   config : EngineConfig
   input : InputState
   frame : Int
   dt_ms : Int
-}
-pub impl Eq for RuntimeContext
-pub impl Show for RuntimeContext
+} derive(Eq, Show)
 
 pub(all) struct Sprite {
   name : String
   width : Int
   height : Int
   pixels : Array[Int]
-}
-pub impl Eq for Sprite
-pub impl Show for Sprite
+} derive(Eq, Show)
 
 pub(all) struct Tilemap {
   name : String
   width : Int
   height : Int
   tiles : Array[Int]
-}
-pub impl Eq for Tilemap
-pub impl Show for Tilemap
+} derive(Eq, Show)
 
 // Type aliases
 

@@ -194,6 +194,16 @@ pub fn btn(flap : Bool, reset : Bool) -> InputState {
 }
 
 ///|
+pub fn btnp(current : Bool, previous : Bool) -> Bool {
+  @engine.btnp(current, previous)
+}
+
+///|
+pub fn every(frame : Int, interval : Int) -> Bool {
+  @engine.every(frame, interval)
+}
+
+///|
 pub fn[T : @engine.Game] step(
   game : T,
   config : EngineConfig,

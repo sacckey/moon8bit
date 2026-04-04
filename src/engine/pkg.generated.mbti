@@ -8,6 +8,8 @@ import {
 // Values
 pub fn btn(Bool, Bool) -> @model.InputState
 
+pub fn btnp(Bool, Bool) -> Bool
+
 pub fn cls(@model.Frame, Int) -> Unit
 
 pub fn config(Int, Int, fps? : Int, scale? : Int, palette? : @model.Palette) -> @model.EngineConfig
@@ -15,6 +17,8 @@ pub fn config(Int, Int, fps? : Int, scale? : Int, palette? : @model.Palette) -> 
 pub fn[T : Game] engine_init(T, @model.EngineConfig) -> T
 
 pub fn[T : Game] engine_step(T, @model.EngineConfig, @model.InputState, Int) -> (T, @model.Frame)
+
+pub fn every(Int, Int) -> Bool
 
 pub fn pset(@model.Frame, Int, Int, Int) -> Unit
 
