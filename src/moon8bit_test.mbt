@@ -3,9 +3,9 @@ test "root facade exposes metadata and defaults" {
   assert_eq(version_tag(), "moon8bit-v0.1-mvp")
 
   let cfg = default_engine_config()
-  assert_eq(cfg.width, 64)
-  assert_eq(cfg.height, 48)
-  assert_eq(cfg.fps, 30)
+  assert_eq(cfg.width, 256)
+  assert_eq(cfg.height, 144)
+  assert_eq(cfg.fps, 60)
 }
 
 ///|

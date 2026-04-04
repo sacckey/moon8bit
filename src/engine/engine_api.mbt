@@ -2,7 +2,7 @@
 pub fn config(
   width : Int,
   height : Int,
-  fps? : Int = 30,
+  fps? : Int = 60,
   scale? : Int = 4,
   palette? : @model.Palette = @model.palette_default(),
 ) -> EngineConfig {

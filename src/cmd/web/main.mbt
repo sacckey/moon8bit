@@ -2,7 +2,7 @@
 let config : @lib.EngineConfig = @lib.default_engine_config()
 
 ///|
-let display_scale : Int = config.scale * 2
+let display_scale : Int = config.scale
 
 ///|
 let initial_bundle : @lib.AssetBundle = @lib.load_sample_assets()

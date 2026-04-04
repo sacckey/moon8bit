@@ -246,7 +246,7 @@ pub fn[T : @engine.Game] run_fixed_frames(
 pub fn config(
   width : Int,
   height : Int,
-  fps? : Int = 30,
+  fps? : Int = 60,
   scale? : Int = 4,
   palette? : Palette = palette_default(),
 ) -> EngineConfig {

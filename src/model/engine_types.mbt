@@ -46,9 +46,9 @@ pub(all) struct Collider {
 ///|
 pub fn default_engine_config() -> EngineConfig {
   EngineConfig::{
-    width: 64,
-    height: 48,
-    fps: 30,
+    width: 256,
+    height: 144,
+    fps: 60,
     scale: 4,
     palette: palette_default(),
   }
