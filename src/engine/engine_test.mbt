@@ -118,20 +118,20 @@ test "wrapper ui helpers provide centered layout and panel drawing" {
 }
 
 ///|
-test "wrapper ui text helpers render 5x7 ascii glyphs and scaling" {
-  assert_eq(@engine.ui_text_width("A1"), 11)
-  assert_eq(@engine.ui_text_width("A1", scale=2), 22)
+test "wrapper ui text helpers render ascii glyphs in 8x8 cells and scaling" {
+  assert_eq(@engine.ui_text_width("A1"), 16)
+  assert_eq(@engine.ui_text_width("A1", scale=2), 32)
   assert_eq(@engine.ui_text_width("", scale=2), 0)
 
   let frame = @model.Frame::new(20, 12, fill=-1)
   @engine.ui_text(frame, 0, 0, "A1", 5)
-  assert_eq(frame.get_pixel(2, 0), Some(5))
-  assert_eq(frame.get_pixel(1, 1), Some(5))
-  assert_eq(frame.get_pixel(8, 0), Some(5))
+  assert_eq(frame.get_pixel(3, 1), Some(5))
+  assert_eq(frame.get_pixel(2, 2), Some(5))
+  assert_eq(frame.get_pixel(11, 1), Some(5))
 
   let scaled = @model.Frame::new(20, 12, fill=-1)
   @engine.ui_text(scaled, 0, 0, "A", 6, scale=2)
-  assert_eq(scaled.get_pixel(4, 0), Some(6))
-  assert_eq(scaled.get_pixel(5, 1), Some(6))
+  assert_eq(scaled.get_pixel(6, 2), Some(6))
+  assert_eq(scaled.get_pixel(4, 4), Some(6))
   assert_eq(scaled.get_pixel(0, 0), Some(-1))
 }

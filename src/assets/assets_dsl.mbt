@@ -73,6 +73,11 @@ fn decode_pixel_symbol(ch : Char) -> Int? {
 }
 
 ///|
+fn is_supported_sprite_axis(size : Int) -> Bool {
+  size == 8 || size == 16 || size == 32
+}
+
+///|
 fn parse_palette_block(
   lines : Array[String],
   header : Array[String],
@@ -148,6 +153,11 @@ fn parse_sprite_block(
 
   if width <= 0 || height <= 0 {
     return err(header_line, "sprite width/height must be positive")
+  }
+  if !is_supported_sprite_axis(width) || !is_supported_sprite_axis(height) {
+    return err(
+      header_line, "sprite width/height must each be one of: 8, 16, 32",
+    )
   }
 
   let pixels : Array[Int] = []

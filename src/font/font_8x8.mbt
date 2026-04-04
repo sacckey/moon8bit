@@ -111,6 +111,15 @@ fn glyph_index_ascii(ch : Char) -> Int {
 }
 
 ///|
+let glyph_width : Int = 5
+
+///|
+let glyph_height : Int = 7
+
+///|
+let glyph_cell_size : Int = 8
+
+///|
 pub fn text_width(text : String, scale? : Int = 1) -> Int {
   if scale <= 0 {
     return 0
@@ -122,7 +131,7 @@ pub fn text_width(text : String, scale? : Int = 1) -> Int {
   if count <= 0 {
     0
   } else {
-    count * 6 * scale - scale
+    count * glyph_cell_size * scale
   }
 }
 
@@ -139,16 +148,18 @@ pub fn draw_text(
     return
   }
 
+  let base_y = y + scale
   let mut pen_x = x
   for ch in text {
     let cols = glyphs_5x7_ascii[glyph_index_ascii(ch)]
-    for col_idx in 0..<5 {
+    let base_x = pen_x + scale
+    for col_idx in 0..<glyph_width {
       let bits = cols[col_idx]
-      for row_idx in 0..<7 {
+      for row_idx in 0..<glyph_height {
         if (bits & (1 << row_idx)) != 0 {
           frame.draw_rect(
-            pen_x + col_idx * scale,
-            y + row_idx * scale,
+            base_x + col_idx * scale,
+            base_y + row_idx * scale,
             scale,
             scale,
             color,
@@ -156,6 +167,6 @@ pub fn draw_text(
         }
       }
     }
-    pen_x += 6 * scale
+    pen_x += glyph_cell_size * scale
   }
 }

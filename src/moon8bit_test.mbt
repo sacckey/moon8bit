@@ -13,7 +13,7 @@ test "assets cli output covers success and parse errors" {
   let ok = assets_cli_output(["tilemap m 1 1", "3", "end"].join("\n"))
   assert_true(ok.find("\"tilemaps\"") is Some(_))
 
-  let ng = assets_cli_output(["sprite s 1 1", "g", "end"].join("\n"))
+  let ng = assets_cli_output(["sprite s 8 8", "g.......", "end"].join("\n"))
   assert_true(ng.find("error(line=2):") is Some(_))
 }
 
