@@ -165,6 +165,23 @@ pub fn ui_panel(
 }
 
 ///|
+pub fn ui_text_width(text : String, scale? : Int = 1) -> Int {
+  @engine.ui_text_width(text, scale~)
+}
+
+///|
+pub fn ui_text(
+  frame : Frame,
+  x : Int,
+  y : Int,
+  text : String,
+  color : Int,
+  scale? : Int = 1,
+) -> Unit {
+  @engine.ui_text(frame, x, y, text, color, scale~)
+}
+
+///|
 pub fn parse_assets_dsl(input : String) -> Result[AssetBundle, DslError] {
   @assets.parse_assets_dsl(input)
 }

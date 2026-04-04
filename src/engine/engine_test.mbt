@@ -116,3 +116,21 @@ test "wrapper ui helpers provide centered layout and panel drawing" {
   assert_eq(frame.get_pixel(4, 2), Some(3))
   assert_eq(frame.get_pixel(6, 4), Some(7))
 }
+
+///|
+test "wrapper ui text helpers render 3x5 glyphs and scaling" {
+  assert_eq(@engine.ui_text_width("A1"), 7)
+  assert_eq(@engine.ui_text_width("A1", scale=2), 14)
+  assert_eq(@engine.ui_text_width("", scale=2), 0)
+
+  let frame = @model.Frame::new(20, 12, fill=-1)
+  @engine.ui_text(frame, 0, 0, "A1", 5)
+  assert_eq(frame.get_pixel(1, 0), Some(5))
+  assert_eq(frame.get_pixel(4, 1), Some(5))
+
+  let scaled = @model.Frame::new(20, 12, fill=-1)
+  @engine.ui_text(scaled, 0, 0, "A", 6, scale=2)
+  assert_eq(scaled.get_pixel(2, 0), Some(6))
+  assert_eq(scaled.get_pixel(3, 1), Some(6))
+  assert_eq(scaled.get_pixel(0, 0), Some(-1))
+}

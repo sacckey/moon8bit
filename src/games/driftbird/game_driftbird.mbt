@@ -90,6 +90,23 @@ fn ui_panel(
 }
 
 ///|
+fn ui_text_width(text : String, scale? : Int = 1) -> Int {
+  @engine.ui_text_width(text, scale~)
+}
+
+///|
+fn ui_text(
+  frame : Frame,
+  x : Int,
+  y : Int,
+  text : String,
+  color : Int,
+  scale? : Int = 1,
+) -> Unit {
+  @engine.ui_text(frame, x, y, text, color, scale~)
+}
+
+///|
 fn default_engine_config() -> EngineConfig {
   @model.default_engine_config()
 }
@@ -284,74 +301,6 @@ fn draw_scrolling_tilemap_rows(
 }
 
 ///|
-fn glyph_rows_3x5(ch : Char) -> Array[String]? {
-  match ch {
-    '0' => Some(["###", "#.#", "#.#", "#.#", "###"])
-    '1' => Some([".#.", "##.", ".#.", ".#.", "###"])
-    '2' => Some(["###", "..#", "###", "#..", "###"])
-    '3' => Some(["###", "..#", "###", "..#", "###"])
-    '4' => Some(["#.#", "#.#", "###", "..#", "..#"])
-    '5' => Some(["###", "#..", "###", "..#", "###"])
-    '6' => Some(["###", "#..", "###", "#.#", "###"])
-    '7' => Some(["###", "..#", "..#", "..#", "..#"])
-    '8' => Some(["###", "#.#", "###", "#.#", "###"])
-    '9' => Some(["###", "#.#", "###", "..#", "###"])
-    'A' => Some([".#.", "#.#", "###", "#.#", "#.#"])
-    'C' => Some(["###", "#..", "#..", "#..", "###"])
-    'E' => Some(["###", "#..", "###", "#..", "###"])
-    'F' => Some(["###", "#..", "##.", "#..", "#.."])
-    'G' => Some(["###", "#..", "#.#", "#.#", "###"])
-    'H' => Some(["#.#", "#.#", "###", "#.#", "#.#"])
-    'M' => Some(["#.#", "###", "#.#", "#.#", "#.#"])
-    'O' => Some(["###", "#.#", "#.#", "#.#", "###"])
-    'P' => Some(["###", "#.#", "###", "#..", "#.."])
-    'R' => Some(["##.", "#.#", "##.", "#.#", "#.#"])
-    'S' => Some(["###", "#..", "###", "..#", "###"])
-    'V' => Some(["#.#", "#.#", "#.#", "#.#", ".#."])
-    ' ' => Some(["...", "...", "...", "...", "..."])
-    _ => None
-  }
-}
-
-///|
-fn text3x5_width(text : String) -> Int {
-  let mut count = 0
-  for _ in text {
-    count += 1
-  }
-  if count <= 0 {
-    0
-  } else {
-    count * 4 - 1
-  }
-}
-
-///|
-fn draw_text3x5(
-  frame : Frame,
-  x : Int,
-  y : Int,
-  text : String,
-  color : Int,
-) -> Unit {
-  let mut pen_x = x
-  for ch in text {
-    match glyph_rows_3x5(ch) {
-      Some(rows) =>
-        for dy, row in rows {
-          for dx, pixel in row {
-            if pixel == '#' {
-              pset(frame, pen_x + dx, y + dy, color)
-            }
-          }
-        }
-      None => ()
-    }
-    pen_x += 4
-  }
-}
-
-///|
 fn hit_code(tag : String?) -> Int {
   match tag {
     Some("ground") => 1
@@ -366,7 +315,7 @@ fn hit_code(tag : String?) -> Int {
 fn draw_hud(frame : Frame, game : DriftbirdGame, config : EngineConfig) -> Unit {
   ui_panel(frame, 0, 0, config.width, 7, 0)
   let hud = "S\{game.score} F\{game.tick} H\{hit_code(game.last_hit_tag)}"
-  draw_text3x5(frame, 1, 1, hud, 6)
+  ui_text(frame, 1, 1, hud, 6)
 }
 
 ///|
@@ -377,8 +326,8 @@ fn draw_state_overlay(
 ) -> Unit {
   let line1 = if game.is_over { "GAME" } else { "SPACE" }
   let line2 = if game.is_over { "OVER" } else { "" }
-  let line1_w = text3x5_width(line1)
-  let line2_w = text3x5_width(line2)
+  let line1_w = ui_text_width(line1)
+  let line2_w = ui_text_width(line2)
   let content_w = if line1_w > line2_w { line1_w } else { line2_w }
   let content_h = if line2 == "" { 5 } else { 11 }
   let panel_w = content_w + 4
@@ -389,7 +338,7 @@ fn draw_state_overlay(
   let text_color = if game.is_over { 6 } else { 0 }
 
   ui_panel(frame, panel_x, panel_y, panel_w, panel_h, fill, border=0)
-  draw_text3x5(
+  ui_text(
     frame,
     panel_x + 2 + (content_w - line1_w) / 2,
     panel_y + 2,
@@ -397,7 +346,7 @@ fn draw_state_overlay(
     text_color,
   )
   if line2 != "" {
-    draw_text3x5(
+    ui_text(
       frame,
       panel_x + 2 + (content_w - line2_w) / 2,
       panel_y + 8,

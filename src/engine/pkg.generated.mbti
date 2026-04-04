@@ -42,6 +42,10 @@ pub fn ui_center_y(Int, Int) -> Int
 
 pub fn ui_panel(@model.Frame, Int, Int, Int, Int, Int, border? : Int) -> Unit
 
+pub fn ui_text(@model.Frame, Int, Int, String, Int, scale? : Int) -> Unit
+
+pub fn ui_text_width(String, scale? : Int) -> Int
+
 // Errors
 
 // Types and methods
