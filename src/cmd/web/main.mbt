@@ -80,24 +80,6 @@ fn tick() -> Unit {
   frame_ref.val = frame_index + 1
 
   draw_frame(rendered)
-  let hit_tag = match next.last_hit_tag() {
-    Some(v) => v
-    None => "-"
-  }
-
-  if !next.is_started() {
-    web_set_status(
-      "moon8bit driftbird demo  PRESS SPACE TO START  score=\{next.score()}  frame=\{frame_ref.val}  hit=\{hit_tag}  reset=R",
-    )
-  } else if next.is_over() {
-    web_set_status(
-      "moon8bit driftbird demo  GAME OVER - PRESS SPACE TO RESTART  score=\{next.score()}  frame=\{frame_ref.val}  hit=\{hit_tag}  reset=R",
-    )
-  } else {
-    web_set_status(
-      "moon8bit driftbird demo  score=\{next.score()}  frame=\{frame_ref.val}  hit=\{hit_tag}  reset=R",
-    )
-  }
 }
 
 ///|
@@ -142,6 +124,9 @@ fn on_import(dsl_text : String) -> Unit {
 ///|
 fn main {
   web_init_canvas(config.width, config.height, display_scale)
+  web_set_status(
+    "HUD is rendered in-canvas (S=score F=frame H=hit-code). Controls: Space/ArrowUp flap, R reset.",
+  )
 
   web_set_editor_text(@lib.sample_assets_dsl())
   web_bind_apply(on_apply)
