@@ -1,5 +1,25 @@
 # Handoff
 
+## 2026-04-06 Runtime/Docs Sync Note
+
+- Runtime architecture status:
+  - `EngineInstance` owns tick/input-history/event-queue/timers.
+  - `Game::update` emits `EngineCommand`; timer scheduling is command-driven.
+  - `UpdateContext` / `DrawContext` split is complete.
+- Web architecture status:
+  - `cmd/web` is shared game-neutral runtime UI.
+  - each game has its own web entry package (`src/games/<id>/web`).
+  - published paths are generated under `site/g/<game_id>/`.
+- Reproducible local commands:
+  - `moon check`
+  - `moon test`
+  - `./scripts/update_demo_bundle.sh`
+  - `python3 -m http.server 8000 --directory site`
+- Current primary URLs:
+  - `/` top
+  - `/g/` game list
+  - `/g/driftbird/` playable editor/runtime page
+
 ## 2026-04-02 Acceptance Note (SCC Stage 1)
 
 - Application status: accepted.
@@ -38,7 +58,7 @@
    - `docs/application-draft.md` (300+ words, SCC-axis mapping)
    - `README.mbt.md` evaluator quickstart
 2. Improved explainability and validation:
-   - collision hit tag surfaced in web status (`hit=<tag>`)
+   - collision outcome surfaced via in-canvas HUD (`H=<hit-code>`)
    - runtime test for `pipe_top` collision tag
 3. Added submission prep assets:
    - `docs/submission-checklist.md`
@@ -46,8 +66,8 @@
 
 ## Current State
 
-- Build/Test status: pass (`moon check`, `moon test`, `moon build --target js cmd/web`)
-- Demo status: playable web demo with live apply + import/export + collision tag feedback
+- Build/Test status: pass (`moon check`, `moon test`, `./scripts/update_demo_bundle.sh`)
+- Demo status: playable per-game web pages with live apply + import/export + sprite/sound tabs
 - Known limitations:
   - No direct browser-to-local file overwrite; import/export workflow is used
   - WebGPU backend is not included in v1
@@ -59,7 +79,7 @@
 
 ## Risks / Open Questions
 
-- Ensure final demo media clearly shows both DSL apply and collision tag (`hit=<tag>`).
+- Ensure final demo media clearly shows DSL apply and HUD updates (`S/F/H`).
 - Keep remaining changes to docs/bugfix only until submission.
 
 ## Quick Restart Commands
@@ -67,8 +87,8 @@
 ```bash
 moon check
 moon test
-moon build --target js cmd/web
-python3 -m http.server 8000
+./scripts/update_demo_bundle.sh
+python3 -m http.server 8000 --directory site
 ```
 
 ## 2026-04-01 End-of-Day TODO Snapshot

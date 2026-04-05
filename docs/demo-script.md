@@ -2,37 +2,44 @@
 
 ## Goal
 
-Show that moon8bit supports fast AI-friendly iteration:
-`Edit DSL -> Apply -> Visual change -> Explainable collision tag`.
+Show fast AI-friendly iteration with the current web workflow:
+`Open game page -> Edit DSL/Sprite/Sound -> Apply -> Immediate playable result`.
 
 ## Recording Setup
 
-- Open `http://localhost:8000/demo/`
+- Open `http://localhost:8000/g/driftbird/`
 - Keep browser zoom at 100%
-- Show canvas, DSL editor, and status line in one frame
+- Keep all tabs visible (`Game`, `DSL`, `Sprite`, `Sound`)
 
 ## Timeline
 
-1. 0s-8s: Start and movement
-   - Press `Space` a few times so the bird is clearly controllable.
-   - Briefly show status updates (`score`, `frame`, `hit`).
+1. 0s-8s: Game control and HUD
+   - In `Game` tab, press `Space` a few times.
+   - Show in-canvas HUD updates (`S`, `F`, `H`).
 
-2. 8s-20s: Live DSL edit + apply
-   - In `tilemap ground ...`, change one row value (example: `3` to `4`).
+2. 8s-18s: DSL edit + apply
+   - Switch to `DSL` tab.
+   - Change a `tilemap` or `sprite` row.
    - Click `Apply DSL`.
-   - Show immediate visual change on ground color/pattern.
+   - Return to `Game` tab and show visual change.
 
-3. 20s-30s: Import/Export workflow
-   - Click `Export DSL` and show file download.
-   - Click `Import DSL` and load a local `.dsl` file.
-   - Show editor content update and applied scene.
+3. 18s-30s: Sprite GUI editing
+   - Switch to `Sprite` tab.
+   - Modify a few pixels.
+   - Click `Write + Apply`.
+   - Return to `Game` tab and show updated sprite.
 
-4. 30s-45s: Collision explainability
-   - Let the bird collide (or stop flapping).
-   - Show `hit=<tag>` in status line (for example `ground` or `pipe_top`).
+4. 30s-40s: Sound GUI editing
+   - Switch to `Sound` tab.
+   - Press SFX test buttons and adjust one parameter.
+   - Return to `Game` tab and show sound still works during play.
 
-## Optional Voiceover (Short)
+5. 40s-45s: Import/Export loop
+   - In `DSL` tab, click `Export DSL`.
+   - Click `Import DSL` and re-apply.
 
-- "Assets are text-first DSL, so iteration is diffable and AI-friendly."
-- "Apply is immediate in browser; import/export keeps local persistence."
-- "Collision outcomes are explainable through tagged hits."
+## Optional Voiceover
+
+- "Assets are text-first DSL and editable in-browser."
+- "The runtime is deterministic and update/apply is immediate."
+- "Sprite and sound authoring are integrated into the same per-game page."

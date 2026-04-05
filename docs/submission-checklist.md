@@ -4,56 +4,56 @@
 
 - Submission target: MoonBit SCC 2026
 - Deadline: 2026-04-21
-- Current status date: 2026-04-04
+- Current status date: 2026-04-06
 
-## Stage 1 Submission Gate
+## Stage 1 Gates
 
-- [x] Google Form is submitted (target: 2026-04-01).
-- [x] Submission timestamp is recorded in `docs/handoff.md`.
-- [x] Final submitted text snapshot is preserved locally.
+- [x] Google Form submitted (2026-04-01)
+- [x] Submission timestamp recorded in `docs/handoff.md`
+- [x] Stage 1 acceptance received (2026-04-02)
 
-## Stage 1 Acceptance Gate (2026-04-02)
+## Acceptance Expectations (2026-04-02)
 
-- [x] Acceptance mail received ("no major issues", proceed with development).
-- [ ] MoonBit central role is visible in architecture and runtime logic (not peripheral use).
-- [ ] Final target is tracked as a complete runnable application (not partial prototype only).
-- [x] E2E runnable example path is documented and maintained.
-- [x] Distribution path is explicit (GitHub Pages now; release/install channel plan documented).
+- [x] MoonBit is central in architecture/runtime logic
+- [x] Final target is tracked as a complete runnable application
+- [x] E2E runnable path is documented
+- [x] Distribution path is explicit (GitHub Pages)
 
-## Messaging Safety Checks
+## Messaging Safety
 
-- [ ] Claims are evidence-based (implementation facts only).
-- [ ] No "first/only/better than X" uniqueness claims without proof.
-- [ ] Competitor comparison is optional and not required for this submission.
+- [ ] Claims are implementation-fact based only
+- [ ] No uniqueness/superiority claims without proof
+- [ ] Public-facing docs avoid unnecessary competitor comparisons
 
-## Showcase Readiness Checks
+## Showcase Readiness
 
-- [ ] Application text explicitly states: engineering goal, target users, architecture idea, feasibility.
-- [ ] Public kickoff evidence is visible (active public repo + ongoing commit history).
-- [x] README includes goals, scope, usage, and environment requirements.
-- [x] README includes reproducible run/build/test path.
-- [x] Core-path tests and edge-case validation are documented.
+- [x] Application text covers goal/users/architecture/feasibility
+- [x] Public kickoff evidence exists (active public repo + commit history)
+- [x] README covers goals/scope/usage/environment
+- [x] README covers reproducible build/run/test path
+- [x] Core-path tests and edge-case validation are documented
 
-## Baseline Capability Track (toward final deadline)
+## Capability Track (Current)
 
-- [ ] WebGPU path reaches minimum playable parity with current Canvas frame primitives.
-- [x] Audio path supports practical BGM + SFX playback.
-- [ ] Minimal GUI authoring path exists for sprite editing and sound editing.
+- [ ] WebGPU path reaches minimum parity for current frame primitives
+- [x] Audio path supports practical BGM + SFX playback
+- [x] Minimal GUI authoring path exists for sprite + sound editing
+- [x] Browser editing loop supports apply/import/export of `assets.dsl`
 
 ## moon8bit Unique Value Track
 
-- [x] Text-first asset workflow remains central (not replaced by binary-only tooling).
-- [x] Deterministic runtime behavior remains testable and reproducible.
-- [x] Diagnostics stay AI-loop-friendly (line-numbered parser feedback + clear errors).
-- [x] Public docs explain baseline capabilities and moon8bit-specific value separately.
+- [x] Text-first asset workflow is central
+- [x] Deterministic runtime remains testable/reproducible
+- [x] AI-friendly diagnostics remain (line-numbered parser errors)
+- [x] Baseline vs moon8bit-specific value is documented
 
 ## Required Artifacts
 
-- [ ] Repository URL is final and accessible.
-- [ ] Application text (300+ words) is finalized.
-- [ ] AI usage / retrospective note is finalized.
-- [x] README has reproducible run steps.
-- [ ] Demo video or GIF is ready and viewable.
+- [ ] Final repository URL confirmation
+- [ ] Final application text (300+ words) freeze
+- [ ] AI usage / retrospective finalization
+- [x] README reproducible run steps
+- [ ] Demo video/GIF ready and viewable
 
 ## Repository Docs to Confirm
 
@@ -62,6 +62,7 @@
 - [x] `docs/ai-usage-log.md`
 - [x] `docs/decision-log.md`
 - [x] `docs/demo-script.md`
+- [x] `docs/north-star.md`
 
 ## Reproducibility Checks
 
@@ -70,49 +71,37 @@ Run from module root:
 ```bash
 moon check
 moon test
-moon build --target js src/cmd/web
+./scripts/update_demo_bundle.sh
 python3 -m http.server 8000 --directory site
 ```
 
 Open:
 
-- `http://localhost:8000/` (or `http://localhost:8000/demo/`)
+- `http://localhost:8000/`
+- `http://localhost:8000/g/`
+- `http://localhost:8000/g/driftbird/`
 
 Expected:
 
-- [ ] Driftbird demo is playable (`Space` / `ArrowUp`, `R` reset).
-- [ ] DSL `Apply` updates screen output.
-- [ ] `Import DSL` loads local file and applies.
-- [ ] `Export DSL` downloads current editor text.
-- [ ] In-canvas HUD updates (`S=score`, `F=frame`, `H=hit-code`).
+- [ ] Game tab is playable (`Space` / `ArrowUp`, `R`)
+- [ ] DSL tab `Apply` updates screen output
+- [ ] DSL `Import` loads local file and applies
+- [ ] DSL `Export` downloads current editor text
+- [ ] Sprite tab can edit sprite pixels and write back to DSL
+- [ ] Sound tab can preview/tune BGM/SFX
+- [ ] In-canvas HUD updates (`S`, `F`, `H`)
 
 ## Final Submission Pass
 
-- [ ] Freeze major features (docs/bugfix only).
-- [ ] Re-run reproducibility checks.
-- [ ] Ensure latest docs match actual implementation.
-- [ ] Ensure commit history is clean and understandable.
-- [ ] Submit with final application text and demo link.
+- [ ] Freeze major features (docs/bugfix only)
+- [ ] Re-run reproducibility checks
+- [ ] Ensure docs match implementation
+- [ ] Ensure commit history is clean/readable
+- [ ] Submit final application text + demo link
 
-## Post-Submission Priority (Execution Order)
+## Current Priorities (2026-04-06)
 
-1. Add thin ergonomic wrapper APIs with backward compatibility.
-2. Add wrapper equivalence tests (same behavior as existing APIs).
-3. Apply wrapper API usage to `game_driftbird.mbt` itself and verify behavior parity.
-4. Update README with concise API examples and reproducibility proof points.
-
-## Post-Submission Progress (2026-04-01)
-
-- [x] Thin ergonomic wrapper APIs were added with backward compatibility.
-- [x] Wrapper equivalence tests were added and passing.
-- [x] `game_driftbird.mbt` call sites were updated to use wrapper APIs where applicable.
-- [x] README now includes concise wrapper API examples and quickstart snippets.
-
-## Next API TODO (Logic-Shrinking Layer)
-
-- [x] Add an input edge helper API (candidate: `btnp`) to reduce per-game "just pressed" boilerplate.
-- [x] Add deterministic spawn/timer helpers (candidate: `every` or small timer utility).
-- [x] Add lightweight collision helpers for common AABB workflows used in side-scrollers.
-- [x] Add minimal UI helpers for overlays/text placement used by game state screens.
-- [x] Refactor `game_driftbird` incrementally to use the new helpers while preserving behavior parity.
-- [x] Add parity tests proving the refactor keeps score/collision/reset behavior unchanged.
+1. Finalize docs/README sync to current architecture and URL paths.
+2. Freeze complete E2E flow and record final demo video/GIF.
+3. Decide WebGPU final-scope (minimal MVP or defer with explicit note).
+4. Finalize submission text with implementation-fact wording only.

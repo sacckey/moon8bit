@@ -11,15 +11,15 @@ The core idea is simple:
 
 - Engineering Goal: make AI-assisted retro game iteration practical in MoonBit.
 - Target Users: solo developers/small teams building pixel-style prototypes and learners exploring MoonBit systems code.
-- Architecture Idea: `DSL parser -> runtime model -> renderer -> web demo`, with CLI and tests wired to the same core package.
-- Feasibility Today: playable driftbird demo, reproducible commands, parser/error tests, runtime determinism tests.
+- Architecture Idea: `DSL parser -> runtime model -> renderer -> per-game web entry`, with CLI and tests wired to the same core package.
+- Feasibility Today: playable driftbird demos, reproducible commands, parser/error tests, runtime determinism tests.
 
 ## Environment Requirements
 
 - OS: macOS/Linux (current local verification environment: macOS/Darwin)
 - MoonBit toolchain: `moon 0.1.20260209`
 - Python: `Python 3.9.6` (for `python3 -m http.server --directory site`)
-- Browser: a modern browser with Canvas 2D support (Chrome/Safari/Edge class)
+- Browser: a modern browser with Canvas 2D support
 
 ## Current MVP
 
@@ -28,28 +28,26 @@ Implemented in this repository:
   - `EngineConfig`
   - `Game` trait with `init/update/draw`
   - `Sprite`, `Tilemap`, `Palette`, `AssetBundle`
+  - `EngineInstance` runtime model
+  - `EngineCommand` event/timer pipeline
 - Asset DSL v1 parser:
   - `palette`, `sprite`, `tilemap`, `end`
   - line-numbered parse errors
 - Asset conversion helper:
   - DSL -> JSON string
-- Sample game:
-  - driftbird side scroller
-  - flap/reset input
+- Sample games:
+  - driftbird side scroller variants (`driftbird`, `driftbird-night`)
   - collision detection and scrolling obstacles
-  - engine-level `Collider` API usage for overlap detection
   - web demo audio cues (BGM + flap/reset/hit SFX)
 - CLI:
-  - `demo`
-  - `sample-dsl`
   - `assets`
+  - `assets-file`
 
 ## Quick Start
 
 ```bash
 moon check
 moon test
-moon run src/cmd/main -- demo 60
 ```
 
 ## Evaluator Quickstart (3-5 min)
@@ -57,44 +55,52 @@ moon run src/cmd/main -- demo 60
 ```bash
 moon check
 moon test
-moon build --target js src/cmd/web
+./scripts/update_demo_bundle.sh
 python3 -m http.server 8000 --directory site
-# open http://localhost:8000/
 ```
+
+Open:
+- `http://localhost:8000/`
+- `http://localhost:8000/g/`
+- `http://localhost:8000/g/driftbird/`
 
 Then in browser:
-
 1. Press `Space` to start and flap.
-2. Edit a tile value in DSL and click `Apply DSL`.
-3. Confirm the scene changes and in-canvas HUD updates (`S`/`F`/`H`).
+2. Edit DSL and click `Apply DSL`.
+3. Confirm scene/HUD changes.
+4. Open `Sprite` and `Sound` tabs to verify GUI authoring path.
 
-Run browser demo (Canvas 2D):
+## GitHub Pages
 
-```bash
-moon build --target js src/cmd/web
-python3 -m http.server 8000 --directory site
-# open http://localhost:8000/demo/
-```
-
-Update GitHub Pages demo bundle (`demo/web.js`):
+Publish artifacts are generated under `site/`:
 
 ```bash
 ./scripts/update_demo_bundle.sh
 ```
 
-GitHub Pages path (if Pages serves from root):
+Entry paths:
+- `/` top page
+- `/g/` game list
+- `/g/<game_id>/` per-game runtime/editor page
 
-```text
-https://<github-user>.github.io/<repo>/demo/
-```
+## Controls and Editor
 
-Controls:
-- `Space` / `ArrowUp`: start, restart, and flap (one jump per key press)
+Game controls:
+- `Space` / `ArrowUp`: start, restart, and flap
 - `R`: reset
-- edit DSL in the textarea and click `Apply DSL` (or `Ctrl/Cmd + Enter`)
-- `Export DSL`: download current editor text as `moon8bit_assets.dsl`
-- `Import DSL`: load a local `.dsl`/`.txt` file into the editor and apply it
-- HUD is rendered in-canvas (`S=score F=frame H=hit-code`)
+
+Editor tabs:
+- `Game`: playable runtime
+- `DSL`: edit/apply/import/export `assets.dsl`
+- `Sprite`: pixel editor synced with DSL sprites
+- `Sound`: BGM/SFX parameter tuning and test playback
+
+In-canvas HUD:
+- `S=score`
+- `F=frame`
+- `H=hit-code`
+
+## CLI Usage
 
 Convert DSL text to JSON:
 
@@ -108,29 +114,27 @@ Convert DSL file to JSON file (`--target js`):
 moon run src/cmd/main --target js -- assets-file assets.dsl assets.json
 ```
 
-Print built-in sample DSL:
-
-```bash
-moon run src/cmd/main -- sample-dsl
-```
-
 ## Wrapper API Quickstart
 
-The thin wrapper layer is available for shorter game code:
-
-- `config`: create `EngineConfig`
-- `btn`: create `InputState`
-- `step` / `run`: runtime stepping helpers
-- `cls` / `pset` / `rect` / `spr`: frame drawing helpers
+Thin wrapper layer:
+- `config`
+- `btn`
+- `step` / `run`
+- `cls` / `pset` / `rect` / `spr`
 
 Minimal runtime example:
 
 ```mbt
-fn quick_run() -> Unit {
+fn quick_run(bundle : AssetBundle) -> Unit {
   let cfg = config(256, 144, fps=60, scale=4)
-  let game = new_driftbird_game(load_sample_assets())
-  let inputs = [btn(true, false), btn(false, false), btn(false, true)]
-  let (state, frames) = run(game, cfg, inputs)
+  let game = new_driftbird_game(bundle)
+  let inputs = [
+    btn([]),
+    btn(["Space"], keys_pressed=["Space"]),
+    btn([]),
+  ]
+  let (runtime, frames) = run(game, cfg, inputs)
+  let state = game_state(runtime)
   println("score=\{state.score()} frames=\{frames.length()}")
 }
 ```
@@ -150,7 +154,7 @@ fn draw_preview(frame : Frame, sprite : Sprite) -> Unit {
 
 - Default config: `256 x 144`, `60 fps`, `scale=4`.
 - Sprite dimensions: each axis must be one of `8`, `16`, `32` (DSL validation).
-- UI text rendering: 8x8 cell layout per character (top/left padding included in cell).
+- UI text rendering: 8x8 cell layout per character.
 
 ## DSL v1
 
@@ -190,22 +194,17 @@ tilemap ground 8 2
 end
 ```
 
-- `ground` is used for the scrolling floor band.
-- `bg` is used for the scrolling background layer.
-
 ## Engine Model
 
 - `init`: create/reset game state.
 - `update`: fixed-step state transition (deterministic).
 - `draw`: pure frame generation from current state.
 
-This structure makes generated game code easy for AI to produce and refactor.
-
 ## Collision Model
 
 - Engine provides reusable primitives: `Rect` + `Collider`.
 - Games build tagged colliders and choose collision responses in game logic.
-- The driftbird sample stores `last_hit_tag` (e.g. `ground`, `pipe_top`) for explainable game-over behavior.
+- Driftbird stores `last_hit_tag` (e.g. `ground`, `pipe_top`) for explainable game-over behavior.
 
 ## Why AI-Friendly
 
@@ -215,8 +214,8 @@ This structure makes generated game code easy for AI to produce and refactor.
 
 ## Baseline and Differentiation
 
-- Baseline capabilities we are pursuing as a practical engine:
-  - playable rendering paths (Canvas now, WebGPU path as next milestone)
+- Baseline capabilities:
+  - playable rendering path (Canvas now, WebGPU path as next milestone)
   - practical audio path (BGM + SFX in web demo)
   - minimal GUI authoring path (sprite + sound)
 - moon8bit-specific value:
@@ -226,32 +225,24 @@ This structure makes generated game code easy for AI to produce and refactor.
 
 ## Context Harness (Anti-Drift)
 
-To avoid goal drift across daily AI-assisted sessions, keep these docs updated:
-
-- `docs/north-star.md`: project mission, scope, and non-goals.
-- `docs/session-brief.md`: session start checklist (today focus and out-of-scope).
-- `docs/decision-log.md`: short architecture/product decisions with reasons.
-- `docs/handoff.md`: session end `Done / Next / Risks`.
-- `docs/ai-usage-log.md`: retrospective log of AI usage.
-
-Recommended routine:
-
-1. Start session by reading `north-star` and writing `session-brief`.
-2. During work, append major decisions to `decision-log`.
-3. End session by writing `handoff` and updating `ai-usage-log`.
+- `docs/north-star.md`
+- `docs/session-brief.md`
+- `docs/decision-log.md`
+- `docs/handoff.md`
+- `docs/ai-usage-log.md`
 
 ## Submission Prep
 
-- `docs/submission-checklist.md`: final pre-submit checklist.
-- `docs/demo-script.md`: 30-45 second demo recording flow.
-- `docs/application-draft.md`: current submission description draft.
+- `docs/submission-checklist.md`
+- `docs/demo-script.md`
+- `docs/application-draft.md`
 
 ## Validation
 
-This repository currently includes:
+This repository includes:
 - DSL success/error tests
-- Deterministic engine tests
-- Integration test for driftbird sample loop
+- deterministic runtime tests
+- integration tests for driftbird loops
 
 Run everything:
 

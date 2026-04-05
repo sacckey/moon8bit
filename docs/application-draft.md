@@ -8,8 +8,8 @@ Concrete scope for this submission:
 
 - Engineering goal: deliver a compact MoonBit retro 2D engine that keeps AI-assisted iteration practical and reproducible.
 - Target users: solo developers and small teams building pixel-style prototypes with AI assistance, plus learners who want an inspectable MoonBit game-engine codebase.
-- Architecture idea: a layered flow of `assets DSL -> parser/validation -> runtime state transition -> renderer -> web demo`, with CLI and tests sharing the same core package.
-- Feasibility: the repository already includes a playable driftbird web demo, CLI commands, parser diagnostics, deterministic runtime tests, and reproducible local run steps.
+- Architecture idea: a layered flow of `assets DSL -> parser/validation -> runtime state transition -> renderer -> per-game web runtime/editor`, with CLI and tests sharing the same core package.
+- Feasibility: the repository already includes playable driftbird web pages, CLI conversion commands, parser diagnostics, deterministic runtime tests, and reproducible local run steps.
 
 Baseline engine capability target by the final challenge deadline:
 
@@ -23,16 +23,16 @@ Current implementation includes five integrated parts:
 
 1. Engine core with explicit `init/update/draw` phases and fixed-step runtime.
 2. DSL v1 (`palette`, `sprite`, `tilemap`, `end`) with strict validation and clear parser errors.
-3. CLI flow for demo execution and DSL conversion (`demo`, `sample-dsl`, `assets`).
-4. Web Canvas demo with live DSL editing plus local `Import DSL` / `Export DSL`.
-5. A driftbird side-scroller sample covering input, scrolling, collision, and rendering.
+3. CLI flow for DSL conversion and validation (`assets`, `assets-file`).
+4. Web Canvas runtime/editor pages under `site/g/<game_id>/` with live DSL editing plus local `Import DSL` / `Export DSL`.
+5. Driftbird side-scroller samples covering input, scrolling, collision, rendering, and web audio events.
 
 This design maps directly to the SCC evaluation axes:
 
-- Functional Completeness: the repository ships a playable web demo, CLI tooling, and a full parse -> runtime pipeline.
-- Engineering Quality: deterministic fixed-step execution, reusable collision primitives (`Rect` + `Collider`), and tests for parser errors, deterministic replay, collision behavior, and integration paths.
-- Explainability: small module boundaries (types/parser/runtime/render/sample), explicit decision logs, and reproducible commands in README.
-- User Experience: immediate edit/apply loop in browser, visible status feedback (`hit=<tag>`), and import/export to preserve local iteration results.
+- Functional Completeness: the repository ships playable web pages, CLI tooling, and a full parse -> runtime pipeline.
+- Engineering Quality: deterministic fixed-step execution, reusable collision primitives (`Rect` + `Collider`), command-based engine events/timers, and tests for parser errors, deterministic replay, collision behavior, and integration paths.
+- Explainability: small module boundaries (model/assets/engine/games/web), explicit decision logs, and reproducible commands in README.
+- User Experience: immediate edit/apply loop in browser, in-canvas HUD feedback, sprite/sound GUI tabs, and import/export to preserve local iteration results.
 
 MoonBit is a strong fit for this direction because of portability and clean data modeling. The implementation stays intentionally compact so evaluators can inspect behavior quickly and reproduce results with minimal setup.
 

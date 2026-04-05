@@ -47,9 +47,9 @@ Use one short entry per decision to prevent direction drift.
 - Impact: Integration tests can verify both game-over and collision cause, improving debugging and reproducibility.
 
 - Date: 2026-03-28
-- Decision: Surface `last_hit_tag` in web status UI and add a pipe-hit runtime test.
+- Decision: Surface collision outcomes in runtime UI and add a pipe-hit runtime test.
 - Why: Make collision outcomes visible during demo play and prevent regressions in tag wiring.
-- Impact: Better UX explainability and stronger confidence in collision behavior changes.
+- Impact: Better UX explainability and stronger confidence in collision behavior changes (currently shown via in-canvas HUD code).
 
 - Date: 2026-03-28
 - Decision: Rework submission draft to explicitly map SCC evaluation axes and add evaluator quickstart to README.
@@ -103,3 +103,17 @@ Use one short entry per decision to prevent direction drift.
     2. runtime boundary clarity (`update/draw` responsibilities)
     3. minimal event handoff cleanup
   - Large feature additions are paused until this order is complete.
+
+- Date: 2026-04-06
+- Decision: Complete internal runtime cleanup with `EngineCommand`-driven timers/events as the single scheduling path.
+- Why: Remove duplicated timer APIs and keep engine behavior simple, deterministic, and testable.
+- Impact:
+  - Command-based scheduling is the single public path for delayed/repeated events.
+  - Added event ordering tests to lock queue semantics (`timer emissions` then `immediate commands` in the same frame).
+
+- Date: 2026-04-06
+- Decision: Standardize web publishing layout to generated per-game pages under `site/g/<game_id>/`.
+- Why: Keep shared `cmd/web` game-neutral while supporting multiple games without hardcoded registry edits.
+- Impact:
+  - Build script generates per-game `web.js`, `assets.dsl`, and `game_spec.json`.
+  - Runtime/editor entry points are now path-driven (`/g/<game_id>/`), with `/g/` as the game list.
