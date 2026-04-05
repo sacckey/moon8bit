@@ -12,11 +12,6 @@ pub fn[G] run_web_game((@model.AssetBundle, @model.EngineConfig) -> @engine.Engi
 // Errors
 
 // Types and methods
-pub struct WebGameSpec {
-  title : String
-  status_text : String
-  export_filename : String
-}
 
 // Type aliases
 

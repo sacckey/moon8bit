@@ -8,7 +8,9 @@ pub fn[G] run_web_game(
   config? : @lib.EngineConfig = @lib.default_engine_config(),
 ) -> Unit {
   let display_scale = config.scale
-  let spec_ref : Ref[WebGameSpec?] = @ref.new(None)
+  let title_ref : Ref[String] = @ref.new("Game")
+  let status_text_ref : Ref[String] = @ref.new("Ready")
+  let export_filename_ref : Ref[String] = @ref.new("assets.dsl")
   let state_ref : Ref[@lib.EngineInstance[G]?] = @ref.new(None)
   let palette_ref : Ref[@lib.Palette] = @ref.new(@lib.palette_default())
   let default_palette = @lib.palette_default()
@@ -122,11 +124,6 @@ pub fn[G] run_web_game(
   }
 
   let apply_dsl_text = fn(dsl_text : String) -> Unit {
-    if spec_ref.val is None {
-      web_set_editor_feedback("Game spec is not loaded yet", true)
-      return
-    }
-
     let bundle = match @lib.parse_assets_dsl(dsl_text) {
       Ok(parsed) => parsed
       Err(err) => {
@@ -147,16 +144,10 @@ pub fn[G] run_web_game(
   let on_apply = fn() -> Unit { apply_dsl_text(web_get_editor_text()) }
 
   let on_export = fn() -> Unit {
-    let spec = match spec_ref.val {
-      Some(v) => v
-      None => {
-        web_set_editor_feedback("Game spec is not loaded yet", true)
-        return
-      }
-    }
     let current = web_get_editor_text()
-    web_download_text(spec.export_filename, current)
-    web_set_editor_feedback("Exported DSL as \{spec.export_filename}", false)
+    let export_filename = export_filename_ref.val
+    web_download_text(export_filename, current)
+    web_set_editor_feedback("Exported DSL as \{export_filename}", false)
   }
 
   let on_import = fn(dsl_text : String) -> Unit {
@@ -173,9 +164,10 @@ pub fn[G] run_web_game(
   web_init_sprite_editor()
   web_bootstrap_game(
     fn(title, status_text, export_filename, dsl_text) {
-      let spec : WebGameSpec = { title, status_text, export_filename }
-      spec_ref.val = Some(spec)
-      web_set_status("\{spec.title}: \{spec.status_text}")
+      title_ref.val = title
+      status_text_ref.val = status_text
+      export_filename_ref.val = export_filename
+      web_set_status("\{title_ref.val}: \{status_text_ref.val}")
       web_set_editor_text(dsl_text)
       web_sprite_editor_refresh()
       apply_dsl_text(dsl_text)
