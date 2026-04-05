@@ -18,11 +18,23 @@ pub fn cls(@model.Frame, Int) -> Unit
 
 pub fn config(Int, Int, fps? : Int, scale? : Int, palette? : @model.Palette) -> @model.EngineConfig
 
-pub fn[T : Game] engine_init(T, @model.EngineConfig) -> T
+pub fn[T] engine_events(EngineInstance[T]) -> Array[EngineEvent]
 
-pub fn[T : Game] engine_step(T, @model.EngineConfig, @model.InputState, Int) -> (T, @model.Frame)
+pub fn[T] engine_game(EngineInstance[T]) -> T
+
+pub fn[T : Game] engine_init(T, @model.EngineConfig) -> EngineInstance[T]
+
+pub fn[T : Game] engine_step(EngineInstance[T], @model.InputState) -> (EngineInstance[T], @model.Frame)
+
+pub fn[T] engine_take_events(EngineInstance[T]) -> (EngineInstance[T], Array[EngineEvent])
+
+pub fn[T] engine_with_game(EngineInstance[T], T) -> EngineInstance[T]
+
+pub fn[T] events(EngineInstance[T]) -> Array[EngineEvent]
 
 pub fn every(Int, Int) -> Bool
+
+pub fn[T] game_state(EngineInstance[T]) -> T
 
 pub fn key_down(@model.InputState, String) -> Bool
 
@@ -34,19 +46,15 @@ pub fn pset(@model.Frame, Int, Int, Int) -> Unit
 
 pub fn rect(@model.Frame, Int, Int, Int, Int, Int) -> Unit
 
-pub fn[T : Game] run(T, @model.EngineConfig, Array[@model.InputState]) -> (T, Array[@model.Frame])
+pub fn[T : Game] run(T, @model.EngineConfig, Array[@model.InputState]) -> (EngineInstance[T], Array[@model.Frame])
 
-pub fn[T : Game] run_fixed_frames(T, @model.EngineConfig, Array[@model.InputState]) -> (T, Array[@model.Frame])
-
-pub fn[T] runner_game(EngineRunner[T]) -> T
-
-pub fn[T : Game] runner_init(T, @model.EngineConfig) -> EngineRunner[T]
-
-pub fn[T : Game] runner_step(EngineRunner[T], @model.EngineConfig, @model.InputState) -> (EngineRunner[T], @model.Frame)
+pub fn[T : Game] run_fixed_frames(T, @model.EngineConfig, Array[@model.InputState]) -> (EngineInstance[T], Array[@model.Frame])
 
 pub fn spr(@model.Frame, @model.Sprite, Int, Int) -> Unit
 
-pub fn[T : Game] step(T, @model.EngineConfig, @model.InputState, Int) -> (T, @model.Frame)
+pub fn[T : Game] step(EngineInstance[T], @model.InputState) -> (EngineInstance[T], @model.Frame)
+
+pub fn[T] take_events(EngineInstance[T]) -> (EngineInstance[T], Array[EngineEvent])
 
 pub fn ui_center_x(Int, Int) -> Int
 
@@ -58,20 +66,51 @@ pub fn ui_text(@model.Frame, Int, Int, String, Int, scale? : Int) -> Unit
 
 pub fn ui_text_width(String, scale? : Int) -> Int
 
+pub fn[T] with_game(EngineInstance[T], T) -> EngineInstance[T]
+
 // Errors
 
 // Types and methods
-pub(all) struct EngineRunner[T] {
+pub(all) struct DrawContext {
+  config : @model.EngineConfig
+  tick : Int
+} derive(Eq, Show)
+
+pub(all) enum EngineEvent {
+  Sfx(String)
+  BgmStart
+  BgmStop
+} derive(Eq, Show)
+
+pub(all) struct EngineInstance[T] {
+  config : @model.EngineConfig
   game : T
-  frame : Int
+  tick : Int
+  prev_input : @model.InputState
+  event_queue : Array[EngineEvent]
+  timers : Array[EngineTimer]
+} derive(Eq, Show)
+
+pub(all) struct EngineTimer {
+  kind : EngineEvent
+  remaining_frames : Int
+  interval_frames : Int
+} derive(Eq, Show)
+
+pub(all) struct UpdateContext {
+  config : @model.EngineConfig
+  input : @model.InputState
+  prev_input : @model.InputState
+  tick : Int
+  dt_ms : Int
 } derive(Eq, Show)
 
 // Type aliases
 
 // Traits
 pub(open) trait Game {
-  init(Self, @model.RuntimeContext) -> Self
-  update(Self, @model.RuntimeContext) -> Self
-  draw(Self, @model.RuntimeContext) -> @model.Frame
+  init(Self, @model.EngineConfig) -> Self
+  update(Self, UpdateContext) -> (Self, Array[EngineEvent])
+  draw(Self, DrawContext) -> @model.Frame
 }
 

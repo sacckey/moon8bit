@@ -17,7 +17,7 @@ pub impl @engine.Game for WrapperTestGame with update(self, ctx) {
   } else if key_pressed(ctx.input, "Space") {
     self.count = self.count + 1
   }
-  self
+  (self, [])
 }
 
 ///|
@@ -65,25 +65,28 @@ test "root wrapper step and run remain equivalent to engine primitives" {
   let base_state = engine_init(WrapperTestGame::{ count: 0 }, cfg)
   let wrapped_state = engine_init(WrapperTestGame::{ count: 0 }, cfg)
 
-  let (next_base, frame_base) = engine_step(base_state, cfg, input, 0)
-  let (next_wrapped, frame_wrapped) = step(wrapped_state, cfg, input, 0)
+  let (next_base, frame_base) = engine_step(base_state, input)
+  let (next_wrapped, frame_wrapped) = step(wrapped_state, input)
 
-  assert_eq(next_wrapped.count, next_base.count)
+  assert_eq(game_state(next_wrapped).count, game_state(next_base).count)
   assert_eq(frame_wrapped, frame_base)
 
   let inputs = wrapper_test_inputs(24)
-  let (final_base, frames_base) = run_fixed_frames(
+  let (final_base_runtime, frames_base) = run_fixed_frames(
     WrapperTestGame::{ count: 0 },
     cfg,
     inputs,
   )
-  let (final_wrapped, frames_wrapped) = run(
+  let (final_wrapped_runtime, frames_wrapped) = run(
     WrapperTestGame::{ count: 0 },
     cfg,
     inputs,
   )
 
-  assert_eq(final_wrapped.count, final_base.count)
+  assert_eq(
+    game_state(final_wrapped_runtime).count,
+    game_state(final_base_runtime).count,
+  )
   assert_eq(frames_wrapped, frames_base)
 }
 

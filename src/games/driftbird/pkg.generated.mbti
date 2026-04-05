@@ -7,17 +7,13 @@ import {
 }
 
 // Values
-pub fn audio_events_for_step(DriftbirdGame, DriftbirdGame, @model.InputState) -> Array[String]
-
-pub fn init_game(@model.AssetBundle, @model.EngineConfig) -> @engine.EngineRunner[DriftbirdGame]
+pub fn init_game(@model.AssetBundle, @model.EngineConfig) -> @engine.EngineInstance[DriftbirdGame]
 
 pub fn new_driftbird_game(@model.AssetBundle) -> DriftbirdGame
 
 pub fn run_driftbird(@model.AssetBundle, Array[@model.InputState], config? : @model.EngineConfig) -> (DriftbirdGame, Array[@model.Frame])
 
-pub fn step_audio_events(@engine.EngineRunner[DriftbirdGame], @engine.EngineRunner[DriftbirdGame], @model.InputState) -> Array[String]
-
-pub fn step_game(@engine.EngineRunner[DriftbirdGame], @model.EngineConfig, @model.InputState) -> (@engine.EngineRunner[DriftbirdGame], @model.Frame)
+pub fn step_game(@engine.EngineInstance[DriftbirdGame], @model.InputState) -> (@engine.EngineInstance[DriftbirdGame], @model.Frame)
 
 // Errors
 
@@ -46,7 +42,7 @@ pub fn DriftbirdGame::score(Self) -> Int
 pub impl @engine.Game for DriftbirdGame
 
 // Type aliases
-pub type DriftbirdRuntime = @engine.EngineRunner[DriftbirdGame]
+pub type DriftbirdRuntime = @engine.EngineInstance[DriftbirdGame]
 
 // Traits
 

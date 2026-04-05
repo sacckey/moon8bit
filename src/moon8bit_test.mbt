@@ -15,7 +15,7 @@ pub impl @engine.Game for TestGame with update(self, ctx) {
   } else if key_pressed(ctx.input, "Space") {
     self.count = self.count + 1
   }
-  self
+  (self, [])
 }
 
 ///|
@@ -60,7 +60,7 @@ test "root facade run supports generic game" {
     inputs,
   )
   assert_eq(frames.length(), inputs.length())
-  assert_eq(state.count, 0)
+  assert_eq(game_state(state).count, 0)
   assert_true(frames[0].to_ascii().length() > 0)
 }
 

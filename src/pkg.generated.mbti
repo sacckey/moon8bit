@@ -37,15 +37,27 @@ pub fn config(Int, Int, fps? : Int, scale? : Int, palette? : @model.Palette) -> 
 
 pub fn default_engine_config() -> @model.EngineConfig
 
-pub fn[T : @engine.Game] engine_init(T, @model.EngineConfig) -> T
+pub fn[T] engine_events(@engine.EngineInstance[T]) -> Array[@engine.EngineEvent]
 
-pub fn[T : @engine.Game] engine_step(T, @model.EngineConfig, @model.InputState, Int) -> (T, @model.Frame)
+pub fn[T] engine_game(@engine.EngineInstance[T]) -> T
+
+pub fn[T : @engine.Game] engine_init(T, @model.EngineConfig) -> @engine.EngineInstance[T]
+
+pub fn[T : @engine.Game] engine_step(@engine.EngineInstance[T], @model.InputState) -> (@engine.EngineInstance[T], @model.Frame)
+
+pub fn[T] engine_take_events(@engine.EngineInstance[T]) -> (@engine.EngineInstance[T], Array[@engine.EngineEvent])
+
+pub fn[T] engine_with_game(@engine.EngineInstance[T], T) -> @engine.EngineInstance[T]
+
+pub fn[T] events(@engine.EngineInstance[T]) -> Array[@engine.EngineEvent]
 
 pub fn every(Int, Int) -> Bool
 
 pub fn find_sprite(@model.AssetBundle, String) -> @model.Sprite?
 
 pub fn find_tilemap(@model.AssetBundle, String) -> @model.Tilemap?
+
+pub fn[T] game_state(@engine.EngineInstance[T]) -> T
 
 pub let input_none : @model.InputState
 
@@ -71,9 +83,9 @@ pub fn rect(@model.Frame, Int, Int, Int, Int, Int) -> Unit
 
 pub fn rect_intersects(@model.Rect, @model.Rect) -> Bool
 
-pub fn[T : @engine.Game] run(T, @model.EngineConfig, Array[@model.InputState]) -> (T, Array[@model.Frame])
+pub fn[T : @engine.Game] run(T, @model.EngineConfig, Array[@model.InputState]) -> (@engine.EngineInstance[T], Array[@model.Frame])
 
-pub fn[T : @engine.Game] run_fixed_frames(T, @model.EngineConfig, Array[@model.InputState]) -> (T, Array[@model.Frame])
+pub fn[T : @engine.Game] run_fixed_frames(T, @model.EngineConfig, Array[@model.InputState]) -> (@engine.EngineInstance[T], Array[@model.Frame])
 
 pub fn spr(@model.Frame, @model.Sprite, Int, Int) -> Unit
 
@@ -81,7 +93,9 @@ pub fn sprite_pixel(@model.Sprite, Int, Int) -> Int?
 
 pub fn sprite_to_json(@model.Sprite) -> Json
 
-pub fn[T : @engine.Game] step(T, @model.EngineConfig, @model.InputState, Int) -> (T, @model.Frame)
+pub fn[T : @engine.Game] step(@engine.EngineInstance[T], @model.InputState) -> (@engine.EngineInstance[T], @model.Frame)
+
+pub fn[T] take_events(@engine.EngineInstance[T]) -> (@engine.EngineInstance[T], Array[@engine.EngineEvent])
 
 pub fn tile_at(@model.Tilemap, Int, Int) -> Int?
 
@@ -99,6 +113,8 @@ pub fn ui_text_width(String, scale? : Int) -> Int
 
 pub fn version_tag() -> String
 
+pub fn[T] with_game(@engine.EngineInstance[T], T) -> @engine.EngineInstance[T]
+
 // Errors
 
 // Types and methods
@@ -108,9 +124,15 @@ pub using @model {type AssetBundle}
 
 pub using @model {type Collider}
 
+pub using @engine {type DrawContext}
+
 pub using @model {type DslError}
 
 pub using @model {type EngineConfig}
+
+pub using @engine {type EngineEvent}
+
+pub using @engine {type EngineInstance}
 
 pub using @model {type Frame}
 
@@ -125,6 +147,8 @@ pub using @model {type RuntimeContext}
 pub using @model {type Sprite}
 
 pub using @model {type Tilemap}
+
+pub using @engine {type UpdateContext}
 
 // Traits
 

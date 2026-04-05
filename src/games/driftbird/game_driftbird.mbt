@@ -17,13 +17,19 @@ type EngineConfig = @model.EngineConfig
 type InputState = @model.InputState
 
 ///|
-type RuntimeContext = @model.RuntimeContext
+type UpdateContext = @engine.UpdateContext
+
+///|
+type DrawContext = @engine.DrawContext
 
 ///|
 type Frame = @model.Frame
 
 ///|
-pub type DriftbirdRuntime = @engine.EngineRunner[DriftbirdGame]
+type EngineEvent = @engine.EngineEvent
+
+///|
+pub type DriftbirdRuntime = @engine.EngineInstance[DriftbirdGame]
 
 ///|
 fn find_sprite(bundle : AssetBundle, name : String) -> Sprite? {
@@ -126,7 +132,7 @@ fn[T : @engine.Game] run(
   game : T,
   config : EngineConfig,
   inputs : Array[InputState],
-) -> (T, Array[Frame]) {
+) -> (@engine.EngineInstance[T], Array[Frame]) {
   @engine.run(game, config, inputs)
 }
 
@@ -387,67 +393,25 @@ pub fn DriftbirdGame::last_hit_tag(self : DriftbirdGame) -> String? {
 }
 
 ///|
-pub fn audio_events_for_step(
-  previous : DriftbirdGame,
-  next : DriftbirdGame,
-  input : InputState,
-) -> Array[String] {
-  let events : Array[String] = []
-  if key_pressed(input, "Space") || key_pressed(input, "ArrowUp") {
-    events.push("flap")
-  }
-  if key_pressed(input, "KeyR") {
-    events.push("reset")
-    events.push("@bgm_stop")
-  }
-
-  if !previous.is_started() && next.is_started() {
-    events.push("@bgm_start")
-  }
-  if previous.is_over() && !next.is_over() && next.is_started() {
-    events.push("@bgm_start")
-  }
-  if !previous.is_over() && next.is_over() {
-    events.push("hit")
-    events.push("@bgm_stop")
-  }
-  events
-}
-
-///|
 pub fn init_game(
   bundle : AssetBundle,
   config : EngineConfig,
 ) -> DriftbirdRuntime {
-  @engine.runner_init(new_driftbird_game(bundle), config)
+  @engine.engine_init(new_driftbird_game(bundle), config)
 }
 
 ///|
 pub fn step_game(
   game : DriftbirdRuntime,
-  config : EngineConfig,
   input : InputState,
 ) -> (DriftbirdRuntime, Frame) {
-  @engine.runner_step(game, config, input)
-}
-
-///|
-pub fn step_audio_events(
-  previous : DriftbirdRuntime,
-  next : DriftbirdRuntime,
-  input : InputState,
-) -> Array[String] {
-  audio_events_for_step(
-    @engine.runner_game(previous),
-    @engine.runner_game(next),
-    input,
-  )
+  @engine.engine_step(game, input)
 }
 
 ///|
 fn step_running(
   game : DriftbirdGame,
-  ctx : RuntimeContext,
+  ctx : UpdateContext,
   flap_pressed : Bool,
 ) -> DriftbirdGame {
   let flap_impulse : Double = -2.5
@@ -501,15 +465,27 @@ fn step_running(
 }
 
 ///|
-pub impl @engine.Game for DriftbirdGame with init(self, ctx) {
-  reset_driftbird(self, ctx.config)
+pub impl @engine.Game for DriftbirdGame with init(self, config : EngineConfig) {
+  reset_driftbird(self, config)
 }
 
 ///|
-pub impl @engine.Game for DriftbirdGame with update(self, ctx) {
+pub impl @engine.Game for DriftbirdGame with update(self, ctx : UpdateContext) {
+  let events : Array[EngineEvent] = []
   let flap_pressed = key_pressed(ctx.input, "Space") ||
     key_pressed(ctx.input, "ArrowUp")
   let reset_pressed = key_pressed(ctx.input, "KeyR")
+
+  if flap_pressed {
+    events.push(EngineEvent::Sfx("flap"))
+  }
+  if reset_pressed {
+    events.push(EngineEvent::Sfx("reset"))
+    events.push(EngineEvent::BgmStop)
+  }
+
+  let was_started = self.is_started
+  let was_over = self.is_over
 
   let next = if reset_pressed {
     reset_driftbird(self, ctx.config)
@@ -530,11 +506,22 @@ pub impl @engine.Game for DriftbirdGame with update(self, ctx) {
     step_running(self, ctx, flap_pressed)
   }
 
-  next
+  if !was_started && next.is_started {
+    events.push(EngineEvent::BgmStart)
+  }
+  if was_over && !next.is_over && next.is_started {
+    events.push(EngineEvent::BgmStart)
+  }
+  if !was_over && next.is_over {
+    events.push(EngineEvent::Sfx("hit"))
+    events.push(EngineEvent::BgmStop)
+  }
+
+  (next, events)
 }
 
 ///|
-pub impl @engine.Game for DriftbirdGame with draw(self, ctx) {
+pub impl @engine.Game for DriftbirdGame with draw(self, ctx : DrawContext) {
   let frame = Frame::new(ctx.config.width, ctx.config.height, fill=0)
   let ground_rows = if ctx.config.height >= 2 { 2 } else { ctx.config.height }
   let ground_y = ctx.config.height - ground_rows
@@ -601,5 +588,6 @@ pub fn run_driftbird(
   config? : EngineConfig = default_engine_config(),
 ) -> (DriftbirdGame, Array[Frame]) {
   let initial = new_driftbird_game(bundle)
-  run(initial, config, inputs)
+  let (runtime, frames) = run(initial, config, inputs)
+  (@engine.engine_game(runtime), frames)
 }

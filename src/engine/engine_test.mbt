@@ -15,7 +15,7 @@ pub impl @engine.Game for CounterGame with init(self, _ctx) {
 pub impl @engine.Game for CounterGame with update(self, ctx) {
   self.ticks += 1
   self.last_flap = @engine.key_pressed(ctx.input, "Space")
-  self
+  (self, [])
 }
 
 ///|
@@ -45,12 +45,13 @@ test "wrapper step matches engine_step with package local game" {
   let base_state = @engine.engine_init(new_counter_game(), cfg)
   let wrapped_state = @engine.engine_init(new_counter_game(), cfg)
 
-  let (next_base, frame_base) = @engine.engine_step(base_state, cfg, input, 0)
-  let (next_wrapped, frame_wrapped) = @engine.step(wrapped_state, cfg, input, 0)
+  let (next_base, frame_base) = @engine.engine_step(base_state, input)
+  let (next_wrapped, frame_wrapped) = @engine.step(wrapped_state, input)
 
   assert_eq(next_wrapped, next_base)
   assert_eq(frame_wrapped, frame_base)
   assert_eq(frame_wrapped.get_pixel(0, 0), Some(2))
+  assert_eq(@engine.game_state(next_wrapped).ticks, 1)
 }
 
 ///|
@@ -62,20 +63,21 @@ test "wrapper run matches run_fixed_frames for deterministic inputs" {
     @engine.btn([]),
   ]
 
-  let (base_state, base_frames) = @engine.run_fixed_frames(
+  let (base_runtime, base_frames) = @engine.run_fixed_frames(
     new_counter_game(),
     cfg,
     inputs,
   )
-  let (wrapped_state, wrapped_frames) = @engine.run(
+  let (wrapped_runtime, wrapped_frames) = @engine.run(
     new_counter_game(),
     cfg,
     inputs,
   )
 
-  assert_eq(wrapped_state, base_state)
+  assert_eq(wrapped_runtime, base_runtime)
   assert_eq(wrapped_frames, base_frames)
   assert_eq(wrapped_frames.length(), 3)
+  assert_eq(@engine.game_state(wrapped_runtime).ticks, 3)
 }
 
 ///|

@@ -150,12 +150,10 @@ pub fn ui_text(
 
 ///|
 pub fn[T : Game] step(
-  game : T,
-  config : EngineConfig,
+  state : EngineInstance[T],
   input : InputState,
-  frame : Int,
-) -> (T, Frame) {
-  engine_step(game, config, input, frame)
+) -> (EngineInstance[T], Frame) {
+  engine_step(state, input)
 }
 
 ///|
@@ -163,8 +161,30 @@ pub fn[T : Game] run(
   game : T,
   config : EngineConfig,
   inputs : Array[InputState],
-) -> (T, Array[Frame]) {
+) -> (EngineInstance[T], Array[Frame]) {
   run_fixed_frames(game, config, inputs)
+}
+
+///|
+pub fn[T] game_state(state : EngineInstance[T]) -> T {
+  engine_game(state)
+}
+
+///|
+pub fn[T] with_game(state : EngineInstance[T], game : T) -> EngineInstance[T] {
+  engine_with_game(state, game)
+}
+
+///|
+pub fn[T] events(state : EngineInstance[T]) -> Array[EngineEvent] {
+  engine_events(state)
+}
+
+///|
+pub fn[T] take_events(
+  state : EngineInstance[T],
+) -> (EngineInstance[T], Array[EngineEvent]) {
+  engine_take_events(state)
 }
 
 ///|

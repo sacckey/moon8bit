@@ -23,6 +23,15 @@ pub type InputState = @model.InputState
 pub type RuntimeContext = @model.RuntimeContext
 
 ///|
+pub type UpdateContext = @engine.UpdateContext
+
+///|
+pub type DrawContext = @engine.DrawContext
+
+///|
+pub type EngineEvent = @engine.EngineEvent
+
+///|
 pub type Rect = @model.Rect
 
 ///|
@@ -30,6 +39,9 @@ pub type Collider = @model.Collider
 
 ///|
 pub type Frame = @model.Frame
+
+///|
+pub type EngineInstance[T] = @engine.EngineInstance[T]
 
 ///|
 pub let input_none : InputState = @model.input_none
@@ -234,18 +246,19 @@ pub fn parse_assets_dsl_to_json_string(
 }
 
 ///|
-pub fn[T : @engine.Game] engine_init(initial : T, config : EngineConfig) -> T {
+pub fn[T : @engine.Game] engine_init(
+  initial : T,
+  config : EngineConfig,
+) -> EngineInstance[T] {
   @engine.engine_init(initial, config)
 }
 
 ///|
 pub fn[T : @engine.Game] engine_step(
-  game : T,
-  config : EngineConfig,
+  state : EngineInstance[T],
   input : InputState,
-  frame : Int,
-) -> (T, Frame) {
-  @engine.engine_step(game, config, input, frame)
+) -> (EngineInstance[T], Frame) {
+  @engine.engine_step(state, input)
 }
 
 ///|
@@ -253,8 +266,33 @@ pub fn[T : @engine.Game] run_fixed_frames(
   initial : T,
   config : EngineConfig,
   inputs : Array[InputState],
-) -> (T, Array[Frame]) {
+) -> (EngineInstance[T], Array[Frame]) {
   @engine.run_fixed_frames(initial, config, inputs)
+}
+
+///|
+pub fn[T] engine_game(state : EngineInstance[T]) -> T {
+  @engine.engine_game(state)
+}
+
+///|
+pub fn[T] engine_with_game(
+  state : EngineInstance[T],
+  game : T,
+) -> EngineInstance[T] {
+  @engine.engine_with_game(state, game)
+}
+
+///|
+pub fn[T] engine_events(state : EngineInstance[T]) -> Array[EngineEvent] {
+  @engine.engine_events(state)
+}
+
+///|
+pub fn[T] engine_take_events(
+  state : EngineInstance[T],
+) -> (EngineInstance[T], Array[EngineEvent]) {
+  @engine.engine_take_events(state)
 }
 
 ///|
@@ -318,12 +356,10 @@ pub fn every(frame : Int, interval : Int) -> Bool {
 
 ///|
 pub fn[T : @engine.Game] step(
-  game : T,
-  config : EngineConfig,
+  state : EngineInstance[T],
   input : InputState,
-  frame : Int,
-) -> (T, Frame) {
-  @engine.step(game, config, input, frame)
+) -> (EngineInstance[T], Frame) {
+  @engine.step(state, input)
 }
 
 ///|
@@ -331,8 +367,30 @@ pub fn[T : @engine.Game] run(
   game : T,
   config : EngineConfig,
   inputs : Array[InputState],
-) -> (T, Array[Frame]) {
+) -> (EngineInstance[T], Array[Frame]) {
   @engine.run(game, config, inputs)
+}
+
+///|
+pub fn[T] game_state(state : EngineInstance[T]) -> T {
+  @engine.game_state(state)
+}
+
+///|
+pub fn[T] with_game(state : EngineInstance[T], game : T) -> EngineInstance[T] {
+  @engine.with_game(state, game)
+}
+
+///|
+pub fn[T] events(state : EngineInstance[T]) -> Array[EngineEvent] {
+  @engine.events(state)
+}
+
+///|
+pub fn[T] take_events(
+  state : EngineInstance[T],
+) -> (EngineInstance[T], Array[EngineEvent]) {
+  @engine.take_events(state)
 }
 
 ///|

@@ -2,11 +2,12 @@
 package "sacckey/moon8bit/cmd/web"
 
 import {
+  "sacckey/moon8bit/engine",
   "sacckey/moon8bit/model",
 }
 
 // Values
-pub fn[T] run_web_game((@model.AssetBundle, @model.EngineConfig) -> T, (T, @model.EngineConfig, @model.InputState) -> (T, @model.Frame), (T, T, @model.InputState) -> Array[String], config? : @model.EngineConfig) -> Unit
+pub fn[G] run_web_game((@model.AssetBundle, @model.EngineConfig) -> @engine.EngineInstance[G], (@engine.EngineInstance[G], @model.InputState) -> (@engine.EngineInstance[G], @model.Frame), config? : @model.EngineConfig) -> Unit
 
 // Errors
 

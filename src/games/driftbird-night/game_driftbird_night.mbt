@@ -24,17 +24,7 @@ pub fn init_game(
 ///|
 pub fn step_game(
   game : DriftbirdNightGame,
-  config : EngineConfig,
   input : InputState,
 ) -> (DriftbirdNightGame, Frame) {
-  @driftbird.step_game(game, config, input)
-}
-
-///|
-pub fn step_audio_events(
-  previous : DriftbirdNightGame,
-  next : DriftbirdNightGame,
-  input : InputState,
-) -> Array[String] {
-  @driftbird.step_audio_events(previous, next, input)
+  @driftbird.step_game(game, input)
 }

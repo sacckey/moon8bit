@@ -8,18 +8,16 @@ import {
 }
 
 // Values
-pub fn init_game(@model.AssetBundle, @model.EngineConfig) -> @engine.EngineRunner[@driftbird.DriftbirdGame]
+pub fn init_game(@model.AssetBundle, @model.EngineConfig) -> @engine.EngineInstance[@driftbird.DriftbirdGame]
 
-pub fn step_audio_events(@engine.EngineRunner[@driftbird.DriftbirdGame], @engine.EngineRunner[@driftbird.DriftbirdGame], @model.InputState) -> Array[String]
-
-pub fn step_game(@engine.EngineRunner[@driftbird.DriftbirdGame], @model.EngineConfig, @model.InputState) -> (@engine.EngineRunner[@driftbird.DriftbirdGame], @model.Frame)
+pub fn step_game(@engine.EngineInstance[@driftbird.DriftbirdGame], @model.InputState) -> (@engine.EngineInstance[@driftbird.DriftbirdGame], @model.Frame)
 
 // Errors
 
 // Types and methods
 
 // Type aliases
-pub type DriftbirdNightGame = @engine.EngineRunner[@driftbird.DriftbirdGame]
+pub type DriftbirdNightGame = @engine.EngineInstance[@driftbird.DriftbirdGame]
 
 // Traits
 

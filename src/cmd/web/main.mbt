@@ -1,13 +1,15 @@
 ///|
-pub fn[T] run_web_game(
-  init_game : (@lib.AssetBundle, @lib.EngineConfig) -> T,
-  step_game : (T, @lib.EngineConfig, @lib.InputState) -> (T, @lib.Frame),
-  step_audio_events : (T, T, @lib.InputState) -> Array[String],
+pub fn[G] run_web_game(
+  init_game : (@lib.AssetBundle, @lib.EngineConfig) -> @lib.EngineInstance[G],
+  step_game : (@lib.EngineInstance[G], @lib.InputState) -> (
+    @lib.EngineInstance[G],
+    @lib.Frame,
+  ),
   config? : @lib.EngineConfig = @lib.default_engine_config(),
 ) -> Unit {
   let display_scale = config.scale
   let spec_ref : Ref[WebGameSpec?] = @ref.new(None)
-  let state_ref : Ref[T?] = @ref.new(None)
+  let state_ref : Ref[@lib.EngineInstance[G]?] = @ref.new(None)
   let palette_ref : Ref[@lib.Palette] = @ref.new(@lib.palette_default())
   let default_palette = @lib.palette_default()
   let prev_keys_down_ref : Ref[Array[String]] = @ref.new([])
@@ -104,19 +106,18 @@ pub fn[T] run_web_game(
     }
 
     let input = poll_input()
-    let (next, rendered) = step_game(previous, config, input)
+    let (next, rendered) = step_game(previous, input)
+    let (next_cleared, events) = @lib.engine_take_events(next)
 
-    for event in step_audio_events(previous, next, input) {
-      if event == "@bgm_start" {
-        start_bgm_if_needed()
-      } else if event == "@bgm_stop" {
-        stop_bgm_if_playing()
-      } else {
-        web_audio_play_sfx(event)
+    for event in events {
+      match event {
+        @lib.EngineEvent::BgmStart => start_bgm_if_needed()
+        @lib.EngineEvent::BgmStop => stop_bgm_if_playing()
+        @lib.EngineEvent::Sfx(kind) => web_audio_play_sfx(kind)
       }
     }
 
-    state_ref.val = Some(next)
+    state_ref.val = Some(next_cleared)
     draw_frame(rendered)
   }
 
