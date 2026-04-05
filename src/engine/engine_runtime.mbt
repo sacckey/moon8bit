@@ -15,6 +15,14 @@ pub(all) enum EngineEvent {
 } derive(Eq, Show)
 
 ///|
+pub(all) enum EngineCommand {
+  Emit(EngineEvent)
+  SetTimeout(Int, EngineEvent)
+  SetInterval(Int, EngineEvent)
+  ClearTimers
+} derive(Eq, Show)
+
+///|
 pub(all) struct EngineTimer {
   kind : EngineEvent
   remaining_frames : Int
@@ -52,7 +60,7 @@ let input_none : InputState = @model.input_none
 ///|
 pub(open) trait Game {
   init(Self, EngineConfig) -> Self
-  update(Self, UpdateContext) -> (Self, Array[EngineEvent])
+  update(Self, UpdateContext) -> (Self, Array[EngineCommand])
   draw(Self, DrawContext) -> Frame
 }
 
@@ -122,6 +130,45 @@ fn advance_timers(
 }
 
 ///|
+fn copy_timers(timers : Array[EngineTimer]) -> Array[EngineTimer] {
+  let next_timers : Array[EngineTimer] = []
+  for timer in timers {
+    next_timers.push(timer)
+  }
+  next_timers
+}
+
+///|
+fn apply_commands(
+  base_timers : Array[EngineTimer],
+  commands : Array[EngineCommand],
+) -> (Array[EngineTimer], Array[EngineEvent]) {
+  let mut timers = copy_timers(base_timers)
+  let emitted : Array[EngineEvent] = []
+  for command in commands {
+    match command {
+      Emit(event) => emitted.push(event)
+      SetTimeout(frames, event) =>
+        timers.push(EngineTimer::{
+          kind: event,
+          remaining_frames: timer_frames(frames),
+          interval_frames: 0,
+        })
+      SetInterval(frames, event) => {
+        let interval = timer_frames(frames)
+        timers.push(EngineTimer::{
+          kind: event,
+          remaining_frames: interval,
+          interval_frames: interval,
+        })
+      }
+      ClearTimers => timers = []
+    }
+  }
+  (timers, emitted)
+}
+
+///|
 pub fn[T : Game] engine_init(
   initial : T,
   config : EngineConfig,
@@ -142,13 +189,14 @@ pub fn[T : Game] engine_step(
   input : InputState,
 ) -> (EngineInstance[T], Frame) {
   let update_ctx = make_update_context(state, input)
-  let (next_game, emitted) = Game::update(state.game, update_ctx)
+  let (next_game, commands) = Game::update(state.game, update_ctx)
   let (next_timers, timer_emitted) = advance_timers(state.timers)
+  let (final_timers, command_emitted) = apply_commands(next_timers, commands)
   let all_emitted : Array[EngineEvent] = []
-  for event in emitted {
+  for event in timer_emitted {
     all_emitted.push(event)
   }
-  for event in timer_emitted {
+  for event in command_emitted {
     all_emitted.push(event)
   }
   let next_state = EngineInstance::{
@@ -157,7 +205,7 @@ pub fn[T : Game] engine_step(
     tick: state.tick + 1,
     prev_input: input,
     event_queue: all_emitted,
-    timers: next_timers,
+    timers: final_timers,
   }
   let rendered = Game::draw(next_state.game, make_draw_context(next_state))
   (next_state, rendered)
@@ -227,10 +275,7 @@ pub fn[T] engine_set_timeout(
   frames : Int,
   kind : EngineEvent,
 ) -> EngineInstance[T] {
-  let next_timers : Array[EngineTimer] = []
-  for timer in state.timers {
-    next_timers.push(timer)
-  }
+  let next_timers = copy_timers(state.timers)
   next_timers.push(EngineTimer::{
     kind,
     remaining_frames: timer_frames(frames),
@@ -253,10 +298,7 @@ pub fn[T] engine_set_interval(
   kind : EngineEvent,
 ) -> EngineInstance[T] {
   let interval = timer_frames(frames)
-  let next_timers : Array[EngineTimer] = []
-  for timer in state.timers {
-    next_timers.push(timer)
-  }
+  let next_timers = copy_timers(state.timers)
   next_timers.push(EngineTimer::{
     kind,
     remaining_frames: interval,
@@ -282,4 +324,39 @@ pub fn[T] engine_clear_timers(state : EngineInstance[T]) -> EngineInstance[T] {
     event_queue: state.event_queue,
     timers: [],
   }
+}
+
+///|
+pub fn emit(event : EngineEvent) -> EngineCommand {
+  EngineCommand::Emit(event)
+}
+
+///|
+pub fn sfx(name : String) -> EngineCommand {
+  EngineCommand::Emit(EngineEvent::Sfx(name))
+}
+
+///|
+pub fn bgm_start() -> EngineCommand {
+  EngineCommand::Emit(EngineEvent::BgmStart)
+}
+
+///|
+pub fn bgm_stop() -> EngineCommand {
+  EngineCommand::Emit(EngineEvent::BgmStop)
+}
+
+///|
+pub fn set_timeout_cmd(frames : Int, event : EngineEvent) -> EngineCommand {
+  EngineCommand::SetTimeout(frames, event)
+}
+
+///|
+pub fn set_interval_cmd(frames : Int, event : EngineEvent) -> EngineCommand {
+  EngineCommand::SetInterval(frames, event)
+}
+
+///|
+pub fn clear_timers_cmd() -> EngineCommand {
+  EngineCommand::ClearTimers
 }

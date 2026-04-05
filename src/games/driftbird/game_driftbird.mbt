@@ -29,6 +29,9 @@ type Frame = @model.Frame
 type EngineEvent = @engine.EngineEvent
 
 ///|
+type EngineCommand = @engine.EngineCommand
+
+///|
 pub type DriftbirdRuntime = @engine.EngineInstance[DriftbirdGame]
 
 ///|
@@ -472,16 +475,17 @@ pub impl @engine.Game for DriftbirdGame with init(self, config : EngineConfig) {
 
 ///|
 pub impl @engine.Game for DriftbirdGame with update(self, ctx : UpdateContext) {
-  let events : Array[EngineEvent] = []
+  let commands : Array[EngineCommand] = []
   let flap_pressed = @engine.key_pressed_any(ctx.input, ["Space", "ArrowUp"])
   let reset_pressed = key_pressed(ctx.input, "KeyR")
 
   if flap_pressed {
-    events.push(EngineEvent::Sfx("flap"))
+    commands.push(@engine.sfx("flap"))
   }
   if reset_pressed {
-    events.push(EngineEvent::Sfx("reset"))
-    events.push(EngineEvent::BgmStop)
+    commands.push(@engine.clear_timers_cmd())
+    commands.push(@engine.sfx("reset"))
+    commands.push(@engine.bgm_stop())
   }
 
   let was_started = self.is_started
@@ -507,17 +511,17 @@ pub impl @engine.Game for DriftbirdGame with update(self, ctx : UpdateContext) {
   }
 
   if !was_started && next.is_started {
-    events.push(EngineEvent::BgmStart)
+    commands.push(@engine.set_timeout_cmd(1, EngineEvent::BgmStart))
   }
   if was_over && !next.is_over && next.is_started {
-    events.push(EngineEvent::BgmStart)
+    commands.push(@engine.set_timeout_cmd(1, EngineEvent::BgmStart))
   }
   if !was_over && next.is_over {
-    events.push(EngineEvent::Sfx("hit"))
-    events.push(EngineEvent::BgmStop)
+    commands.push(@engine.set_timeout_cmd(1, EngineEvent::Sfx("hit")))
+    commands.push(@engine.bgm_stop())
   }
 
-  (next, events)
+  (next, commands)
 }
 
 ///|

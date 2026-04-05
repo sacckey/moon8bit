@@ -17,11 +17,17 @@ pub fn asset_bundle_to_json_string(@model.AssetBundle) -> String
 
 pub fn assets_cli_output(String) -> String
 
+pub fn bgm_start() -> @engine.EngineCommand
+
+pub fn bgm_stop() -> @engine.EngineCommand
+
 pub fn btn(Array[String], keys_pressed? : Array[String], keys_released? : Array[String], pointer_x? : Int, pointer_y? : Int, pointer_down? : Bool, pointer_pressed? : Bool, pointer_released? : Bool) -> @model.InputState
 
 pub fn btnp(Bool, Bool) -> Bool
 
 pub fn[T] clear_timers(@engine.EngineInstance[T]) -> @engine.EngineInstance[T]
+
+pub fn clear_timers_cmd() -> @engine.EngineCommand
 
 pub fn cls(@model.Frame, Int) -> Unit
 
@@ -38,6 +44,8 @@ pub fn collider_intersects(@model.Collider, @model.Collider) -> Bool
 pub fn config(Int, Int, fps? : Int, scale? : Int, palette? : @model.Palette) -> @model.EngineConfig
 
 pub fn default_engine_config() -> @model.EngineConfig
+
+pub fn emit(@engine.EngineEvent) -> @engine.EngineCommand
 
 pub fn[T] engine_clear_timers(@engine.EngineInstance[T]) -> @engine.EngineInstance[T]
 
@@ -103,7 +111,13 @@ pub fn[T : @engine.Game] run_fixed_frames(T, @model.EngineConfig, Array[@model.I
 
 pub fn[T] set_interval(@engine.EngineInstance[T], Int, @engine.EngineEvent) -> @engine.EngineInstance[T]
 
+pub fn set_interval_cmd(Int, @engine.EngineEvent) -> @engine.EngineCommand
+
 pub fn[T] set_timeout(@engine.EngineInstance[T], Int, @engine.EngineEvent) -> @engine.EngineInstance[T]
+
+pub fn set_timeout_cmd(Int, @engine.EngineEvent) -> @engine.EngineCommand
+
+pub fn sfx(String) -> @engine.EngineCommand
 
 pub fn spr(@model.Frame, @model.Sprite, Int, Int) -> Unit
 
@@ -145,6 +159,8 @@ pub using @model {type Collider}
 pub using @engine {type DrawContext}
 
 pub using @model {type DslError}
+
+pub using @engine {type EngineCommand}
 
 pub using @model {type EngineConfig}
 

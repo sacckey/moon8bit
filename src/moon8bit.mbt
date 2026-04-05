@@ -29,6 +29,9 @@ pub type DrawContext = @engine.DrawContext
 pub type EngineEvent = @engine.EngineEvent
 
 ///|
+pub type EngineCommand = @engine.EngineCommand
+
+///|
 pub type Rect = @model.Rect
 
 ///|
@@ -313,6 +316,41 @@ pub fn[T] engine_set_interval(
 ///|
 pub fn[T] engine_clear_timers(state : EngineInstance[T]) -> EngineInstance[T] {
   @engine.engine_clear_timers(state)
+}
+
+///|
+pub fn emit(event : EngineEvent) -> EngineCommand {
+  @engine.emit(event)
+}
+
+///|
+pub fn sfx(name : String) -> EngineCommand {
+  @engine.sfx(name)
+}
+
+///|
+pub fn bgm_start() -> EngineCommand {
+  @engine.bgm_start()
+}
+
+///|
+pub fn bgm_stop() -> EngineCommand {
+  @engine.bgm_stop()
+}
+
+///|
+pub fn set_timeout_cmd(frames : Int, event : EngineEvent) -> EngineCommand {
+  @engine.set_timeout_cmd(frames, event)
+}
+
+///|
+pub fn set_interval_cmd(frames : Int, event : EngineEvent) -> EngineCommand {
+  @engine.set_interval_cmd(frames, event)
+}
+
+///|
+pub fn clear_timers_cmd() -> EngineCommand {
+  @engine.clear_timers_cmd()
 }
 
 ///|

@@ -10,15 +10,23 @@ pub fn aabb(Int, Int, Int, Int, Int, Int, Int, Int) -> Bool
 
 pub fn aabb_hit_tag(Int, Int, Int, Int, Array[@model.Collider]) -> String?
 
+pub fn bgm_start() -> EngineCommand
+
+pub fn bgm_stop() -> EngineCommand
+
 pub fn btn(Array[String], keys_pressed? : Array[String], keys_released? : Array[String], pointer_x? : Int, pointer_y? : Int, pointer_down? : Bool, pointer_pressed? : Bool, pointer_released? : Bool) -> @model.InputState
 
 pub fn btnp(Bool, Bool) -> Bool
 
 pub fn[T] clear_timers(EngineInstance[T]) -> EngineInstance[T]
 
+pub fn clear_timers_cmd() -> EngineCommand
+
 pub fn cls(@model.Frame, Int) -> Unit
 
 pub fn config(Int, Int, fps? : Int, scale? : Int, palette? : @model.Palette) -> @model.EngineConfig
+
+pub fn emit(EngineEvent) -> EngineCommand
 
 pub fn[T] engine_clear_timers(EngineInstance[T]) -> EngineInstance[T]
 
@@ -66,7 +74,13 @@ pub fn[T : Game] run_fixed_frames(T, @model.EngineConfig, Array[@model.InputStat
 
 pub fn[T] set_interval(EngineInstance[T], Int, EngineEvent) -> EngineInstance[T]
 
+pub fn set_interval_cmd(Int, EngineEvent) -> EngineCommand
+
 pub fn[T] set_timeout(EngineInstance[T], Int, EngineEvent) -> EngineInstance[T]
+
+pub fn set_timeout_cmd(Int, EngineEvent) -> EngineCommand
+
+pub fn sfx(String) -> EngineCommand
 
 pub fn spr(@model.Frame, @model.Sprite, Int, Int) -> Unit
 
@@ -92,6 +106,13 @@ pub fn[T] with_game(EngineInstance[T], T) -> EngineInstance[T]
 pub(all) struct DrawContext {
   config : @model.EngineConfig
   tick : Int
+} derive(Eq, Show)
+
+pub(all) enum EngineCommand {
+  Emit(EngineEvent)
+  SetTimeout(Int, EngineEvent)
+  SetInterval(Int, EngineEvent)
+  ClearTimers
 } derive(Eq, Show)
 
 pub(all) enum EngineEvent {
@@ -128,7 +149,7 @@ pub(all) struct UpdateContext {
 // Traits
 pub(open) trait Game {
   init(Self, @model.EngineConfig) -> Self
-  update(Self, UpdateContext) -> (Self, Array[EngineEvent])
+  update(Self, UpdateContext) -> (Self, Array[EngineCommand])
   draw(Self, DrawContext) -> @model.Frame
 }
 

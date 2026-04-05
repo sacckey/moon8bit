@@ -33,6 +33,35 @@ fn new_counter_game() -> CounterGame {
 }
 
 ///|
+struct CommandGame {
+  mut ticks : Int
+} derive(Eq, Show)
+
+///|
+pub impl @engine.Game for CommandGame with init(self, _ctx) {
+  self.ticks = 0
+  self
+}
+
+///|
+pub impl @engine.Game for CommandGame with update(self, ctx) {
+  self.ticks += 1
+  let commands : Array[@engine.EngineCommand] = []
+  if ctx.tick == 0 {
+    commands.push(@engine.sfx("now"))
+    commands.push(@engine.set_timeout_cmd(2, @engine.EngineEvent::Sfx("timer")))
+  }
+  (self, commands)
+}
+
+///|
+pub impl @engine.Game for CommandGame with draw(self, ctx) {
+  let frame = @model.Frame::new(ctx.config.width, ctx.config.height, fill=0)
+  frame.set_pixel(0, 0, self.ticks)
+  frame
+}
+
+///|
 test "wrapper step matches engine_step with package local game" {
   let cfg = @engine.config(
     8,
@@ -193,4 +222,19 @@ test "engine interval timer emits events repeatedly" {
 
   let (step4, _) = @engine.engine_step(step3, @engine.btn([]))
   assert_eq(@engine.events(step4), [@engine.EngineEvent::BgmStart])
+}
+
+///|
+test "engine commands support immediate emit and delayed timeout from update" {
+  let cfg = @engine.config(4, 4)
+  let initial = @engine.engine_init(CommandGame::{ ticks: 0 }, cfg)
+
+  let (step1, _) = @engine.engine_step(initial, @engine.btn([]))
+  assert_eq(@engine.events(step1), [@engine.EngineEvent::Sfx("now")])
+
+  let (step2, _) = @engine.engine_step(step1, @engine.btn([]))
+  assert_eq(@engine.events(step2), [])
+
+  let (step3, _) = @engine.engine_step(step2, @engine.btn([]))
+  assert_eq(@engine.events(step3), [@engine.EngineEvent::Sfx("timer")])
 }
