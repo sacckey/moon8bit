@@ -28,7 +28,6 @@ pub struct DriftbirdGame {
   mut pipe_width : Int
   mut gap_height : Int
   mut score : Int
-  mut tick : Int
   mut terrain_offset : Int
   mut is_started : Bool
   mut is_over : Bool

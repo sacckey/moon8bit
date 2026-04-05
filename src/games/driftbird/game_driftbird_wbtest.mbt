@@ -205,6 +205,5 @@ test "parity reset baseline restores zeroed run state" {
   assert_true(!state.is_started())
   assert_true(!state.is_over())
   assert_eq(state.score(), 0)
-  assert_eq(state.tick, 0)
   assert_eq(state.last_hit_tag(), None)
 }

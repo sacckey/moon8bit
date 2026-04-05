@@ -147,7 +147,6 @@ pub struct DriftbirdGame {
   mut pipe_width : Int
   mut gap_height : Int
   mut score : Int
-  mut tick : Int
   mut terrain_offset : Int
   mut is_started : Bool
   mut is_over : Bool
@@ -214,7 +213,6 @@ fn reset_driftbird(
   game.pipe_x = config.width + 4
   game.pipe_gap_y = next_gap_y(11, config, game.gap_height)
   game.score = 0
-  game.tick = 0
   game.terrain_offset = 0
   game.is_started = false
   game.is_over = false
@@ -261,9 +259,14 @@ fn hit_code(tag : String?) -> Int {
 }
 
 ///|
-fn draw_hud(frame : Frame, game : DriftbirdGame, config : EngineConfig) -> Unit {
+fn draw_hud(
+  frame : Frame,
+  game : DriftbirdGame,
+  config : EngineConfig,
+  tick : Int,
+) -> Unit {
   ui_panel(frame, 0, 0, config.width, 9, 0)
-  let hud = "S\{game.score} F\{game.tick} H\{hit_code(game.last_hit_tag)}"
+  let hud = "S\{game.score} F\{tick} H\{hit_code(game.last_hit_tag)}"
   ui_text(frame, 1, 1, hud, 6)
 }
 
@@ -363,7 +366,6 @@ pub fn new_driftbird_game(bundle : AssetBundle) -> DriftbirdGame {
     pipe_width: 0,
     gap_height: 0,
     score: 0,
-    tick: 0,
     terrain_offset: 0,
     is_started: false,
     is_over: false,
@@ -446,12 +448,11 @@ fn step_running(
   }
   if game.pipe_x + game.pipe_width < 0 {
     game.pipe_x = ctx.config.width + 6
-    game.pipe_gap_y = next_gap_y(game.tick + 97, ctx.config, game.gap_height)
+    game.pipe_gap_y = next_gap_y(ctx.tick + 97, ctx.config, game.gap_height)
     game.pipe_scored = false
   }
 
   game.terrain_offset = (game.terrain_offset + 1) % ctx.config.width
-  game.tick += 1
 
   match detect_collision_tag(game, ctx.config) {
     Some(tag) => {
@@ -572,7 +573,7 @@ pub impl @engine.Game for DriftbirdGame with draw(self, ctx : DrawContext) {
     None => ()
   }
 
-  draw_hud(frame, self, ctx.config)
+  draw_hud(frame, self, ctx.config, ctx.tick)
   if !self.is_started || self.is_over {
     draw_state_overlay(frame, self, ctx.config)
   }
