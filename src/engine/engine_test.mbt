@@ -62,6 +62,95 @@ pub impl @engine.Game for CommandGame with draw(self, ctx) {
 }
 
 ///|
+struct TimeoutCommandGame {
+  mut ticks : Int
+} derive(Eq, Show)
+
+///|
+pub impl @engine.Game for TimeoutCommandGame with init(self, _ctx) {
+  self.ticks = 0
+  self
+}
+
+///|
+pub impl @engine.Game for TimeoutCommandGame with update(self, ctx) {
+  self.ticks += 1
+  let commands : Array[@engine.EngineCommand] = []
+  if ctx.tick == 0 {
+    commands.push(@engine.set_timeout_cmd(2, @engine.EngineEvent::Sfx("beep")))
+  }
+  (self, commands)
+}
+
+///|
+pub impl @engine.Game for TimeoutCommandGame with draw(self, ctx) {
+  let frame = @model.Frame::new(ctx.config.width, ctx.config.height, fill=0)
+  frame.set_pixel(0, 0, self.ticks)
+  frame
+}
+
+///|
+struct IntervalCommandGame {
+  mut ticks : Int
+} derive(Eq, Show)
+
+///|
+pub impl @engine.Game for IntervalCommandGame with init(self, _ctx) {
+  self.ticks = 0
+  self
+}
+
+///|
+pub impl @engine.Game for IntervalCommandGame with update(self, ctx) {
+  self.ticks += 1
+  let commands : Array[@engine.EngineCommand] = []
+  if ctx.tick == 0 {
+    commands.push(@engine.set_interval_cmd(2, @engine.EngineEvent::BgmStart))
+  }
+  (self, commands)
+}
+
+///|
+pub impl @engine.Game for IntervalCommandGame with draw(self, ctx) {
+  let frame = @model.Frame::new(ctx.config.width, ctx.config.height, fill=0)
+  frame.set_pixel(0, 0, self.ticks)
+  frame
+}
+
+///|
+struct EventOrderGame {
+  mut ticks : Int
+} derive(Eq, Show)
+
+///|
+pub impl @engine.Game for EventOrderGame with init(self, _ctx) {
+  self.ticks = 0
+  self
+}
+
+///|
+pub impl @engine.Game for EventOrderGame with update(self, ctx) {
+  self.ticks += 1
+  let commands : Array[@engine.EngineCommand] = []
+  if ctx.tick == 0 {
+    commands.push(
+      @engine.set_interval_cmd(1, @engine.EngineEvent::Sfx("timer")),
+    )
+  }
+  if ctx.tick == 1 {
+    commands.push(@engine.sfx("now"))
+  }
+  (self, commands)
+}
+
+///|
+pub impl @engine.Game for EventOrderGame with draw(self, ctx) {
+  let frame = @model.Frame::new(ctx.config.width, ctx.config.height, fill=0)
+  frame.set_pixel(0, 0, self.ticks)
+  frame
+}
+
+///|
 test "wrapper step matches engine_step with package local game" {
   let cfg = @engine.config(
     8,
@@ -178,50 +267,46 @@ test "wrapper ui text helpers render ascii glyphs in 8x8 cells and scaling" {
 }
 
 ///|
-test "engine timeout timer emits event once and can be consumed" {
+test "engine timeout command emits event once and can be consumed" {
   let cfg = @engine.config(4, 4)
-  let initial = @engine.engine_init(new_counter_game(), cfg)
-  let scheduled = @engine.set_timeout(
-    initial,
-    2,
-    @engine.EngineEvent::Sfx("beep"),
-  )
+  let initial = @engine.engine_init(TimeoutCommandGame::{ ticks: 0 }, cfg)
 
-  let (step1, _) = @engine.engine_step(scheduled, @engine.btn([]))
+  let (step1, _) = @engine.engine_step(initial, @engine.btn([]))
   assert_eq(@engine.events(step1), [])
 
   let (step2, _) = @engine.engine_step(step1, @engine.btn([]))
-  assert_eq(@engine.events(step2), [@engine.EngineEvent::Sfx("beep")])
+  assert_eq(@engine.events(step2), [])
 
-  let (cleared, consumed) = @engine.take_events(step2)
+  let (step3, _) = @engine.engine_step(step2, @engine.btn([]))
+  assert_eq(@engine.events(step3), [@engine.EngineEvent::Sfx("beep")])
+
+  let (cleared, consumed) = @engine.take_events(step3)
   assert_eq(consumed, [@engine.EngineEvent::Sfx("beep")])
   assert_eq(@engine.events(cleared), [])
 
-  let (step3, _) = @engine.engine_step(cleared, @engine.btn([]))
-  assert_eq(@engine.events(step3), [])
+  let (step4, _) = @engine.engine_step(cleared, @engine.btn([]))
+  assert_eq(@engine.events(step4), [])
 }
 
 ///|
-test "engine interval timer emits events repeatedly" {
+test "engine interval command emits events repeatedly" {
   let cfg = @engine.config(4, 4)
-  let initial = @engine.engine_init(new_counter_game(), cfg)
-  let scheduled = @engine.set_interval(
-    initial,
-    2,
-    @engine.EngineEvent::BgmStart,
-  )
+  let initial = @engine.engine_init(IntervalCommandGame::{ ticks: 0 }, cfg)
 
-  let (step1, _) = @engine.engine_step(scheduled, @engine.btn([]))
+  let (step1, _) = @engine.engine_step(initial, @engine.btn([]))
   assert_eq(@engine.events(step1), [])
 
   let (step2, _) = @engine.engine_step(step1, @engine.btn([]))
-  assert_eq(@engine.events(step2), [@engine.EngineEvent::BgmStart])
+  assert_eq(@engine.events(step2), [])
 
   let (step3, _) = @engine.engine_step(step2, @engine.btn([]))
-  assert_eq(@engine.events(step3), [])
+  assert_eq(@engine.events(step3), [@engine.EngineEvent::BgmStart])
 
   let (step4, _) = @engine.engine_step(step3, @engine.btn([]))
-  assert_eq(@engine.events(step4), [@engine.EngineEvent::BgmStart])
+  assert_eq(@engine.events(step4), [])
+
+  let (step5, _) = @engine.engine_step(step4, @engine.btn([]))
+  assert_eq(@engine.events(step5), [@engine.EngineEvent::BgmStart])
 }
 
 ///|
@@ -237,4 +322,26 @@ test "engine commands support immediate emit and delayed timeout from update" {
 
   let (step3, _) = @engine.engine_step(step2, @engine.btn([]))
   assert_eq(@engine.events(step3), [@engine.EngineEvent::Sfx("timer")])
+}
+
+///|
+test "engine emits timer events before immediate command events in same frame" {
+  let cfg = @engine.config(4, 4)
+  let initial = @engine.engine_init(EventOrderGame::{ ticks: 0 }, cfg)
+
+  let (step1, _) = @engine.engine_step(initial, @engine.btn([]))
+  assert_eq(@engine.events(step1), [])
+
+  let (step2, _) = @engine.engine_step(step1, @engine.btn([]))
+  assert_eq(@engine.events(step2), [
+    @engine.EngineEvent::Sfx("timer"),
+    @engine.EngineEvent::Sfx("now"),
+  ])
+
+  let (cleared, consumed) = @engine.take_events(step2)
+  assert_eq(consumed, [
+    @engine.EngineEvent::Sfx("timer"),
+    @engine.EngineEvent::Sfx("now"),
+  ])
+  assert_eq(@engine.events(cleared), [])
 }

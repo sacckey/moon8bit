@@ -25,8 +25,6 @@ pub fn btn(Array[String], keys_pressed? : Array[String], keys_released? : Array[
 
 pub fn btnp(Bool, Bool) -> Bool
 
-pub fn[T] clear_timers(@engine.EngineInstance[T]) -> @engine.EngineInstance[T]
-
 pub fn clear_timers_cmd() -> @engine.EngineCommand
 
 pub fn cls(@model.Frame, Int) -> Unit
@@ -47,17 +45,11 @@ pub fn default_engine_config() -> @model.EngineConfig
 
 pub fn emit(@engine.EngineEvent) -> @engine.EngineCommand
 
-pub fn[T] engine_clear_timers(@engine.EngineInstance[T]) -> @engine.EngineInstance[T]
-
 pub fn[T] engine_events(@engine.EngineInstance[T]) -> Array[@engine.EngineEvent]
 
 pub fn[T] engine_game(@engine.EngineInstance[T]) -> T
 
 pub fn[T : @engine.Game] engine_init(T, @model.EngineConfig) -> @engine.EngineInstance[T]
-
-pub fn[T] engine_set_interval(@engine.EngineInstance[T], Int, @engine.EngineEvent) -> @engine.EngineInstance[T]
-
-pub fn[T] engine_set_timeout(@engine.EngineInstance[T], Int, @engine.EngineEvent) -> @engine.EngineInstance[T]
 
 pub fn[T : @engine.Game] engine_step(@engine.EngineInstance[T], @model.InputState) -> (@engine.EngineInstance[T], @model.Frame)
 
@@ -109,11 +101,7 @@ pub fn[T : @engine.Game] run(T, @model.EngineConfig, Array[@model.InputState]) -
 
 pub fn[T : @engine.Game] run_fixed_frames(T, @model.EngineConfig, Array[@model.InputState]) -> (@engine.EngineInstance[T], Array[@model.Frame])
 
-pub fn[T] set_interval(@engine.EngineInstance[T], Int, @engine.EngineEvent) -> @engine.EngineInstance[T]
-
 pub fn set_interval_cmd(Int, @engine.EngineEvent) -> @engine.EngineCommand
-
-pub fn[T] set_timeout(@engine.EngineInstance[T], Int, @engine.EngineEvent) -> @engine.EngineInstance[T]
 
 pub fn set_timeout_cmd(Int, @engine.EngineEvent) -> @engine.EngineCommand
 

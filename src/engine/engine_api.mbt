@@ -203,29 +203,6 @@ pub fn[T] take_events(
 }
 
 ///|
-pub fn[T] set_timeout(
-  state : EngineInstance[T],
-  frames : Int,
-  event : EngineEvent,
-) -> EngineInstance[T] {
-  engine_set_timeout(state, frames, event)
-}
-
-///|
-pub fn[T] set_interval(
-  state : EngineInstance[T],
-  frames : Int,
-  event : EngineEvent,
-) -> EngineInstance[T] {
-  engine_set_interval(state, frames, event)
-}
-
-///|
-pub fn[T] clear_timers(state : EngineInstance[T]) -> EngineInstance[T] {
-  engine_clear_timers(state)
-}
-
-///|
 pub fn cls(frame : Frame, color : Int) -> Unit {
   frame.clear(color)
 }

@@ -296,29 +296,6 @@ pub fn[T] engine_take_events(
 }
 
 ///|
-pub fn[T] engine_set_timeout(
-  state : EngineInstance[T],
-  frames : Int,
-  event : EngineEvent,
-) -> EngineInstance[T] {
-  @engine.engine_set_timeout(state, frames, event)
-}
-
-///|
-pub fn[T] engine_set_interval(
-  state : EngineInstance[T],
-  frames : Int,
-  event : EngineEvent,
-) -> EngineInstance[T] {
-  @engine.engine_set_interval(state, frames, event)
-}
-
-///|
-pub fn[T] engine_clear_timers(state : EngineInstance[T]) -> EngineInstance[T] {
-  @engine.engine_clear_timers(state)
-}
-
-///|
 pub fn emit(event : EngineEvent) -> EngineCommand {
   @engine.emit(event)
 }
@@ -464,29 +441,6 @@ pub fn[T] take_events(
   state : EngineInstance[T],
 ) -> (EngineInstance[T], Array[EngineEvent]) {
   @engine.take_events(state)
-}
-
-///|
-pub fn[T] set_timeout(
-  state : EngineInstance[T],
-  frames : Int,
-  event : EngineEvent,
-) -> EngineInstance[T] {
-  @engine.set_timeout(state, frames, event)
-}
-
-///|
-pub fn[T] set_interval(
-  state : EngineInstance[T],
-  frames : Int,
-  event : EngineEvent,
-) -> EngineInstance[T] {
-  @engine.set_interval(state, frames, event)
-}
-
-///|
-pub fn[T] clear_timers(state : EngineInstance[T]) -> EngineInstance[T] {
-  @engine.clear_timers(state)
 }
 
 ///|

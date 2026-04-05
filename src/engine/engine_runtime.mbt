@@ -270,63 +270,6 @@ pub fn[T] engine_take_events(
 }
 
 ///|
-pub fn[T] engine_set_timeout(
-  state : EngineInstance[T],
-  frames : Int,
-  kind : EngineEvent,
-) -> EngineInstance[T] {
-  let next_timers = copy_timers(state.timers)
-  next_timers.push(EngineTimer::{
-    kind,
-    remaining_frames: timer_frames(frames),
-    interval_frames: 0,
-  })
-  EngineInstance::{
-    config: state.config,
-    game: state.game,
-    tick: state.tick,
-    prev_input: state.prev_input,
-    event_queue: state.event_queue,
-    timers: next_timers,
-  }
-}
-
-///|
-pub fn[T] engine_set_interval(
-  state : EngineInstance[T],
-  frames : Int,
-  kind : EngineEvent,
-) -> EngineInstance[T] {
-  let interval = timer_frames(frames)
-  let next_timers = copy_timers(state.timers)
-  next_timers.push(EngineTimer::{
-    kind,
-    remaining_frames: interval,
-    interval_frames: interval,
-  })
-  EngineInstance::{
-    config: state.config,
-    game: state.game,
-    tick: state.tick,
-    prev_input: state.prev_input,
-    event_queue: state.event_queue,
-    timers: next_timers,
-  }
-}
-
-///|
-pub fn[T] engine_clear_timers(state : EngineInstance[T]) -> EngineInstance[T] {
-  EngineInstance::{
-    config: state.config,
-    game: state.game,
-    tick: state.tick,
-    prev_input: state.prev_input,
-    event_queue: state.event_queue,
-    timers: [],
-  }
-}
-
-///|
 pub fn emit(event : EngineEvent) -> EngineCommand {
   EngineCommand::Emit(event)
 }
