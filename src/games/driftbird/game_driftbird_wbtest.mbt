@@ -25,7 +25,11 @@ fn test_inputs(frame_count : Int) -> Array[InputState] {
   let inputs : Array[InputState] = []
   for i in 0..<frame_count {
     let flap = i % 8 == 0 || i % 13 == 0
-    inputs.push(@model.input_state(flap, false))
+    if flap {
+      inputs.push(@model.input_state(["Space"], ["Space"], []))
+    } else {
+      inputs.push(@model.input_none)
+    }
   }
   inputs
 }
@@ -46,8 +50,8 @@ test "reset input restores game state" {
   let bundle = test_bundle()
   let inputs = [
     @model.input_none,
-    InputState::{ flap: true, reset: false },
-    InputState::{ flap: false, reset: true },
+    @model.input_state(["Space"], ["Space"], []),
+    @model.input_state(["KeyR"], ["KeyR"], []),
     @model.input_none,
   ]
 
@@ -177,9 +181,9 @@ test "parity collision baseline reports ground hit" {
 ///|
 test "parity reset baseline restores zeroed run state" {
   let inputs = [
-    @model.input_state(true, false),
+    @model.input_state(["Space"], ["Space"], []),
     @model.input_none,
-    @model.input_state(false, true),
+    @model.input_state(["KeyR"], ["KeyR"], []),
     @model.input_none,
   ]
   let config = default_engine_config()

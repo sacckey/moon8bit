@@ -12,9 +12,9 @@ pub impl @engine.Game for WrapperTestGame with init(self, _ctx) {
 
 ///|
 pub impl @engine.Game for WrapperTestGame with update(self, ctx) {
-  if ctx.input.reset {
+  if key_pressed(ctx.input, "KeyR") {
     self.count = 0
-  } else if ctx.input.flap {
+  } else if key_pressed(ctx.input, "Space") {
     self.count = self.count + 1
   }
   self
@@ -48,7 +48,11 @@ fn wrapper_test_inputs(frame_count : Int) -> Array[InputState] {
   let inputs : Array[InputState] = []
   for i in 0..<frame_count {
     let flap = every(i, 8) || every(i, 13)
-    inputs.push(input_state(flap, false))
+    if flap {
+      inputs.push(input_state(["Space"], ["Space"], []))
+    } else {
+      inputs.push(input_none)
+    }
   }
   inputs
 }
@@ -56,7 +60,7 @@ fn wrapper_test_inputs(frame_count : Int) -> Array[InputState] {
 ///|
 test "root wrapper step and run remain equivalent to engine primitives" {
   let cfg = default_engine_config()
-  let input = input_state(true, false)
+  let input = input_state(["Space"], ["Space"], [])
 
   let base_state = engine_init(WrapperTestGame::{ count: 0 }, cfg)
   let wrapped_state = engine_init(WrapperTestGame::{ count: 0 }, cfg)

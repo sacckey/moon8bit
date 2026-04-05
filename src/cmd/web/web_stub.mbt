@@ -6,8 +6,22 @@ fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit {
 }
 
 ///|
-fn web_key_down(code : String) -> Bool {
-  ignore(code)
+fn web_keys_down() -> Array[String] {
+  []
+}
+
+///|
+fn web_pointer_x() -> Int {
+  0
+}
+
+///|
+fn web_pointer_y() -> Int {
+  0
+}
+
+///|
+fn web_pointer_down() -> Bool {
   false
 }
 

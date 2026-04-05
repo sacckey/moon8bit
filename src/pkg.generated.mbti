@@ -17,7 +17,7 @@ pub fn asset_bundle_to_json_string(@model.AssetBundle) -> String
 
 pub fn assets_cli_output(String) -> String
 
-pub fn btn(Bool, Bool) -> @model.InputState
+pub fn btn(Array[String], keys_pressed? : Array[String], keys_released? : Array[String], pointer_x? : Int, pointer_y? : Int, pointer_down? : Bool, pointer_pressed? : Bool, pointer_released? : Bool) -> @model.InputState
 
 pub fn btnp(Bool, Bool) -> Bool
 
@@ -49,7 +49,13 @@ pub fn find_tilemap(@model.AssetBundle, String) -> @model.Tilemap?
 
 pub let input_none : @model.InputState
 
-pub fn input_state(Bool, Bool) -> @model.InputState
+pub fn input_state(Array[String], Array[String], Array[String], pointer_x? : Int, pointer_y? : Int, pointer_down? : Bool, pointer_pressed? : Bool, pointer_released? : Bool) -> @model.InputState
+
+pub fn key_down(@model.InputState, String) -> Bool
+
+pub fn key_pressed(@model.InputState, String) -> Bool
+
+pub fn key_released(@model.InputState, String) -> Bool
 
 pub fn palette_default() -> @model.Palette
 

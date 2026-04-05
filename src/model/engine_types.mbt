@@ -9,16 +9,74 @@ pub(all) struct EngineConfig {
 
 ///|
 pub(all) struct InputState {
-  flap : Bool
-  reset : Bool
+  keys_down : Array[String]
+  keys_pressed : Array[String]
+  keys_released : Array[String]
+  pointer_x : Int
+  pointer_y : Int
+  pointer_down : Bool
+  pointer_pressed : Bool
+  pointer_released : Bool
 } derive(Eq, Show)
 
 ///|
-pub let input_none : InputState = InputState::{ flap: false, reset: false }
+pub let input_none : InputState = InputState::{
+  keys_down: [],
+  keys_pressed: [],
+  keys_released: [],
+  pointer_x: 0,
+  pointer_y: 0,
+  pointer_down: false,
+  pointer_pressed: false,
+  pointer_released: false,
+}
 
 ///|
-pub fn input_state(flap : Bool, reset : Bool) -> InputState {
-  InputState::{ flap, reset }
+pub fn input_state(
+  keys_down : Array[String],
+  keys_pressed : Array[String],
+  keys_released : Array[String],
+  pointer_x? : Int = 0,
+  pointer_y? : Int = 0,
+  pointer_down? : Bool = false,
+  pointer_pressed? : Bool = false,
+  pointer_released? : Bool = false,
+) -> InputState {
+  InputState::{
+    keys_down,
+    keys_pressed,
+    keys_released,
+    pointer_x,
+    pointer_y,
+    pointer_down,
+    pointer_pressed,
+    pointer_released,
+  }
+}
+
+///|
+fn has_key(keys : Array[String], key : String) -> Bool {
+  for current in keys {
+    if current == key {
+      return true
+    }
+  }
+  false
+}
+
+///|
+pub fn key_down(input : InputState, key : String) -> Bool {
+  has_key(input.keys_down, key)
+}
+
+///|
+pub fn key_pressed(input : InputState, key : String) -> Bool {
+  has_key(input.keys_pressed, key)
+}
+
+///|
+pub fn key_released(input : InputState, key : String) -> Bool {
+  has_key(input.keys_released, key)
 }
 
 ///|

@@ -131,6 +131,9 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   ctx.imageSmoothingEnabled = false;
   #|   globalThis.__moon8bit_ctx = ctx;
   #|   globalThis.__moon8bit_keys = new Set();
+  #|   if (!globalThis.__moon8bit_pointer) {
+  #|     globalThis.__moon8bit_pointer = { x: 0, y: 0, down: false };
+  #|   }
   #|
   #|   if (!globalThis.__moon8bit_ensure_audio) {
   #|     globalThis.__moon8bit_ensure_audio = () => {
@@ -165,6 +168,37 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   globalThis.addEventListener("keyup", (e) => {
   #|     globalThis.__moon8bit_keys.delete(e.code);
   #|   });
+  #|
+  #|   const updatePointer = (evt) => {
+  #|     const p = globalThis.__moon8bit_pointer || (globalThis.__moon8bit_pointer = { x: 0, y: 0, down: false });
+  #|     const rect = canvas.getBoundingClientRect();
+  #|     const fx = (evt.clientX - rect.left) / Math.max(1, rect.width);
+  #|     const fy = (evt.clientY - rect.top) / Math.max(1, rect.height);
+  #|     const x = Math.floor(fx * canvas.width);
+  #|     const y = Math.floor(fy * canvas.height);
+  #|     p.x = Math.max(0, Math.min(canvas.width - 1, x));
+  #|     p.y = Math.max(0, Math.min(canvas.height - 1, y));
+  #|   };
+  #|
+  #|   if (!globalThis.__moon8bit_game_pointer_bound) {
+  #|     canvas.addEventListener("pointerdown", (evt) => {
+  #|       updatePointer(evt);
+  #|       globalThis.__moon8bit_pointer.down = true;
+  #|       if (globalThis.__moon8bit_ensure_audio) {
+  #|         globalThis.__moon8bit_ensure_audio();
+  #|       }
+  #|     });
+  #|     canvas.addEventListener("pointermove", (evt) => {
+  #|       updatePointer(evt);
+  #|     });
+  #|     globalThis.addEventListener("pointerup", (evt) => {
+  #|       if (evt && typeof evt.clientX === "number" && typeof evt.clientY === "number") {
+  #|         updatePointer(evt);
+  #|       }
+  #|       globalThis.__moon8bit_pointer.down = false;
+  #|     });
+  #|     globalThis.__moon8bit_game_pointer_bound = true;
+  #|   }
   #|
   #|   let editor = document.getElementById("moon8bit-editor");
   #|   if (!editor) {
@@ -744,8 +778,29 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #| }
 
 ///|
-extern "js" fn web_key_down(code : String) -> Bool =
-  #| (code) => !!(globalThis.__moon8bit_keys && globalThis.__moon8bit_keys.has(code))
+extern "js" fn web_keys_down() -> Array[String] =
+  #| () => {
+  #|   if (!globalThis.__moon8bit_keys) return [];
+  #|   return Array.from(globalThis.__moon8bit_keys);
+  #| }
+
+///|
+extern "js" fn web_pointer_x() -> Int =
+  #| () => {
+  #|   const p = globalThis.__moon8bit_pointer || { x: 0 };
+  #|   return Number.isFinite(p.x) ? (p.x | 0) : 0;
+  #| }
+
+///|
+extern "js" fn web_pointer_y() -> Int =
+  #| () => {
+  #|   const p = globalThis.__moon8bit_pointer || { y: 0 };
+  #|   return Number.isFinite(p.y) ? (p.y | 0) : 0;
+  #| }
+
+///|
+extern "js" fn web_pointer_down() -> Bool =
+  #| () => !!(globalThis.__moon8bit_pointer && globalThis.__moon8bit_pointer.down)
 
 ///|
 extern "js" fn web_bootstrap_game(

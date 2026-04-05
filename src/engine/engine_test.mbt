@@ -14,7 +14,7 @@ pub impl @engine.Game for CounterGame with init(self, _ctx) {
 ///|
 pub impl @engine.Game for CounterGame with update(self, ctx) {
   self.ticks += 1
-  self.last_flap = ctx.input.flap
+  self.last_flap = @engine.key_pressed(ctx.input, "Space")
   self
 }
 
@@ -41,7 +41,7 @@ test "wrapper step matches engine_step with package local game" {
     scale=1,
     palette=@model.palette_default(),
   )
-  let input = @engine.btn(true, false)
+  let input = @engine.btn(["Space"], keys_pressed=["Space"])
   let base_state = @engine.engine_init(new_counter_game(), cfg)
   let wrapped_state = @engine.engine_init(new_counter_game(), cfg)
 
@@ -57,9 +57,9 @@ test "wrapper step matches engine_step with package local game" {
 test "wrapper run matches run_fixed_frames for deterministic inputs" {
   let cfg = @engine.config(4, 4)
   let inputs = [
-    @engine.btn(false, false),
-    @engine.btn(true, false),
-    @engine.btn(false, false),
+    @engine.btn([]),
+    @engine.btn(["Space"], keys_pressed=["Space"]),
+    @engine.btn([]),
   ]
 
   let (base_state, base_frames) = @engine.run_fixed_frames(

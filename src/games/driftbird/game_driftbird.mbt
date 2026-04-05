@@ -99,8 +99,8 @@ fn default_engine_config() -> EngineConfig {
 }
 
 ///|
-fn btnp(current : Bool, previous : Bool) -> Bool {
-  @engine.btnp(current, previous)
+fn key_pressed(input : InputState, key : String) -> Bool {
+  @model.key_pressed(input, key)
 }
 
 ///|
@@ -144,7 +144,6 @@ pub struct DriftbirdGame {
   mut is_over : Bool
   mut last_hit_tag : String?
   mut pipe_scored : Bool
-  mut prev_input : InputState
 } derive(Eq, Show)
 
 ///|
@@ -212,7 +211,6 @@ fn reset_driftbird(
   game.is_over = false
   game.last_hit_tag = None
   game.pipe_scored = false
-  game.prev_input = @model.input_none
   game
 }
 
@@ -362,7 +360,6 @@ pub fn new_driftbird_game(bundle : AssetBundle) -> DriftbirdGame {
     is_over: false,
     last_hit_tag: None,
     pipe_scored: false,
-    prev_input: @model.input_none,
   }
 }
 
@@ -393,10 +390,10 @@ pub fn audio_events_for_step(
   input : InputState,
 ) -> Array[String] {
   let events : Array[String] = []
-  if input.flap {
+  if key_pressed(input, "Space") || key_pressed(input, "ArrowUp") {
     events.push("flap")
   }
-  if input.reset {
+  if key_pressed(input, "KeyR") {
     events.push("reset")
     events.push("@bgm_stop")
   }
@@ -501,8 +498,9 @@ pub impl @engine.Game for DriftbirdGame with init(self, ctx) {
 
 ///|
 pub impl @engine.Game for DriftbirdGame with update(self, ctx) {
-  let flap_pressed = btnp(ctx.input.flap, self.prev_input.flap)
-  let reset_pressed = btnp(ctx.input.reset, self.prev_input.reset)
+  let flap_pressed = key_pressed(ctx.input, "Space") ||
+    key_pressed(ctx.input, "ArrowUp")
+  let reset_pressed = key_pressed(ctx.input, "KeyR")
 
   let next = if reset_pressed {
     reset_driftbird(self, ctx.config)
@@ -523,7 +521,6 @@ pub impl @engine.Game for DriftbirdGame with update(self, ctx) {
     step_running(self, ctx, flap_pressed)
   }
 
-  next.prev_input = ctx.input
   next
 }
 

@@ -10,13 +10,46 @@ pub fn config(
 }
 
 ///|
-pub fn btn(flap : Bool, reset : Bool) -> InputState {
-  @model.input_state(flap, reset)
+pub fn btn(
+  keys_down : Array[String],
+  keys_pressed? : Array[String] = [],
+  keys_released? : Array[String] = [],
+  pointer_x? : Int = 0,
+  pointer_y? : Int = 0,
+  pointer_down? : Bool = false,
+  pointer_pressed? : Bool = false,
+  pointer_released? : Bool = false,
+) -> InputState {
+  @model.input_state(
+    keys_down,
+    keys_pressed,
+    keys_released,
+    pointer_x~,
+    pointer_y~,
+    pointer_down~,
+    pointer_pressed~,
+    pointer_released~,
+  )
 }
 
 ///|
 pub fn btnp(current : Bool, previous : Bool) -> Bool {
   current && !previous
+}
+
+///|
+pub fn key_down(input : InputState, key : String) -> Bool {
+  @model.key_down(input, key)
+}
+
+///|
+pub fn key_pressed(input : InputState, key : String) -> Bool {
+  @model.key_pressed(input, key)
+}
+
+///|
+pub fn key_released(input : InputState, key : String) -> Bool {
+  @model.key_released(input, key)
 }
 
 ///|

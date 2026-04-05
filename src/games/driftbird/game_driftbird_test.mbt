@@ -25,7 +25,11 @@ fn test_inputs(frame_count : Int) -> Array[@model.InputState] {
   let inputs : Array[@model.InputState] = []
   for i in 0..<frame_count {
     let flap = i % 8 == 0 || i % 13 == 0
-    inputs.push(@model.input_state(flap, false))
+    if flap {
+      inputs.push(@model.input_state(["Space"], ["Space"], []))
+    } else {
+      inputs.push(@model.input_none)
+    }
   }
   inputs
 }
@@ -52,11 +56,11 @@ test "driftbird waits for flap input before start" {
 ///|
 test "driftbird restarts on flap after game over" {
   let inputs : Array[@model.InputState] = []
-  inputs.push(@model.input_state(true, false))
+  inputs.push(@model.input_state(["Space"], ["Space"], []))
   for _ in 0..<64 {
     inputs.push(@model.input_none)
   }
-  inputs.push(@model.input_state(true, false))
+  inputs.push(@model.input_state(["Space"], ["Space"], []))
 
   let (state, _) = @driftbird.run_driftbird(test_bundle(), inputs)
   assert_true(state.is_started())

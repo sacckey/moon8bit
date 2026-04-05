@@ -20,7 +20,13 @@ pub fn find_tilemap(AssetBundle, String) -> Tilemap?
 
 pub let input_none : InputState
 
-pub fn input_state(Bool, Bool) -> InputState
+pub fn input_state(Array[String], Array[String], Array[String], pointer_x? : Int, pointer_y? : Int, pointer_down? : Bool, pointer_pressed? : Bool, pointer_released? : Bool) -> InputState
+
+pub fn key_down(InputState, String) -> Bool
+
+pub fn key_pressed(InputState, String) -> Bool
+
+pub fn key_released(InputState, String) -> Bool
 
 pub fn palette_default() -> Palette
 
@@ -71,8 +77,14 @@ pub fn Frame::set_pixel(Self, Int, Int, Int) -> Unit
 pub fn Frame::to_ascii(Self) -> String
 
 pub(all) struct InputState {
-  flap : Bool
-  reset : Bool
+  keys_down : Array[String]
+  keys_pressed : Array[String]
+  keys_released : Array[String]
+  pointer_x : Int
+  pointer_y : Int
+  pointer_down : Bool
+  pointer_pressed : Bool
+  pointer_released : Bool
 } derive(Eq, Show)
 
 pub(all) struct Palette {

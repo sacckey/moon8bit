@@ -70,8 +70,26 @@ pub fn default_engine_config() -> EngineConfig {
 }
 
 ///|
-pub fn input_state(flap : Bool, reset : Bool) -> InputState {
-  @model.input_state(flap, reset)
+pub fn input_state(
+  keys_down : Array[String],
+  keys_pressed : Array[String],
+  keys_released : Array[String],
+  pointer_x? : Int = 0,
+  pointer_y? : Int = 0,
+  pointer_down? : Bool = false,
+  pointer_pressed? : Bool = false,
+  pointer_released? : Bool = false,
+) -> InputState {
+  @model.input_state(
+    keys_down,
+    keys_pressed,
+    keys_released,
+    pointer_x~,
+    pointer_y~,
+    pointer_down~,
+    pointer_pressed~,
+    pointer_released~,
+  )
 }
 
 ///|
@@ -251,13 +269,46 @@ pub fn config(
 }
 
 ///|
-pub fn btn(flap : Bool, reset : Bool) -> InputState {
-  @engine.btn(flap, reset)
+pub fn btn(
+  keys_down : Array[String],
+  keys_pressed? : Array[String] = [],
+  keys_released? : Array[String] = [],
+  pointer_x? : Int = 0,
+  pointer_y? : Int = 0,
+  pointer_down? : Bool = false,
+  pointer_pressed? : Bool = false,
+  pointer_released? : Bool = false,
+) -> InputState {
+  @engine.btn(
+    keys_down,
+    keys_pressed~,
+    keys_released~,
+    pointer_x~,
+    pointer_y~,
+    pointer_down~,
+    pointer_pressed~,
+    pointer_released~,
+  )
 }
 
 ///|
 pub fn btnp(current : Bool, previous : Bool) -> Bool {
   @engine.btnp(current, previous)
+}
+
+///|
+pub fn key_down(input : InputState, key : String) -> Bool {
+  @engine.key_down(input, key)
+}
+
+///|
+pub fn key_pressed(input : InputState, key : String) -> Bool {
+  @engine.key_pressed(input, key)
+}
+
+///|
+pub fn key_released(input : InputState, key : String) -> Bool {
+  @engine.key_released(input, key)
 }
 
 ///|

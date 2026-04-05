@@ -10,7 +10,7 @@ pub fn aabb(Int, Int, Int, Int, Int, Int, Int, Int) -> Bool
 
 pub fn aabb_hit_tag(Int, Int, Int, Int, Array[@model.Collider]) -> String?
 
-pub fn btn(Bool, Bool) -> @model.InputState
+pub fn btn(Array[String], keys_pressed? : Array[String], keys_released? : Array[String], pointer_x? : Int, pointer_y? : Int, pointer_down? : Bool, pointer_pressed? : Bool, pointer_released? : Bool) -> @model.InputState
 
 pub fn btnp(Bool, Bool) -> Bool
 
@@ -23,6 +23,12 @@ pub fn[T : Game] engine_init(T, @model.EngineConfig) -> T
 pub fn[T : Game] engine_step(T, @model.EngineConfig, @model.InputState, Int) -> (T, @model.Frame)
 
 pub fn every(Int, Int) -> Bool
+
+pub fn key_down(@model.InputState, String) -> Bool
+
+pub fn key_pressed(@model.InputState, String) -> Bool
+
+pub fn key_released(@model.InputState, String) -> Bool
 
 pub fn pset(@model.Frame, Int, Int, Int) -> Unit
 

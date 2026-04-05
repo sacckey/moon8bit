@@ -11,9 +11,31 @@ pub fn[T] run_web_game(
   let frame_ref : Ref[Int] = @ref.new(0)
   let palette_ref : Ref[@lib.Palette] = @ref.new(@lib.palette_default())
   let default_palette = @lib.palette_default()
-  let flap_prev_ref : Ref[Bool] = @ref.new(false)
-  let reset_prev_ref : Ref[Bool] = @ref.new(false)
+  let prev_keys_down_ref : Ref[Array[String]] = @ref.new([])
+  let pointer_prev_down_ref : Ref[Bool] = @ref.new(false)
   let bgm_playing_ref : Ref[Bool] = @ref.new(false)
+
+  let has_key = fn(keys : Array[String], key : String) -> Bool {
+    for current in keys {
+      if current == key {
+        return true
+      }
+    }
+    false
+  }
+
+  let diff_keys = fn(
+    current : Array[String],
+    previous : Array[String],
+  ) -> Array[String] {
+    let diff : Array[String] = []
+    for key in current {
+      if !has_key(previous, key) {
+        diff.push(key)
+      }
+    }
+    diff
+  }
 
   let palette_color = fn(index : Int) -> String {
     let palette = palette_ref.val
@@ -27,15 +49,27 @@ pub fn[T] run_web_game(
   }
 
   let poll_input = fn() -> @lib.InputState {
-    let flap_down = web_key_down("Space") || web_key_down("ArrowUp")
-    let flap = flap_down && !flap_prev_ref.val
-    flap_prev_ref.val = flap_down
+    let keys_down = web_keys_down()
+    let prev_keys_down = prev_keys_down_ref.val
+    let keys_pressed = diff_keys(keys_down, prev_keys_down)
+    let keys_released = diff_keys(prev_keys_down, keys_down)
+    prev_keys_down_ref.val = keys_down
 
-    let reset_down = web_key_down("KeyR")
-    let reset = reset_down && !reset_prev_ref.val
-    reset_prev_ref.val = reset_down
+    let pointer_down = web_pointer_down()
+    let pointer_pressed = pointer_down && !pointer_prev_down_ref.val
+    let pointer_released = !pointer_down && pointer_prev_down_ref.val
+    pointer_prev_down_ref.val = pointer_down
 
-    @lib.input_state(flap, reset)
+    @lib.input_state(
+      keys_down,
+      keys_pressed,
+      keys_released,
+      pointer_x=web_pointer_x(),
+      pointer_y=web_pointer_y(),
+      pointer_down~,
+      pointer_pressed~,
+      pointer_released~,
+    )
   }
 
   let draw_frame = fn(frame : @lib.Frame) -> Unit {

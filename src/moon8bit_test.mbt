@@ -10,9 +10,9 @@ pub impl @engine.Game for TestGame with init(self, _ctx) {
 
 ///|
 pub impl @engine.Game for TestGame with update(self, ctx) {
-  if ctx.input.reset {
+  if key_pressed(ctx.input, "KeyR") {
     self.count = 0
-  } else if ctx.input.flap {
+  } else if key_pressed(ctx.input, "Space") {
     self.count = self.count + 1
   }
   self
@@ -49,9 +49,9 @@ test "assets cli output covers success and parse errors" {
 ///|
 test "root facade run supports generic game" {
   let inputs = [
-    input_state(true, false),
-    input_state(true, false),
-    input_state(false, true),
+    input_state(["Space"], ["Space"], []),
+    input_state(["Space"], ["Space"], []),
+    input_state(["KeyR"], ["KeyR"], []),
     input_none,
   ]
   let (state, frames) = run(
