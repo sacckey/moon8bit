@@ -90,6 +90,16 @@ test "wrapper input helpers detect edges and intervals" {
   assert_true(@engine.every(16, 8))
   assert_true(!@engine.every(15, 8))
   assert_true(!@engine.every(3, 0))
+
+  let input = @engine.btn(["Space", "KeyA"], keys_pressed=["Space"], keys_released=[
+    "KeyR",
+  ])
+  assert_true(@engine.key_down_any(input, ["ArrowUp", "Space"]))
+  assert_true(!@engine.key_down_any(input, ["ArrowUp", "Enter"]))
+  assert_true(@engine.key_pressed_any(input, ["Space", "KeyZ"]))
+  assert_true(!@engine.key_pressed_any(input, ["KeyQ", "KeyZ"]))
+  assert_true(@engine.key_released_any(input, ["KeyR", "KeyZ"]))
+  assert_true(!@engine.key_released_any(input, ["KeyQ", "KeyZ"]))
 }
 
 ///|
@@ -136,4 +146,51 @@ test "wrapper ui text helpers render ascii glyphs in 8x8 cells and scaling" {
   assert_eq(scaled.get_pixel(6, 2), Some(6))
   assert_eq(scaled.get_pixel(4, 4), Some(6))
   assert_eq(scaled.get_pixel(0, 0), Some(-1))
+}
+
+///|
+test "engine timeout timer emits event once and can be consumed" {
+  let cfg = @engine.config(4, 4)
+  let initial = @engine.engine_init(new_counter_game(), cfg)
+  let scheduled = @engine.set_timeout(
+    initial,
+    2,
+    @engine.EngineEvent::Sfx("beep"),
+  )
+
+  let (step1, _) = @engine.engine_step(scheduled, @engine.btn([]))
+  assert_eq(@engine.events(step1), [])
+
+  let (step2, _) = @engine.engine_step(step1, @engine.btn([]))
+  assert_eq(@engine.events(step2), [@engine.EngineEvent::Sfx("beep")])
+
+  let (cleared, consumed) = @engine.take_events(step2)
+  assert_eq(consumed, [@engine.EngineEvent::Sfx("beep")])
+  assert_eq(@engine.events(cleared), [])
+
+  let (step3, _) = @engine.engine_step(cleared, @engine.btn([]))
+  assert_eq(@engine.events(step3), [])
+}
+
+///|
+test "engine interval timer emits events repeatedly" {
+  let cfg = @engine.config(4, 4)
+  let initial = @engine.engine_init(new_counter_game(), cfg)
+  let scheduled = @engine.set_interval(
+    initial,
+    2,
+    @engine.EngineEvent::BgmStart,
+  )
+
+  let (step1, _) = @engine.engine_step(scheduled, @engine.btn([]))
+  assert_eq(@engine.events(step1), [])
+
+  let (step2, _) = @engine.engine_step(step1, @engine.btn([]))
+  assert_eq(@engine.events(step2), [@engine.EngineEvent::BgmStart])
+
+  let (step3, _) = @engine.engine_step(step2, @engine.btn([]))
+  assert_eq(@engine.events(step3), [])
+
+  let (step4, _) = @engine.engine_step(step3, @engine.btn([]))
+  assert_eq(@engine.events(step4), [@engine.EngineEvent::BgmStart])
 }

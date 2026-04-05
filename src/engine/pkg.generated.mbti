@@ -14,15 +14,23 @@ pub fn btn(Array[String], keys_pressed? : Array[String], keys_released? : Array[
 
 pub fn btnp(Bool, Bool) -> Bool
 
+pub fn[T] clear_timers(EngineInstance[T]) -> EngineInstance[T]
+
 pub fn cls(@model.Frame, Int) -> Unit
 
 pub fn config(Int, Int, fps? : Int, scale? : Int, palette? : @model.Palette) -> @model.EngineConfig
+
+pub fn[T] engine_clear_timers(EngineInstance[T]) -> EngineInstance[T]
 
 pub fn[T] engine_events(EngineInstance[T]) -> Array[EngineEvent]
 
 pub fn[T] engine_game(EngineInstance[T]) -> T
 
 pub fn[T : Game] engine_init(T, @model.EngineConfig) -> EngineInstance[T]
+
+pub fn[T] engine_set_interval(EngineInstance[T], Int, EngineEvent) -> EngineInstance[T]
+
+pub fn[T] engine_set_timeout(EngineInstance[T], Int, EngineEvent) -> EngineInstance[T]
 
 pub fn[T : Game] engine_step(EngineInstance[T], @model.InputState) -> (EngineInstance[T], @model.Frame)
 
@@ -38,9 +46,15 @@ pub fn[T] game_state(EngineInstance[T]) -> T
 
 pub fn key_down(@model.InputState, String) -> Bool
 
+pub fn key_down_any(@model.InputState, Array[String]) -> Bool
+
 pub fn key_pressed(@model.InputState, String) -> Bool
 
+pub fn key_pressed_any(@model.InputState, Array[String]) -> Bool
+
 pub fn key_released(@model.InputState, String) -> Bool
+
+pub fn key_released_any(@model.InputState, Array[String]) -> Bool
 
 pub fn pset(@model.Frame, Int, Int, Int) -> Unit
 
@@ -49,6 +63,10 @@ pub fn rect(@model.Frame, Int, Int, Int, Int, Int) -> Unit
 pub fn[T : Game] run(T, @model.EngineConfig, Array[@model.InputState]) -> (EngineInstance[T], Array[@model.Frame])
 
 pub fn[T : Game] run_fixed_frames(T, @model.EngineConfig, Array[@model.InputState]) -> (EngineInstance[T], Array[@model.Frame])
+
+pub fn[T] set_interval(EngineInstance[T], Int, EngineEvent) -> EngineInstance[T]
+
+pub fn[T] set_timeout(EngineInstance[T], Int, EngineEvent) -> EngineInstance[T]
 
 pub fn spr(@model.Frame, @model.Sprite, Int, Int) -> Unit
 

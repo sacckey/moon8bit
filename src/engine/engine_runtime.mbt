@@ -85,6 +85,43 @@ fn[T] make_draw_context(state : EngineInstance[T]) -> DrawContext {
 }
 
 ///|
+fn timer_frames(frames : Int) -> Int {
+  if frames <= 0 {
+    1
+  } else {
+    frames
+  }
+}
+
+///|
+fn advance_timers(
+  timers : Array[EngineTimer],
+) -> (Array[EngineTimer], Array[EngineEvent]) {
+  let next_timers : Array[EngineTimer] = []
+  let emitted : Array[EngineEvent] = []
+  for timer in timers {
+    let remaining = timer.remaining_frames - 1
+    if remaining <= 0 {
+      emitted.push(timer.kind)
+      if timer.interval_frames > 0 {
+        next_timers.push(EngineTimer::{
+          kind: timer.kind,
+          remaining_frames: timer.interval_frames,
+          interval_frames: timer.interval_frames,
+        })
+      }
+    } else {
+      next_timers.push(EngineTimer::{
+        kind: timer.kind,
+        remaining_frames: remaining,
+        interval_frames: timer.interval_frames,
+      })
+    }
+  }
+  (next_timers, emitted)
+}
+
+///|
 pub fn[T : Game] engine_init(
   initial : T,
   config : EngineConfig,
@@ -106,13 +143,21 @@ pub fn[T : Game] engine_step(
 ) -> (EngineInstance[T], Frame) {
   let update_ctx = make_update_context(state, input)
   let (next_game, emitted) = Game::update(state.game, update_ctx)
+  let (next_timers, timer_emitted) = advance_timers(state.timers)
+  let all_emitted : Array[EngineEvent] = []
+  for event in emitted {
+    all_emitted.push(event)
+  }
+  for event in timer_emitted {
+    all_emitted.push(event)
+  }
   let next_state = EngineInstance::{
     config: state.config,
     game: next_game,
     tick: state.tick + 1,
     prev_input: input,
-    event_queue: emitted,
-    timers: state.timers,
+    event_queue: all_emitted,
+    timers: next_timers,
   }
   let rendered = Game::draw(next_state.game, make_draw_context(next_state))
   (next_state, rendered)
@@ -174,4 +219,67 @@ pub fn[T] engine_take_events(
     },
     state.event_queue,
   )
+}
+
+///|
+pub fn[T] engine_set_timeout(
+  state : EngineInstance[T],
+  frames : Int,
+  kind : EngineEvent,
+) -> EngineInstance[T] {
+  let next_timers : Array[EngineTimer] = []
+  for timer in state.timers {
+    next_timers.push(timer)
+  }
+  next_timers.push(EngineTimer::{
+    kind,
+    remaining_frames: timer_frames(frames),
+    interval_frames: 0,
+  })
+  EngineInstance::{
+    config: state.config,
+    game: state.game,
+    tick: state.tick,
+    prev_input: state.prev_input,
+    event_queue: state.event_queue,
+    timers: next_timers,
+  }
+}
+
+///|
+pub fn[T] engine_set_interval(
+  state : EngineInstance[T],
+  frames : Int,
+  kind : EngineEvent,
+) -> EngineInstance[T] {
+  let interval = timer_frames(frames)
+  let next_timers : Array[EngineTimer] = []
+  for timer in state.timers {
+    next_timers.push(timer)
+  }
+  next_timers.push(EngineTimer::{
+    kind,
+    remaining_frames: interval,
+    interval_frames: interval,
+  })
+  EngineInstance::{
+    config: state.config,
+    game: state.game,
+    tick: state.tick,
+    prev_input: state.prev_input,
+    event_queue: state.event_queue,
+    timers: next_timers,
+  }
+}
+
+///|
+pub fn[T] engine_clear_timers(state : EngineInstance[T]) -> EngineInstance[T] {
+  EngineInstance::{
+    config: state.config,
+    game: state.game,
+    tick: state.tick,
+    prev_input: state.prev_input,
+    event_queue: state.event_queue,
+    timers: [],
+  }
 }

@@ -53,6 +53,21 @@ pub fn key_released(input : InputState, key : String) -> Bool {
 }
 
 ///|
+pub fn key_down_any(input : InputState, keys : Array[String]) -> Bool {
+  @model.key_down_any(input, keys)
+}
+
+///|
+pub fn key_pressed_any(input : InputState, keys : Array[String]) -> Bool {
+  @model.key_pressed_any(input, keys)
+}
+
+///|
+pub fn key_released_any(input : InputState, keys : Array[String]) -> Bool {
+  @model.key_released_any(input, keys)
+}
+
+///|
 pub fn every(frame : Int, interval : Int) -> Bool {
   interval > 0 && frame % interval == 0
 }
@@ -185,6 +200,29 @@ pub fn[T] take_events(
   state : EngineInstance[T],
 ) -> (EngineInstance[T], Array[EngineEvent]) {
   engine_take_events(state)
+}
+
+///|
+pub fn[T] set_timeout(
+  state : EngineInstance[T],
+  frames : Int,
+  event : EngineEvent,
+) -> EngineInstance[T] {
+  engine_set_timeout(state, frames, event)
+}
+
+///|
+pub fn[T] set_interval(
+  state : EngineInstance[T],
+  frames : Int,
+  event : EngineEvent,
+) -> EngineInstance[T] {
+  engine_set_interval(state, frames, event)
+}
+
+///|
+pub fn[T] clear_timers(state : EngineInstance[T]) -> EngineInstance[T] {
+  engine_clear_timers(state)
 }
 
 ///|

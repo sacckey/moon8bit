@@ -472,8 +472,7 @@ pub impl @engine.Game for DriftbirdGame with init(self, config : EngineConfig) {
 ///|
 pub impl @engine.Game for DriftbirdGame with update(self, ctx : UpdateContext) {
   let events : Array[EngineEvent] = []
-  let flap_pressed = key_pressed(ctx.input, "Space") ||
-    key_pressed(ctx.input, "ArrowUp")
+  let flap_pressed = @engine.key_pressed_any(ctx.input, ["Space", "ArrowUp"])
   let reset_pressed = key_pressed(ctx.input, "KeyR")
 
   if flap_pressed {

@@ -296,6 +296,29 @@ pub fn[T] engine_take_events(
 }
 
 ///|
+pub fn[T] engine_set_timeout(
+  state : EngineInstance[T],
+  frames : Int,
+  event : EngineEvent,
+) -> EngineInstance[T] {
+  @engine.engine_set_timeout(state, frames, event)
+}
+
+///|
+pub fn[T] engine_set_interval(
+  state : EngineInstance[T],
+  frames : Int,
+  event : EngineEvent,
+) -> EngineInstance[T] {
+  @engine.engine_set_interval(state, frames, event)
+}
+
+///|
+pub fn[T] engine_clear_timers(state : EngineInstance[T]) -> EngineInstance[T] {
+  @engine.engine_clear_timers(state)
+}
+
+///|
 pub fn config(
   width : Int,
   height : Int,
@@ -350,6 +373,21 @@ pub fn key_released(input : InputState, key : String) -> Bool {
 }
 
 ///|
+pub fn key_down_any(input : InputState, keys : Array[String]) -> Bool {
+  @engine.key_down_any(input, keys)
+}
+
+///|
+pub fn key_pressed_any(input : InputState, keys : Array[String]) -> Bool {
+  @engine.key_pressed_any(input, keys)
+}
+
+///|
+pub fn key_released_any(input : InputState, keys : Array[String]) -> Bool {
+  @engine.key_released_any(input, keys)
+}
+
+///|
 pub fn every(frame : Int, interval : Int) -> Bool {
   @engine.every(frame, interval)
 }
@@ -391,6 +429,29 @@ pub fn[T] take_events(
   state : EngineInstance[T],
 ) -> (EngineInstance[T], Array[EngineEvent]) {
   @engine.take_events(state)
+}
+
+///|
+pub fn[T] set_timeout(
+  state : EngineInstance[T],
+  frames : Int,
+  event : EngineEvent,
+) -> EngineInstance[T] {
+  @engine.set_timeout(state, frames, event)
+}
+
+///|
+pub fn[T] set_interval(
+  state : EngineInstance[T],
+  frames : Int,
+  event : EngineEvent,
+) -> EngineInstance[T] {
+  @engine.set_interval(state, frames, event)
+}
+
+///|
+pub fn[T] clear_timers(state : EngineInstance[T]) -> EngineInstance[T] {
+  @engine.clear_timers(state)
 }
 
 ///|

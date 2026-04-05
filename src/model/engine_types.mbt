@@ -80,6 +80,31 @@ pub fn key_released(input : InputState, key : String) -> Bool {
 }
 
 ///|
+fn any_key(keys : Array[String], candidates : Array[String]) -> Bool {
+  for key in candidates {
+    if has_key(keys, key) {
+      return true
+    }
+  }
+  false
+}
+
+///|
+pub fn key_down_any(input : InputState, candidates : Array[String]) -> Bool {
+  any_key(input.keys_down, candidates)
+}
+
+///|
+pub fn key_pressed_any(input : InputState, candidates : Array[String]) -> Bool {
+  any_key(input.keys_pressed, candidates)
+}
+
+///|
+pub fn key_released_any(input : InputState, candidates : Array[String]) -> Bool {
+  any_key(input.keys_released, candidates)
+}
+
+///|
 pub(all) struct RuntimeContext {
   config : EngineConfig
   input : InputState

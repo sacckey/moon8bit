@@ -21,6 +21,8 @@ pub fn btn(Array[String], keys_pressed? : Array[String], keys_released? : Array[
 
 pub fn btnp(Bool, Bool) -> Bool
 
+pub fn[T] clear_timers(@engine.EngineInstance[T]) -> @engine.EngineInstance[T]
+
 pub fn cls(@model.Frame, Int) -> Unit
 
 pub fn collider(String, @model.Rect) -> @model.Collider
@@ -37,11 +39,17 @@ pub fn config(Int, Int, fps? : Int, scale? : Int, palette? : @model.Palette) -> 
 
 pub fn default_engine_config() -> @model.EngineConfig
 
+pub fn[T] engine_clear_timers(@engine.EngineInstance[T]) -> @engine.EngineInstance[T]
+
 pub fn[T] engine_events(@engine.EngineInstance[T]) -> Array[@engine.EngineEvent]
 
 pub fn[T] engine_game(@engine.EngineInstance[T]) -> T
 
 pub fn[T : @engine.Game] engine_init(T, @model.EngineConfig) -> @engine.EngineInstance[T]
+
+pub fn[T] engine_set_interval(@engine.EngineInstance[T], Int, @engine.EngineEvent) -> @engine.EngineInstance[T]
+
+pub fn[T] engine_set_timeout(@engine.EngineInstance[T], Int, @engine.EngineEvent) -> @engine.EngineInstance[T]
 
 pub fn[T : @engine.Game] engine_step(@engine.EngineInstance[T], @model.InputState) -> (@engine.EngineInstance[T], @model.Frame)
 
@@ -65,9 +73,15 @@ pub fn input_state(Array[String], Array[String], Array[String], pointer_x? : Int
 
 pub fn key_down(@model.InputState, String) -> Bool
 
+pub fn key_down_any(@model.InputState, Array[String]) -> Bool
+
 pub fn key_pressed(@model.InputState, String) -> Bool
 
+pub fn key_pressed_any(@model.InputState, Array[String]) -> Bool
+
 pub fn key_released(@model.InputState, String) -> Bool
+
+pub fn key_released_any(@model.InputState, Array[String]) -> Bool
 
 pub fn palette_default() -> @model.Palette
 
@@ -86,6 +100,10 @@ pub fn rect_intersects(@model.Rect, @model.Rect) -> Bool
 pub fn[T : @engine.Game] run(T, @model.EngineConfig, Array[@model.InputState]) -> (@engine.EngineInstance[T], Array[@model.Frame])
 
 pub fn[T : @engine.Game] run_fixed_frames(T, @model.EngineConfig, Array[@model.InputState]) -> (@engine.EngineInstance[T], Array[@model.Frame])
+
+pub fn[T] set_interval(@engine.EngineInstance[T], Int, @engine.EngineEvent) -> @engine.EngineInstance[T]
+
+pub fn[T] set_timeout(@engine.EngineInstance[T], Int, @engine.EngineEvent) -> @engine.EngineInstance[T]
 
 pub fn spr(@model.Frame, @model.Sprite, Int, Int) -> Unit
 

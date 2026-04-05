@@ -24,9 +24,15 @@ pub fn input_state(Array[String], Array[String], Array[String], pointer_x? : Int
 
 pub fn key_down(InputState, String) -> Bool
 
+pub fn key_down_any(InputState, Array[String]) -> Bool
+
 pub fn key_pressed(InputState, String) -> Bool
 
+pub fn key_pressed_any(InputState, Array[String]) -> Bool
+
 pub fn key_released(InputState, String) -> Bool
+
+pub fn key_released_any(InputState, Array[String]) -> Bool
 
 pub fn palette_default() -> Palette
 
