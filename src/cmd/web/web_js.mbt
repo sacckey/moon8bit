@@ -748,21 +748,67 @@ extern "js" fn web_key_down(code : String) -> Bool =
   #| (code) => !!(globalThis.__moon8bit_keys && globalThis.__moon8bit_keys.has(code))
 
 ///|
-extern "js" fn web_route_game_id() -> String =
-  #| () => {
+extern "js" fn web_bootstrap_game(
+  on_ok : (String, String, String, String) -> Unit,
+  on_error : (String) -> Unit,
+) -> Unit =
+  #| (on_ok, on_error) => {
+  #|   const fail = (msg) => {
+  #|     try { on_error(String(msg)); } catch (_) {}
+  #|   };
+  #|
+  #|   let gameId = "";
   #|   try {
   #|     const loc = globalThis.location;
-  #|     if (!loc) return "";
-  #|     const path = String(loc.pathname || "");
+  #|     const path = String((loc && loc.pathname) || "");
   #|     const m = path.match(/\/g\/([^\/?#]+)/);
   #|     if (m && m[1]) {
-  #|       return decodeURIComponent(m[1]);
+  #|       gameId = decodeURIComponent(m[1]);
+  #|     } else {
+  #|       const query = new URLSearchParams(String((loc && loc.search) || ""));
+  #|       gameId = query.get("game") || "";
   #|     }
-  #|     const query = new URLSearchParams(String(loc.search || ""));
-  #|     return query.get("game") || "";
   #|   } catch (_) {
-  #|     return "";
+  #|     gameId = "";
   #|   }
+  #|
+  #|   if (!gameId) {
+  #|     fail("Cannot determine game id from URL. Open /g/<game_id>/ path.");
+  #|     return;
+  #|   }
+  #|
+  #|   Promise.all([
+  #|     fetch("./game_spec.json", { cache: "no-store" }),
+  #|     fetch("./assets.dsl", { cache: "no-store" }),
+  #|   ])
+  #|     .then(async ([specResp, dslResp]) => {
+  #|       if (!specResp.ok) {
+  #|         throw new Error(`Failed to load game_spec.json: HTTP ${specResp.status}`);
+  #|       }
+  #|       if (!dslResp.ok) {
+  #|         throw new Error(`Failed to load assets.dsl: HTTP ${dslResp.status}`);
+  #|       }
+  #|
+  #|       const spec = await specResp.json();
+  #|       const dslText = await dslResp.text();
+  #|
+  #|       const id = String((spec && spec.id) || "");
+  #|       const title = String((spec && spec.title) || "");
+  #|       const statusText = String((spec && spec.status_text) || "");
+  #|       const exportFilename = String((spec && spec.export_filename) || "");
+  #|
+  #|       if (!id || !title || !statusText || !exportFilename) {
+  #|         throw new Error("Invalid game_spec.json: id/title/status_text/export_filename are required.");
+  #|       }
+  #|       if (id !== gameId) {
+  #|         throw new Error(`game_spec.json id mismatch: expected '${gameId}', got '${id}'.`);
+  #|       }
+  #|
+  #|       try { on_ok(title, statusText, exportFilename, dslText); } catch (_) {}
+  #|     })
+  #|     .catch((err) => {
+  #|       fail((err && err.message) ? err.message : String(err));
+  #|     });
   #| }
 
 ///|

@@ -1,14 +1,21 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "sacckey/moon8bit/cmd/web"
 
+import {
+  "sacckey/moon8bit/model",
+}
+
 // Values
+pub fn[T] run_web_game((@model.AssetBundle, @model.EngineConfig) -> T, (T, @model.EngineConfig, @model.InputState, Int) -> (T, @model.Frame), (T, T, @model.InputState) -> Array[String], config? : @model.EngineConfig) -> Unit
 
 // Errors
 
 // Types and methods
-type WebGame
-
-type WebGameSpec
+pub struct WebGameSpec {
+  title : String
+  status_text : String
+  export_filename : String
+}
 
 // Type aliases
 

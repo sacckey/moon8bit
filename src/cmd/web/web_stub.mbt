@@ -12,8 +12,23 @@ fn web_key_down(code : String) -> Bool {
 }
 
 ///|
-fn web_route_game_id() -> String {
-  ""
+fn web_bootstrap_game(
+  on_ok : (String, String, String, String) -> Unit,
+  on_error : (String) -> Unit,
+) -> Unit {
+  ignore(on_error)
+  on_ok(
+    "Game",
+    "Web stub mode",
+    "assets.dsl",
+    [
+      "# moon8bit asset DSL v1", "palette dawn", "color 0 #0f1a20", "color 1 #274060",
+      "color 2 #2e8b57", "color 3 #f2aa4c", "color 4 #e94f37", "color 5 #8f6f4f",
+      "color 6 #f6f7eb", "color 7 #7f5af0", "end", "", "sprite bird 8 8", "........",
+      "...33...", "..33334.", ".3336334", ".3353334", "..33333.", "...33...", "........",
+      "end",
+    ].join("\n"),
+  )
 }
 
 ///|
