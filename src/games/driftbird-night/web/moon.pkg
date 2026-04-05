@@ -1,0 +1,8 @@
+import {
+  "sacckey/moon8bit/cmd/web" @webui,
+  "sacckey/moon8bit/games/driftbird-night" @game,
+}
+
+options(
+  "is-main": true,
+)
