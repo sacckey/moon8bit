@@ -6,3 +6,4 @@ web.js
 web.js.map
 site/**
 !site/.nojekyll
+!site/index.html

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>moon8bit</title>
+    <style>
+      :root {
+        --bg: #0b1420;
+        --panel: #112034;
+        --text: #e9f1ff;
+        --muted: #9fb3c8;
+        --accent: #5cc8ff;
+        --accent-2: #3a91ff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(60rem 40rem at 10% -10%, #1b3357 0%, transparent 60%),
+          radial-gradient(50rem 30rem at 100% 0%, #1f3d66 0%, transparent 65%),
+          var(--bg);
+        color: var(--text);
+        font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+      }
+      .card {
+        width: min(640px, calc(100vw - 32px));
+        border: 1px solid #2a3f58;
+        border-radius: 16px;
+        background: linear-gradient(180deg, #12253b 0%, #0e1c2d 100%);
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+        padding: 28px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 36px;
+        letter-spacing: 0.02em;
+      }
+      p {
+        margin: 10px 0 24px;
+        color: var(--muted);
+      }
+      .link {
+        display: inline-block;
+        text-decoration: none;
+        color: white;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        padding: 11px 16px;
+        border-radius: 10px;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h1>moon8bit</h1>
+      <p>Minimal retro game runtime and browser editing playground.</p>
+      <a class="link" href="./g/">Open Game List</a>
+    </main>
+  </body>
+</html>

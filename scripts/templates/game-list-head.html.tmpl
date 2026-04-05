@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>moon8bit games</title>
+    <style>
+      :root {
+        --bg: #0a1018;
+        --panel: #122132;
+        --line: #294057;
+        --text: #e4edf7;
+        --muted: #98afc5;
+        --accent: #7bd1ff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(50rem 34rem at 8% -10%, #162843 0%, transparent 65%),
+          radial-gradient(45rem 32rem at 100% 0%, #17304f 0%, transparent 60%),
+          var(--bg);
+        color: var(--text);
+        font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+      }
+      .container {
+        width: min(900px, calc(100vw - 32px));
+        margin: 36px auto;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 34px;
+      }
+      .muted {
+        margin: 0 0 24px;
+        color: var(--muted);
+      }
+      .back {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: var(--accent);
+        text-decoration: none;
+        font-size: 14px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        gap: 12px;
+      }
+      .card {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 16px;
+        background: linear-gradient(180deg, #13273d 0%, #101d2e 100%);
+        transition: transform 0.15s ease, border-color 0.15s ease;
+      }
+      .card:hover {
+        transform: translateY(-2px);
+        border-color: #3b5d7b;
+      }
+      .label {
+        font-size: 11px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .name {
+        margin-top: 8px;
+        font-size: 20px;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <a class="back" href="../">← moon8bit top</a>
+      <h1>Game List</h1>
+      <p class="muted">Choose a playable game bundle.</p>
+      <section class="grid">
