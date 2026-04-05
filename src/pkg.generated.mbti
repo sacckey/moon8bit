@@ -3,7 +3,6 @@ package "sacckey/moon8bit"
 
 import {
   "sacckey/moon8bit/engine",
-  "sacckey/moon8bit/games/driftbird",
   "sacckey/moon8bit/model",
 }
 
@@ -52,8 +51,6 @@ pub let input_none : @model.InputState
 
 pub fn input_state(Bool, Bool) -> @model.InputState
 
-pub fn new_driftbird_game(@model.AssetBundle) -> @driftbird.DriftbirdGame
-
 pub fn palette_default() -> @model.Palette
 
 pub fn palette_to_json(@model.Palette) -> Json
@@ -69,8 +66,6 @@ pub fn rect(@model.Frame, Int, Int, Int, Int, Int) -> Unit
 pub fn rect_intersects(@model.Rect, @model.Rect) -> Bool
 
 pub fn[T : @engine.Game] run(T, @model.EngineConfig, Array[@model.InputState]) -> (T, Array[@model.Frame])
-
-pub fn run_driftbird(@model.AssetBundle, Array[@model.InputState], config? : @model.EngineConfig) -> (@driftbird.DriftbirdGame, Array[@model.Frame])
 
 pub fn[T : @engine.Game] run_fixed_frames(T, @model.EngineConfig, Array[@model.InputState]) -> (T, Array[@model.Frame])
 
@@ -106,8 +101,6 @@ pub fn version_tag() -> String
 pub using @model {type AssetBundle}
 
 pub using @model {type Collider}
-
-pub using @driftbird {type DriftbirdGame}
 
 pub using @model {type DslError}
 

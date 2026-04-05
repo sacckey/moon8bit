@@ -32,9 +32,6 @@ pub type Collider = @model.Collider
 pub type Frame = @model.Frame
 
 ///|
-pub type DriftbirdGame = @driftbird.DriftbirdGame
-
-///|
 pub let input_none : InputState = @model.input_none
 
 ///|
@@ -312,20 +309,6 @@ pub fn rect(
 ///|
 pub fn spr(frame : Frame, sprite : Sprite, x : Int, y : Int) -> Unit {
   @engine.spr(frame, sprite, x, y)
-}
-
-///|
-pub fn new_driftbird_game(bundle : AssetBundle) -> DriftbirdGame {
-  @driftbird.new_driftbird_game(bundle)
-}
-
-///|
-pub fn run_driftbird(
-  bundle : AssetBundle,
-  inputs : Array[InputState],
-  config? : EngineConfig = default_engine_config(),
-) -> (DriftbirdGame, Array[Frame]) {
-  @driftbird.run_driftbird(bundle, inputs, config~)
 }
 
 ///|

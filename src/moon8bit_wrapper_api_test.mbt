@@ -1,6 +1,35 @@
 ///|
 
 ///|
+struct WrapperTestGame {
+  mut count : Int
+}
+
+///|
+pub impl @engine.Game for WrapperTestGame with init(self, _ctx) {
+  self
+}
+
+///|
+pub impl @engine.Game for WrapperTestGame with update(self, ctx) {
+  if ctx.input.reset {
+    self.count = 0
+  } else if ctx.input.flap {
+    self.count = self.count + 1
+  }
+  self
+}
+
+///|
+pub impl @engine.Game for WrapperTestGame with draw(self, ctx) {
+  let frame = Frame::new(ctx.config.width, ctx.config.height, fill=0)
+  if self.count % 2 == 1 {
+    pset(frame, 0, 0, 1)
+  }
+  frame
+}
+
+///|
 fn wrapper_test_bundle() -> AssetBundle {
   let dsl = [
     "palette t", "color 0 #000000", "color 1 #111111", "color 2 #222222", "color 3 #333333",
@@ -26,32 +55,31 @@ fn wrapper_test_inputs(frame_count : Int) -> Array[InputState] {
 
 ///|
 test "root wrapper step and run remain equivalent to engine primitives" {
-  let bundle = wrapper_test_bundle()
   let cfg = default_engine_config()
   let input = input_state(true, false)
 
-  let base_state = engine_init(new_driftbird_game(bundle), cfg)
-  let wrapped_state = engine_init(new_driftbird_game(bundle), cfg)
+  let base_state = engine_init(WrapperTestGame::{ count: 0 }, cfg)
+  let wrapped_state = engine_init(WrapperTestGame::{ count: 0 }, cfg)
 
   let (next_base, frame_base) = engine_step(base_state, cfg, input, 0)
   let (next_wrapped, frame_wrapped) = step(wrapped_state, cfg, input, 0)
 
-  assert_eq(next_wrapped, next_base)
+  assert_eq(next_wrapped.count, next_base.count)
   assert_eq(frame_wrapped, frame_base)
 
   let inputs = wrapper_test_inputs(24)
   let (final_base, frames_base) = run_fixed_frames(
-    new_driftbird_game(bundle),
+    WrapperTestGame::{ count: 0 },
     cfg,
     inputs,
   )
   let (final_wrapped, frames_wrapped) = run(
-    new_driftbird_game(bundle),
+    WrapperTestGame::{ count: 0 },
     cfg,
     inputs,
   )
 
-  assert_eq(final_wrapped, final_base)
+  assert_eq(final_wrapped.count, final_base.count)
   assert_eq(frames_wrapped, frames_base)
 }
 

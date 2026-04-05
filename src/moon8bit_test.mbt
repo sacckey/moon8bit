@@ -1,27 +1,30 @@
 ///|
-
-///|
-fn test_bundle() -> AssetBundle {
-  let dsl = [
-    "palette t", "color 0 #000000", "color 1 #111111", "color 2 #222222", "color 3 #333333",
-    "color 4 #444444", "color 5 #555555", "color 6 #666666", "color 7 #777777", "end",
-    "", "sprite bird 8 8", "33333333", "33333333", "33333333", "33333333", "33333333",
-    "33333333", "33333333", "33333333", "end",
-  ].join("\n")
-  match parse_assets_dsl(dsl) {
-    Ok(bundle) => bundle
-    Err(_) => panic()
-  }
+struct TestGame {
+  mut count : Int
 }
 
 ///|
-fn test_inputs(frame_count : Int) -> Array[InputState] {
-  let inputs : Array[InputState] = []
-  for i in 0..<frame_count {
-    let flap = every(i, 8) || every(i, 13)
-    inputs.push(input_state(flap, false))
+pub impl @engine.Game for TestGame with init(self, _ctx) {
+  self
+}
+
+///|
+pub impl @engine.Game for TestGame with update(self, ctx) {
+  if ctx.input.reset {
+    self.count = 0
+  } else if ctx.input.flap {
+    self.count = self.count + 1
   }
-  inputs
+  self
+}
+
+///|
+pub impl @engine.Game for TestGame with draw(self, ctx) {
+  let frame = Frame::new(ctx.config.width, ctx.config.height, fill=0)
+  if self.count % 2 == 1 {
+    pset(frame, 0, 0, 1)
+  }
+  frame
 }
 
 ///|
@@ -44,11 +47,21 @@ test "assets cli output covers success and parse errors" {
 }
 
 ///|
-test "root facade runs driftbird with generated inputs" {
-  let (state, frames) = run_driftbird(test_bundle(), test_inputs(24))
-  assert_eq(frames.length(), 24)
-  assert_true(state.score() >= 0)
-  assert_true(frames[23].to_ascii().length() > 0)
+test "root facade run supports generic game" {
+  let inputs = [
+    input_state(true, false),
+    input_state(true, false),
+    input_state(false, true),
+    input_none,
+  ]
+  let (state, frames) = run(
+    TestGame::{ count: 0 },
+    default_engine_config(),
+    inputs,
+  )
+  assert_eq(frames.length(), inputs.length())
+  assert_eq(state.count, 0)
+  assert_true(frames[0].to_ascii().length() > 0)
 }
 
 ///|
