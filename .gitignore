@@ -4,3 +4,5 @@ _build/
 .moonagent/
 web.js
 web.js.map
+site/**
+!site/.nojekyll
