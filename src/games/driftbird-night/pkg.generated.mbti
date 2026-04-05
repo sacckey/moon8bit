@@ -2,23 +2,24 @@
 package "sacckey/moon8bit/games/driftbird-night"
 
 import {
+  "sacckey/moon8bit/engine",
   "sacckey/moon8bit/games/driftbird",
   "sacckey/moon8bit/model",
 }
 
 // Values
-pub fn init_game(@model.AssetBundle, @model.EngineConfig) -> @driftbird.DriftbirdGame
+pub fn init_game(@model.AssetBundle, @model.EngineConfig) -> @engine.EngineRunner[@driftbird.DriftbirdGame]
 
-pub fn step_audio_events(@driftbird.DriftbirdGame, @driftbird.DriftbirdGame, @model.InputState) -> Array[String]
+pub fn step_audio_events(@engine.EngineRunner[@driftbird.DriftbirdGame], @engine.EngineRunner[@driftbird.DriftbirdGame], @model.InputState) -> Array[String]
 
-pub fn step_game(@driftbird.DriftbirdGame, @model.EngineConfig, @model.InputState, Int) -> (@driftbird.DriftbirdGame, @model.Frame)
+pub fn step_game(@engine.EngineRunner[@driftbird.DriftbirdGame], @model.EngineConfig, @model.InputState) -> (@engine.EngineRunner[@driftbird.DriftbirdGame], @model.Frame)
 
 // Errors
 
 // Types and methods
 
 // Type aliases
-pub using @driftbird {type DriftbirdGame as DriftbirdNightGame}
+pub type DriftbirdNightGame = @engine.EngineRunner[@driftbird.DriftbirdGame]
 
 // Traits
 

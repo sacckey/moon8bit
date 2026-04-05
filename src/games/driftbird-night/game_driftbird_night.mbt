@@ -1,5 +1,5 @@
 ///|
-pub type DriftbirdNightGame = @driftbird.DriftbirdGame
+pub type DriftbirdNightGame = @driftbird.DriftbirdRuntime
 
 ///|
 type AssetBundle = @model.AssetBundle
@@ -26,9 +26,8 @@ pub fn step_game(
   game : DriftbirdNightGame,
   config : EngineConfig,
   input : InputState,
-  frame_index : Int,
 ) -> (DriftbirdNightGame, Frame) {
-  @driftbird.step_game(game, config, input, frame_index)
+  @driftbird.step_game(game, config, input)
 }
 
 ///|

@@ -11,6 +11,12 @@ type RuntimeContext = @model.RuntimeContext
 type Frame = @model.Frame
 
 ///|
+pub(all) struct EngineRunner[T] {
+  game : T
+  frame : Int
+} derive(Eq, Show)
+
+///|
 let input_none : InputState = @model.input_none
 
 ///|
@@ -63,4 +69,32 @@ pub fn[T : Game] run_fixed_frames(
     frames.push(rendered)
   }
   (state, frames)
+}
+
+///|
+pub fn[T : Game] runner_init(
+  initial : T,
+  config : EngineConfig,
+) -> EngineRunner[T] {
+  EngineRunner::{ game: engine_init(initial, config), frame: 0 }
+}
+
+///|
+pub fn[T : Game] runner_step(
+  state : EngineRunner[T],
+  config : EngineConfig,
+  input : InputState,
+) -> (EngineRunner[T], Frame) {
+  let (next_game, rendered) = engine_step(
+    state.game,
+    config,
+    input,
+    state.frame,
+  )
+  (EngineRunner::{ game: next_game, frame: state.frame + 1 }, rendered)
+}
+
+///|
+pub fn[T] runner_game(state : EngineRunner[T]) -> T {
+  state.game
 }

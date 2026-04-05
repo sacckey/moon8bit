@@ -1,14 +1,13 @@
 ///|
 pub fn[T] run_web_game(
   init_game : (@lib.AssetBundle, @lib.EngineConfig) -> T,
-  step_game : (T, @lib.EngineConfig, @lib.InputState, Int) -> (T, @lib.Frame),
+  step_game : (T, @lib.EngineConfig, @lib.InputState) -> (T, @lib.Frame),
   step_audio_events : (T, T, @lib.InputState) -> Array[String],
   config? : @lib.EngineConfig = @lib.default_engine_config(),
 ) -> Unit {
   let display_scale = config.scale
   let spec_ref : Ref[WebGameSpec?] = @ref.new(None)
   let state_ref : Ref[T?] = @ref.new(None)
-  let frame_ref : Ref[Int] = @ref.new(0)
   let palette_ref : Ref[@lib.Palette] = @ref.new(@lib.palette_default())
   let default_palette = @lib.palette_default()
   let prev_keys_down_ref : Ref[Array[String]] = @ref.new([])
@@ -104,9 +103,8 @@ pub fn[T] run_web_game(
       None => return
     }
 
-    let frame_index = frame_ref.val
     let input = poll_input()
-    let (next, rendered) = step_game(previous, config, input, frame_index)
+    let (next, rendered) = step_game(previous, config, input)
 
     for event in step_audio_events(previous, next, input) {
       if event == "@bgm_start" {
@@ -119,7 +117,6 @@ pub fn[T] run_web_game(
     }
 
     state_ref.val = Some(next)
-    frame_ref.val = frame_index + 1
     draw_frame(rendered)
   }
 
@@ -142,7 +139,6 @@ pub fn[T] run_web_game(
 
     state_ref.val = Some(init_game(bundle, config))
     palette_ref.val = bundle.palette
-    frame_ref.val = 0
     stop_bgm_if_playing()
     web_set_editor_feedback("Applied DSL successfully", false)
   }

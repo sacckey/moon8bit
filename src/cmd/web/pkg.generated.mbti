@@ -6,7 +6,7 @@ import {
 }
 
 // Values
-pub fn[T] run_web_game((@model.AssetBundle, @model.EngineConfig) -> T, (T, @model.EngineConfig, @model.InputState, Int) -> (T, @model.Frame), (T, T, @model.InputState) -> Array[String], config? : @model.EngineConfig) -> Unit
+pub fn[T] run_web_game((@model.AssetBundle, @model.EngineConfig) -> T, (T, @model.EngineConfig, @model.InputState) -> (T, @model.Frame), (T, T, @model.InputState) -> Array[String], config? : @model.EngineConfig) -> Unit
 
 // Errors
 

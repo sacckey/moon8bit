@@ -23,6 +23,9 @@ type RuntimeContext = @model.RuntimeContext
 type Frame = @model.Frame
 
 ///|
+pub type DriftbirdRuntime = @engine.EngineRunner[DriftbirdGame]
+
+///|
 fn find_sprite(bundle : AssetBundle, name : String) -> Sprite? {
   @model.find_sprite(bundle, name)
 }
@@ -412,27 +415,33 @@ pub fn audio_events_for_step(
 }
 
 ///|
-pub fn init_game(bundle : AssetBundle, config : EngineConfig) -> DriftbirdGame {
-  @engine.engine_init(new_driftbird_game(bundle), config)
+pub fn init_game(
+  bundle : AssetBundle,
+  config : EngineConfig,
+) -> DriftbirdRuntime {
+  @engine.runner_init(new_driftbird_game(bundle), config)
 }
 
 ///|
 pub fn step_game(
-  game : DriftbirdGame,
+  game : DriftbirdRuntime,
   config : EngineConfig,
   input : InputState,
-  frame_index : Int,
-) -> (DriftbirdGame, Frame) {
-  @engine.engine_step(game, config, input, frame_index)
+) -> (DriftbirdRuntime, Frame) {
+  @engine.runner_step(game, config, input)
 }
 
 ///|
 pub fn step_audio_events(
-  previous : DriftbirdGame,
-  next : DriftbirdGame,
+  previous : DriftbirdRuntime,
+  next : DriftbirdRuntime,
   input : InputState,
 ) -> Array[String] {
-  audio_events_for_step(previous, next, input)
+  audio_events_for_step(
+    @engine.runner_game(previous),
+    @engine.runner_game(next),
+    input,
+  )
 }
 
 ///|

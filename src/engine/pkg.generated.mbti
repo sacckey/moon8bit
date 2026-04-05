@@ -38,6 +38,12 @@ pub fn[T : Game] run(T, @model.EngineConfig, Array[@model.InputState]) -> (T, Ar
 
 pub fn[T : Game] run_fixed_frames(T, @model.EngineConfig, Array[@model.InputState]) -> (T, Array[@model.Frame])
 
+pub fn[T] runner_game(EngineRunner[T]) -> T
+
+pub fn[T : Game] runner_init(T, @model.EngineConfig) -> EngineRunner[T]
+
+pub fn[T : Game] runner_step(EngineRunner[T], @model.EngineConfig, @model.InputState) -> (EngineRunner[T], @model.Frame)
+
 pub fn spr(@model.Frame, @model.Sprite, Int, Int) -> Unit
 
 pub fn[T : Game] step(T, @model.EngineConfig, @model.InputState, Int) -> (T, @model.Frame)
@@ -55,6 +61,10 @@ pub fn ui_text_width(String, scale? : Int) -> Int
 // Errors
 
 // Types and methods
+pub(all) struct EngineRunner[T] {
+  game : T
+  frame : Int
+} derive(Eq, Show)
 
 // Type aliases
 
