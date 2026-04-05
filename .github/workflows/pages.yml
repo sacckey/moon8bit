@@ -33,9 +33,7 @@ jobs:
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
 
       - name: Build web demo bundle
-        run: |
-          moon build --target js src/cmd/web
-          cp _build/js/debug/build/cmd/web/web.js site/demo/web.js
+        run: ./scripts/update_demo_bundle.sh
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

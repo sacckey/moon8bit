@@ -22,6 +22,15 @@ let driftbird_spec : WebGameSpec = {
 }
 
 ///|
+let driftbird_night_spec : WebGameSpec = {
+  id: "driftbird-night",
+  title: "Driftbird Night",
+  status_text: "Night variant. HUD is in-canvas (S/F/H). Audio events are configurable in Sound tab.",
+  export_filename: "driftbird_night_assets.dsl",
+  default_assets_dsl: @driftbird.sample_assets_dsl_night(),
+}
+
+///|
 fn normalize_game_id(raw : String) -> String {
   let trimmed = raw.trim().to_string()
   if trimmed == "" {
@@ -36,6 +45,8 @@ fn resolve_game_spec(raw_game_id : String) -> WebGameSpec {
   let game_id = normalize_game_id(raw_game_id)
   if game_id == driftbird_spec.id {
     driftbird_spec
+  } else if game_id == driftbird_night_spec.id {
+    driftbird_night_spec
   } else {
     driftbird_spec
   }

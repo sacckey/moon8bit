@@ -19,6 +19,8 @@ pub fn run_driftbird_demo(Int) -> (DriftbirdGame, Array[String])
 
 pub fn sample_assets_dsl() -> String
 
+pub fn sample_assets_dsl_night() -> String
+
 pub fn scripted_demo_inputs(Int) -> Array[@model.InputState]
 
 // Errors
