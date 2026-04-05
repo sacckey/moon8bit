@@ -1,8 +1,7 @@
 ///|
 fn print_usage() -> Unit {
   println("moon8bit commands:")
-  println("  moon run cmd/main -- demo [frames]")
-  println("  moon run cmd/main -- sample-dsl")
+  println("  moon run cmd/main -- demo <assets.dsl> [frames]")
   println("  moon run cmd/main -- assets \"<dsl with \\n escapes>\"")
   println("  moon run cmd/main --target js -- assets-file <in.dsl> <out.json>")
 }
@@ -32,11 +31,7 @@ fn args_after_separator(args : Array[String]) -> Array[String] {
 ///|
 fn extract_command_tokens(args : Array[String]) -> Array[String] {
   for i, arg in args {
-    if arg == "demo" ||
-      arg == "assets" ||
-      arg == "sample-dsl" ||
-      arg == "assets-file" ||
-      arg == "help" {
+    if arg == "demo" || arg == "assets" || arg == "assets-file" || arg == "help" {
       return args[i:args.length()].to_array()
     }
   }
@@ -52,13 +47,36 @@ fn parse_int_or_default(text : String, default_value : Int) -> Int {
 
 ///|
 fn run_demo(tokens : Array[String]) -> Unit {
-  let frame_count = if tokens.length() >= 2 {
-    parse_int_or_default(tokens[1], 60)
+  if tokens.length() < 2 {
+    println("demo command requires: <assets.dsl> [frames]")
+    print_usage()
+    return
+  }
+
+  let assets_path = tokens[1]
+  let frame_count = if tokens.length() >= 3 {
+    parse_int_or_default(tokens[2], 60)
   } else {
     60
   }
 
-  let (state, frames) = @lib.run_driftbird_demo(frame_count)
+  let source = match read_text_file(assets_path) {
+    Ok(content) => content
+    Err(msg) => {
+      println(msg)
+      return
+    }
+  }
+
+  let bundle = match @lib.parse_assets_dsl(source) {
+    Ok(parsed) => parsed
+    Err(err) => {
+      println("error(line=\{err.line}): \{err.message}")
+      return
+    }
+  }
+
+  let (state, frames) = @lib.run_driftbird_demo(bundle, frame_count)
   println(
     "moon8bit demo: frames=\{frame_count}, score=\{state.score()}, over=\{state.is_over()}",
   )
@@ -127,7 +145,6 @@ fn main {
 
   match tokens[0] {
     "demo" => run_demo(tokens)
-    "sample-dsl" => println(@lib.sample_assets_dsl())
     "assets" => run_assets(tokens)
     "assets-file" => run_assets_file(tokens)
     _ => print_usage()
