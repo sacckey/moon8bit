@@ -334,6 +334,55 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   if (!audioState.sfx.reset) audioState.sfx.reset = { type: "sine", attack: 0.003, decay: 0.10, peak: 0.06, f0: 420, f1: 620 };
   #|
   #|   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+  #|   const defaultProfiles = {
+  #|     flap: { type: "triangle", attack: 0.001, decay: 0.06, peak: 0.12, f0: 900, f1: 620 },
+  #|     hit: { type: "square", attack: 0.003, decay: 0.12, peak: 0.045, f0: 440, f1: 220 },
+  #|     reset: { type: "sine", attack: 0.003, decay: 0.10, peak: 0.06, f0: 420, f1: 620 },
+  #|     generic: { type: "square", attack: 0.003, decay: 0.10, peak: 0.07, f0: 520, f1: 360 },
+  #|   };
+  #|   const fallbackSoundEvents = [
+  #|     { key: "flap", label: "Flap" },
+  #|     { key: "hit", label: "Hit" },
+  #|     { key: "reset", label: "Reset" },
+  #|   ];
+  #|   const soundKeyToId = (key) =>
+  #|     key.toLowerCase().replace(/[^a-z0-9_-]/g, "_");
+  #|   const ensureSfxProfile = (key) => {
+  #|     if (audioState.sfx[key]) return audioState.sfx[key];
+  #|     const source = defaultProfiles[key] || defaultProfiles.generic;
+  #|     const profile = {
+  #|       type: source.type,
+  #|       attack: source.attack,
+  #|       decay: source.decay,
+  #|       peak: source.peak,
+  #|       f0: source.f0,
+  #|       f1: source.f1,
+  #|     };
+  #|     audioState.sfx[key] = profile;
+  #|     return profile;
+  #|   };
+  #|   const parseSoundEventsFromDsl = (text) => {
+  #|     const lines = String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+  #|     const events = [];
+  #|     for (const line of lines) {
+  #|       const m = line.match(/^#\s*sfx-event\s+([A-Za-z0-9_-]+)(?:\s+(.+))?$/i);
+  #|       if (!m) continue;
+  #|       const key = m[1].trim();
+  #|       if (!key) continue;
+  #|       const label = (m[2] || key).trim();
+  #|       events.push({ key, label: label || key });
+  #|     }
+  #|     if (events.length === 0) return fallbackSoundEvents.slice();
+  #|     const dedup = [];
+  #|     const seen = new Set();
+  #|     for (const e of events) {
+  #|       const k = e.key.toLowerCase();
+  #|       if (seen.has(k)) continue;
+  #|       seen.add(k);
+  #|       dedup.push(e);
+  #|     }
+  #|     return dedup.length > 0 ? dedup : fallbackSoundEvents.slice();
+  #|   };
   #|
   #|   if (!globalThis.__moon8bit_audio_start_bgm_impl) {
   #|     globalThis.__moon8bit_audio_start_bgm_impl = () => {
@@ -604,43 +653,46 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   ensureButton("moon8bit-sound-bgm-stop", "Stop BGM", () => {
   #|     try { globalThis.__moon8bit_audio_stop_bgm_impl(); } catch (_) {}
   #|   });
-  #|   ensureButton("moon8bit-sound-test-flap", "Test Flap", () => {
-  #|     try { globalThis.__moon8bit_audio_play_sfx_impl("flap"); } catch (_) {}
-  #|   });
-  #|   ensureButton("moon8bit-sound-test-hit", "Test Hit", () => {
-  #|     try { globalThis.__moon8bit_audio_play_sfx_impl("hit"); } catch (_) {}
-  #|   });
-  #|   ensureButton("moon8bit-sound-test-reset", "Test Reset", () => {
-  #|     try { globalThis.__moon8bit_audio_play_sfx_impl("reset"); } catch (_) {}
-  #|   });
   #|
-  #|   const ensureSfxEditor = (kind, title) => {
-  #|     const prefix = `moon8bit-sfx-${kind}`;
-  #|     let card = document.getElementById(`${prefix}-card`);
-  #|     if (!card) {
-  #|       card = document.createElement("div");
-  #|       card.id = `${prefix}-card`;
-  #|       card.style.display = "grid";
-  #|       card.style.gridTemplateColumns = "84px 1fr 1fr 1fr 1fr 1fr 80px";
-  #|       card.style.gap = "6px";
-  #|       card.style.alignItems = "center";
-  #|       card.style.padding = "6px";
-  #|       card.style.border = "1px solid #334e68";
-  #|       card.style.background = "#0f1720";
-  #|       soundEditor.appendChild(card);
-  #|     }
+  #|   let eventControls = document.getElementById("moon8bit-sound-event-controls");
+  #|   if (!eventControls) {
+  #|     eventControls = document.createElement("div");
+  #|     eventControls.id = "moon8bit-sound-event-controls";
+  #|     eventControls.style.display = "flex";
+  #|     eventControls.style.flexWrap = "wrap";
+  #|     eventControls.style.gap = "8px";
+  #|     eventControls.style.alignItems = "center";
+  #|     soundEditor.appendChild(eventControls);
+  #|   }
   #|
-  #|     let label = document.getElementById(`${prefix}-label`);
-  #|     if (!label) {
-  #|       label = document.createElement("div");
-  #|       label.id = `${prefix}-label`;
-  #|       label.textContent = title;
-  #|       label.style.fontFamily = "monospace";
-  #|       label.style.fontSize = "12px";
-  #|       card.appendChild(label);
-  #|     }
+  #|   let sfxGrid = document.getElementById("moon8bit-sound-sfx-grid");
+  #|   if (!sfxGrid) {
+  #|     sfxGrid = document.createElement("div");
+  #|     sfxGrid.id = "moon8bit-sound-sfx-grid";
+  #|     sfxGrid.style.display = "grid";
+  #|     sfxGrid.style.gap = "6px";
+  #|     soundEditor.appendChild(sfxGrid);
+  #|   }
   #|
-  #|     const profile = audioState.sfx[kind];
+  #|   const renderSfxCard = (kind, title) => {
+  #|     const profile = ensureSfxProfile(kind);
+  #|     const slug = soundKeyToId(kind);
+  #|     const card = document.createElement("div");
+  #|     card.id = `moon8bit-sfx-${slug}-card`;
+  #|     card.style.display = "grid";
+  #|     card.style.gridTemplateColumns = "84px 1fr 1fr 1fr 1fr 1fr 80px";
+  #|     card.style.gap = "6px";
+  #|     card.style.alignItems = "center";
+  #|     card.style.padding = "6px";
+  #|     card.style.border = "1px solid #334e68";
+  #|     card.style.background = "#0f1720";
+  #|
+  #|     const label = document.createElement("div");
+  #|     label.textContent = title;
+  #|     label.style.fontFamily = "monospace";
+  #|     label.style.fontSize = "12px";
+  #|     card.appendChild(label);
+  #|
   #|     const fields = [
   #|       { key: "f0", label: "F0", min: 60, max: 1800, step: 1 },
   #|       { key: "f1", label: "F1", min: 40, max: 1600, step: 1 },
@@ -650,59 +702,91 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     ];
   #|
   #|     fields.forEach((field) => {
-  #|       const fieldId = `${prefix}-${field.key}`;
-  #|       let input = document.getElementById(fieldId);
-  #|       if (!input) {
-  #|         input = document.createElement("input");
-  #|         input.id = fieldId;
-  #|         input.type = "number";
-  #|         input.min = String(field.min);
-  #|         input.max = String(field.max);
-  #|         input.step = String(field.step);
-  #|         input.title = field.label;
-  #|         input.style.width = "100%";
-  #|         input.style.boxSizing = "border-box";
-  #|         card.appendChild(input);
-  #|       }
-  #|       if (input.dataset.bound !== "1") {
-  #|         input.dataset.bound = "1";
-  #|         input.addEventListener("input", () => {
-  #|           const n = Number(input.value);
-  #|           if (!Number.isFinite(n)) return;
-  #|           profile[field.key] = clamp(n, field.min, field.max);
-  #|         });
-  #|       }
+  #|       const input = document.createElement("input");
+  #|       input.type = "number";
+  #|       input.min = String(field.min);
+  #|       input.max = String(field.max);
+  #|       input.step = String(field.step);
+  #|       input.title = field.label;
+  #|       input.style.width = "100%";
+  #|       input.style.boxSizing = "border-box";
   #|       input.value = String(profile[field.key]);
+  #|       input.addEventListener("input", () => {
+  #|         const n = Number(input.value);
+  #|         if (!Number.isFinite(n)) return;
+  #|         profile[field.key] = clamp(n, field.min, field.max);
+  #|       });
+  #|       card.appendChild(input);
   #|     });
   #|
-  #|     let testBtn = document.getElementById(`${prefix}-test`);
-  #|     if (!testBtn) {
-  #|       testBtn = document.createElement("button");
-  #|       testBtn.id = `${prefix}-test`;
-  #|       testBtn.textContent = "Test";
-  #|       testBtn.style.padding = "4px 8px";
-  #|       testBtn.style.background = "#486581";
-  #|       testBtn.style.color = "#f6f7eb";
-  #|       testBtn.style.border = "1px solid #627d98";
-  #|       testBtn.style.cursor = "pointer";
-  #|       card.appendChild(testBtn);
-  #|     }
-  #|     if (testBtn.dataset.bound !== "1") {
-  #|       testBtn.dataset.bound = "1";
-  #|       testBtn.addEventListener("click", () => {
-  #|         try { globalThis.__moon8bit_audio_play_sfx_impl(kind); } catch (_) {}
-  #|       });
-  #|     }
+  #|     const testBtn = document.createElement("button");
+  #|     testBtn.textContent = "Test";
+  #|     testBtn.style.padding = "4px 8px";
+  #|     testBtn.style.background = "#486581";
+  #|     testBtn.style.color = "#f6f7eb";
+  #|     testBtn.style.border = "1px solid #627d98";
+  #|     testBtn.style.cursor = "pointer";
+  #|     testBtn.addEventListener("click", () => {
+  #|       try { globalThis.__moon8bit_audio_play_sfx_impl(kind); } catch (_) {}
+  #|     });
+  #|     card.appendChild(testBtn);
+  #|     sfxGrid.appendChild(card);
   #|   };
   #|
-  #|   ensureSfxEditor("flap", "Flap");
-  #|   ensureSfxEditor("hit", "Hit");
-  #|   ensureSfxEditor("reset", "Reset");
+  #|   const refreshSoundEditorFromDsl = () => {
+  #|     const events = parseSoundEventsFromDsl(textarea ? textarea.value : "");
+  #|     eventControls.innerHTML = "";
+  #|     sfxGrid.innerHTML = "";
+  #|     globalThis.__moon8bit_sound_events = events;
+  #|
+  #|     events.forEach((event) => {
+  #|       ensureSfxProfile(event.key);
+  #|
+  #|       const testBtn = document.createElement("button");
+  #|       testBtn.textContent = `Test ${event.label}`;
+  #|       testBtn.style.padding = "6px 10px";
+  #|       testBtn.style.background = "#274060";
+  #|       testBtn.style.color = "#f6f7eb";
+  #|       testBtn.style.border = "1px solid #486581";
+  #|       testBtn.style.cursor = "pointer";
+  #|       testBtn.addEventListener("click", () => {
+  #|         try { globalThis.__moon8bit_audio_play_sfx_impl(event.key); } catch (_) {}
+  #|       });
+  #|       eventControls.appendChild(testBtn);
+  #|
+  #|       renderSfxCard(event.key, event.label);
+  #|     });
+  #|   };
+  #|
+  #|   if (textarea && !globalThis.__moon8bit_sound_bound) {
+  #|     textarea.addEventListener("input", refreshSoundEditorFromDsl);
+  #|     globalThis.__moon8bit_sound_bound = true;
+  #|   }
+  #|   globalThis.__moon8bit_sound_refresh = refreshSoundEditorFromDsl;
+  #|   refreshSoundEditorFromDsl();
   #| }
 
 ///|
 extern "js" fn web_key_down(code : String) -> Bool =
   #| (code) => !!(globalThis.__moon8bit_keys && globalThis.__moon8bit_keys.has(code))
+
+///|
+extern "js" fn web_route_game_id() -> String =
+  #| () => {
+  #|   try {
+  #|     const loc = globalThis.location;
+  #|     if (!loc) return "";
+  #|     const path = String(loc.pathname || "");
+  #|     const m = path.match(/\/g\/([^\/?#]+)/);
+  #|     if (m && m[1]) {
+  #|       return decodeURIComponent(m[1]);
+  #|     }
+  #|     const query = new URLSearchParams(String(loc.search || ""));
+  #|     return query.get("game") || "";
+  #|   } catch (_) {
+  #|     return "";
+  #|   }
+  #| }
 
 ///|
 extern "js" fn web_clear(color : String) -> Unit =
@@ -768,6 +852,9 @@ extern "js" fn web_set_editor_text(text : String) -> Unit =
   #|   const input = document.getElementById("moon8bit-dsl-input");
   #|   if (input) {
   #|     input.value = text;
+  #|   }
+  #|   if (globalThis.__moon8bit_sound_refresh) {
+  #|     globalThis.__moon8bit_sound_refresh();
   #|   }
   #| }
 

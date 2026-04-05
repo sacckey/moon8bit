@@ -5,16 +5,16 @@ let config : @lib.EngineConfig = @lib.default_engine_config()
 let display_scale : Int = config.scale
 
 ///|
-let initial_bundle : @lib.AssetBundle = @lib.load_sample_assets()
+let current_spec : WebGameSpec = resolve_game_spec(web_route_game_id())
 
 ///|
-let initial_game : @lib.DriftbirdGame = @lib.engine_init(
-  @lib.new_driftbird_game(initial_bundle),
-  config,
-)
+let initial_bundle : @lib.AssetBundle = initial_bundle_for_spec(current_spec)
 
 ///|
-let state_ref : Ref[@lib.DriftbirdGame] = @ref.new(initial_game)
+let initial_game : WebGame = init_web_game(current_spec, initial_bundle, config)
+
+///|
+let state_ref : Ref[WebGame] = @ref.new(initial_game)
 
 ///|
 let frame_ref : Ref[Int] = @ref.new(0)
@@ -93,9 +93,9 @@ fn start_bgm_if_needed() -> Unit {
 fn tick() -> Unit {
   let frame_index = frame_ref.val
   let input = poll_input()
-  let prev_started = state_ref.val.is_started()
-  let prev_over = state_ref.val.is_over()
-  let (next, rendered) = @lib.engine_step(
+  let prev_started = game_started(state_ref.val)
+  let prev_over = game_over(state_ref.val)
+  let (next, rendered) = step_web_game(
     state_ref.val,
     config,
     input,
@@ -103,20 +103,20 @@ fn tick() -> Unit {
   )
 
   if input.flap {
-    web_audio_play_sfx("flap")
+    web_audio_play_sfx(current_spec.sound_events.flap)
   }
   if input.reset {
-    web_audio_play_sfx("reset")
+    web_audio_play_sfx(current_spec.sound_events.reset)
     stop_bgm_if_playing()
   }
-  if !prev_started && next.is_started() {
+  if !prev_started && game_started(next) {
     start_bgm_if_needed()
   }
-  if prev_over && !next.is_over() && next.is_started() {
+  if prev_over && !game_over(next) && game_started(next) {
     start_bgm_if_needed()
   }
-  if !prev_over && next.is_over() {
-    web_audio_play_sfx("hit")
+  if !prev_over && game_over(next) {
+    web_audio_play_sfx(current_spec.sound_events.hit)
     stop_bgm_if_playing()
   }
 
@@ -139,7 +139,7 @@ fn apply_dsl_text(dsl_text : String) -> Unit {
     }
   }
 
-  state_ref.val = @lib.engine_init(@lib.new_driftbird_game(bundle), config)
+  state_ref.val = init_web_game(current_spec, bundle, config)
   palette_ref.val = bundle.palette
   frame_ref.val = 0
   stop_bgm_if_playing()
@@ -156,8 +156,11 @@ fn on_apply() -> Unit {
 ///|
 fn on_export() -> Unit {
   let current = web_get_editor_text()
-  web_download_text("moon8bit_assets.dsl", current)
-  web_set_editor_feedback("Exported DSL as moon8bit_assets.dsl", false)
+  web_download_text(current_spec.export_filename, current)
+  web_set_editor_feedback(
+    "Exported DSL as \{current_spec.export_filename}",
+    false,
+  )
 }
 
 ///|
@@ -170,11 +173,9 @@ fn on_import(dsl_text : String) -> Unit {
 ///|
 fn main {
   web_init_canvas(config.width, config.height, display_scale)
-  web_set_status(
-    "HUD is in-canvas (S/F/H). Audio: flap/reset/hit SFX. BGM path is enabled but muted (volume=0).",
-  )
+  web_set_status("\{current_spec.title}: \{current_spec.status_text}")
 
-  web_set_editor_text(@lib.sample_assets_dsl())
+  web_set_editor_text(current_spec.default_assets_dsl)
   web_bind_apply(on_apply)
   web_bind_export(on_export)
   web_bind_import(on_import)

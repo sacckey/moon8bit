@@ -12,6 +12,11 @@ fn web_key_down(code : String) -> Bool {
 }
 
 ///|
+fn web_route_game_id() -> String {
+  ""
+}
+
+///|
 fn web_clear(color : String) -> Unit {
   ignore(color)
 }
