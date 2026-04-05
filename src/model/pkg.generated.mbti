@@ -105,13 +105,6 @@ pub(all) struct Rect {
   h : Int
 } derive(Eq, Show)
 
-pub(all) struct RuntimeContext {
-  config : EngineConfig
-  input : InputState
-  frame : Int
-  dt_ms : Int
-} derive(Eq, Show)
-
 pub(all) struct Sprite {
   name : String
   width : Int

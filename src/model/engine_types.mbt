@@ -105,14 +105,6 @@ pub fn key_released_any(input : InputState, candidates : Array[String]) -> Bool 
 }
 
 ///|
-pub(all) struct RuntimeContext {
-  config : EngineConfig
-  input : InputState
-  frame : Int
-  dt_ms : Int
-} derive(Eq, Show)
-
-///|
 pub(all) struct Rect {
   x : Int
   y : Int

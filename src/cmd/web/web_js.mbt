@@ -1455,6 +1455,41 @@ extern "js" fn web_audio_play_sfx(kind : String) -> Unit =
 ///|
 extern "js" fn web_start_loop(cb : () -> Unit, fps : Int) -> Unit =
   #| (cb, fps) => {
-  #|   const interval = Math.max(1, Math.floor(1000 / Math.max(1, fps)));
-  #|   setInterval(() => cb(), interval);
+  #|   if (globalThis.__moon8bit_loop_stop) {
+  #|     globalThis.__moon8bit_loop_stop();
+  #|   }
+  #|
+  #|   const targetFps = Math.max(1, fps | 0);
+  #|   const stepMs = 1000 / targetFps;
+  #|   const maxCatchUpSteps = 8;
+  #|   let acc = 0;
+  #|   let prev = performance.now();
+  #|   let rafId = 0;
+  #|   let stopped = false;
+  #|
+  #|   const frame = (now) => {
+  #|     if (stopped) return;
+  #|     let delta = now - prev;
+  #|     prev = now;
+  #|     if (delta < 0) delta = 0;
+  #|     if (delta > 250) delta = 250;
+  #|     acc += delta;
+  #|
+  #|     let steps = 0;
+  #|     while (acc >= stepMs && steps < maxCatchUpSteps) {
+  #|       cb();
+  #|       acc -= stepMs;
+  #|       steps += 1;
+  #|     }
+  #|
+  #|     rafId = requestAnimationFrame(frame);
+  #|   };
+  #|
+  #|   globalThis.__moon8bit_loop_stop = () => {
+  #|     stopped = true;
+  #|     if (rafId) cancelAnimationFrame(rafId);
+  #|     rafId = 0;
+  #|   };
+  #|
+  #|   rafId = requestAnimationFrame(frame);
   #| }

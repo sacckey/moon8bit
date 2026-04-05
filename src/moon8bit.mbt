@@ -20,9 +20,6 @@ pub type EngineConfig = @model.EngineConfig
 pub type InputState = @model.InputState
 
 ///|
-pub type RuntimeContext = @model.RuntimeContext
-
-///|
 pub type UpdateContext = @engine.UpdateContext
 
 ///|

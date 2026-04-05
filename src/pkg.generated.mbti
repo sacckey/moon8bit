@@ -160,8 +160,6 @@ pub using @model {type Palette}
 
 pub using @model {type Rect}
 
-pub using @model {type RuntimeContext}
-
 pub using @model {type Sprite}
 
 pub using @model {type Tilemap}
