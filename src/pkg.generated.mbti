@@ -54,8 +54,6 @@ pub let input_none : @model.InputState
 
 pub fn input_state(Bool, Bool) -> @model.InputState
 
-pub fn load_sample_assets() -> @model.AssetBundle
-
 pub fn new_driftbird_game(@model.AssetBundle) -> @driftbird.DriftbirdGame
 
 pub fn palette_default() -> @model.Palette
@@ -74,13 +72,11 @@ pub fn rect_intersects(@model.Rect, @model.Rect) -> Bool
 
 pub fn[T : @engine.Game] run(T, @model.EngineConfig, Array[@model.InputState]) -> (T, Array[@model.Frame])
 
-pub fn run_driftbird(Array[@model.InputState], config? : @model.EngineConfig) -> (@driftbird.DriftbirdGame, Array[@model.Frame])
+pub fn run_driftbird(@model.AssetBundle, Array[@model.InputState], config? : @model.EngineConfig) -> (@driftbird.DriftbirdGame, Array[@model.Frame])
 
-pub fn run_driftbird_demo(Int) -> (@driftbird.DriftbirdGame, Array[String])
+pub fn run_driftbird_demo(@model.AssetBundle, Int) -> (@driftbird.DriftbirdGame, Array[String])
 
 pub fn[T : @engine.Game] run_fixed_frames(T, @model.EngineConfig, Array[@model.InputState]) -> (T, Array[@model.Frame])
-
-pub fn sample_assets_dsl() -> String
 
 pub fn scripted_demo_inputs(Int) -> Array[@model.InputState]
 

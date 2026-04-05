@@ -9,19 +9,19 @@ import {
 // Values
 pub fn audio_events_for_step(DriftbirdGame, DriftbirdGame, @model.InputState) -> Array[String]
 
-pub fn load_sample_assets() -> @model.AssetBundle
+pub fn init_game(@model.AssetBundle, @model.EngineConfig) -> DriftbirdGame
 
 pub fn new_driftbird_game(@model.AssetBundle) -> DriftbirdGame
 
-pub fn run_driftbird(Array[@model.InputState], config? : @model.EngineConfig) -> (DriftbirdGame, Array[@model.Frame])
+pub fn run_driftbird(@model.AssetBundle, Array[@model.InputState], config? : @model.EngineConfig) -> (DriftbirdGame, Array[@model.Frame])
 
-pub fn run_driftbird_demo(Int) -> (DriftbirdGame, Array[String])
-
-pub fn sample_assets_dsl() -> String
-
-pub fn sample_assets_dsl_night() -> String
+pub fn run_driftbird_demo(@model.AssetBundle, Int) -> (DriftbirdGame, Array[String])
 
 pub fn scripted_demo_inputs(Int) -> Array[@model.InputState]
+
+pub fn step_audio_events(DriftbirdGame, DriftbirdGame, @model.InputState) -> Array[String]
+
+pub fn step_game(DriftbirdGame, @model.EngineConfig, @model.InputState, Int) -> (DriftbirdGame, @model.Frame)
 
 // Errors
 

@@ -1,6 +1,22 @@
 ///|
+
+///|
+fn wrapper_test_bundle() -> AssetBundle {
+  let dsl = [
+    "palette t", "color 0 #000000", "color 1 #111111", "color 2 #222222", "color 3 #333333",
+    "color 4 #444444", "color 5 #555555", "color 6 #666666", "color 7 #777777", "end",
+    "", "sprite bird 8 8", "33333333", "33333333", "33333333", "33333333", "33333333",
+    "33333333", "33333333", "33333333", "end",
+  ].join("\n")
+  match parse_assets_dsl(dsl) {
+    Ok(bundle) => bundle
+    Err(_) => panic()
+  }
+}
+
+///|
 test "root wrapper step and run remain equivalent to engine primitives" {
-  let bundle = load_sample_assets()
+  let bundle = wrapper_test_bundle()
   let cfg = default_engine_config()
   let input = input_state(true, false)
 
@@ -31,7 +47,7 @@ test "root wrapper step and run remain equivalent to engine primitives" {
 
 ///|
 test "root wrapper frame helpers remain equivalent to Frame methods" {
-  let bundle = load_sample_assets()
+  let bundle = wrapper_test_bundle()
   let sprite = match find_sprite(bundle, "bird") {
     Some(v) => v
     None => panic()

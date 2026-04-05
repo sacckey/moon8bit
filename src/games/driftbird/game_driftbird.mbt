@@ -1,7 +1,4 @@
 ///|
-type Palette = @model.Palette
-
-///|
 type Sprite = @model.Sprite
 
 ///|
@@ -24,16 +21,6 @@ type RuntimeContext = @model.RuntimeContext
 
 ///|
 type Frame = @model.Frame
-
-///|
-fn parse_assets_dsl(input : String) -> Result[AssetBundle, @model.DslError] {
-  @assets.parse_assets_dsl(input)
-}
-
-///|
-fn palette_default() -> Palette {
-  @model.palette_default()
-}
 
 ///|
 fn find_sprite(bundle : AssetBundle, name : String) -> Sprite? {
@@ -148,59 +135,6 @@ fn[T : @engine.Game] run(
   inputs : Array[InputState],
 ) -> (T, Array[Frame]) {
   @engine.run(game, config, inputs)
-}
-
-///|
-fn default_bird_sprite() -> Sprite {
-  Sprite::{
-    name: "bird",
-    width: 8,
-    height: 8,
-    pixels: [
-      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 3, 3, -1, -1, -1, -1, -1, 3, 3,
-      3, 3, 4, -1, -1, 3, 3, 3, 6, 3, 3, 4, -1, 3, 3, 5, 3, 3, 3, 4, -1, -1, 3, 3,
-      3, 3, 3, -1, -1, -1, -1, 3, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    ],
-  }
-}
-
-///|
-pub fn sample_assets_dsl() -> String {
-  [
-    "# moon8bit asset DSL v1", "# sfx-event flap Flap", "# sfx-event hit Hit", "# sfx-event reset Reset",
-    "palette dawn", "color 0 #0f1a20", "color 1 #274060", "color 2 #2e8b57", "color 3 #f2aa4c",
-    "color 4 #e94f37", "color 5 #8f6f4f", "color 6 #f6f7eb", "color 7 #7f5af0", "end",
-    "", "sprite bird 8 8", "........", "...33...", "..33334.", ".3336334", ".3353334",
-    "..33333.", "...33...", "........", "end", "", "tilemap bg 8 6", "0 0 0 0 0 0 0 0",
-    "0 0 1 0 0 1 0 0", "0 0 0 0 0 0 0 0", "0 0 0 0 0 0 0 0", "0 0 0 0 0 0 0 0", "1 0 0 1 0 0 1 0",
-    "end", "", "tilemap ground 8 2", "5 5 5 5 5 5 5 5", "3 3 3 3 3 3 3 3", "end",
-  ].join("\n")
-}
-
-///|
-pub fn sample_assets_dsl_night() -> String {
-  [
-    "# moon8bit asset DSL v1", "# sfx-event flap Wing", "# sfx-event hit Crash", "# sfx-event reset Retry",
-    "palette night", "color 0 #0b1020", "color 1 #1b263b", "color 2 #3a5a40", "color 3 #f4a261",
-    "color 4 #e76f51", "color 5 #5c4d7d", "color 6 #f1faee", "color 7 #7f5af0", "end",
-    "", "sprite bird 8 8", "........", "...33...", "..33334.", ".3336334", ".3353334",
-    "..33333.", "...33...", "........", "end", "", "tilemap bg 8 6", "0 0 1 0 0 1 0 0",
-    "0 0 0 0 0 0 0 0", "0 1 0 0 1 0 0 1", "0 0 0 0 0 0 0 0", "0 0 1 0 0 1 0 0", "1 0 0 1 0 0 1 0",
-    "end", "", "tilemap ground 8 2", "5 5 5 5 5 5 5 5", "2 2 2 2 2 2 2 2", "end",
-  ].join("\n")
-}
-
-///|
-pub fn load_sample_assets() -> AssetBundle {
-  match parse_assets_dsl(sample_assets_dsl()) {
-    Ok(bundle) => bundle
-    Err(_) =>
-      AssetBundle::{
-        palette: palette_default(),
-        sprites: [default_bird_sprite()],
-        tilemaps: [],
-      }
-  }
 }
 
 ///|
@@ -491,6 +425,30 @@ pub fn audio_events_for_step(
 }
 
 ///|
+pub fn init_game(bundle : AssetBundle, config : EngineConfig) -> DriftbirdGame {
+  @engine.engine_init(new_driftbird_game(bundle), config)
+}
+
+///|
+pub fn step_game(
+  game : DriftbirdGame,
+  config : EngineConfig,
+  input : InputState,
+  frame_index : Int,
+) -> (DriftbirdGame, Frame) {
+  @engine.engine_step(game, config, input, frame_index)
+}
+
+///|
+pub fn step_audio_events(
+  previous : DriftbirdGame,
+  next : DriftbirdGame,
+  input : InputState,
+) -> Array[String] {
+  audio_events_for_step(previous, next, input)
+}
+
+///|
 fn step_running(
   game : DriftbirdGame,
   ctx : RuntimeContext,
@@ -627,11 +585,10 @@ pub impl @engine.Game for DriftbirdGame with draw(self, ctx) {
     rect(frame, self.pipe_x, bottom_y, self.pipe_width, bottom_h, 2)
   }
 
-  let sprite = match find_sprite(self.bundle, "bird") {
-    Some(found) => found
-    None => default_bird_sprite()
+  match find_sprite(self.bundle, "bird") {
+    Some(sprite) => spr(frame, sprite, self.bird_x, bird_y_px(self))
+    None => ()
   }
-  spr(frame, sprite, self.bird_x, bird_y_px(self))
 
   draw_hud(frame, self, ctx.config)
   if !self.is_started || self.is_over {
@@ -653,18 +610,21 @@ pub fn scripted_demo_inputs(frame_count : Int) -> Array[InputState] {
 
 ///|
 pub fn run_driftbird(
+  bundle : AssetBundle,
   inputs : Array[InputState],
   config? : EngineConfig = default_engine_config(),
 ) -> (DriftbirdGame, Array[Frame]) {
-  let bundle = load_sample_assets()
   let initial = new_driftbird_game(bundle)
   run(initial, config, inputs)
 }
 
 ///|
-pub fn run_driftbird_demo(frame_count : Int) -> (DriftbirdGame, Array[String]) {
+pub fn run_driftbird_demo(
+  bundle : AssetBundle,
+  frame_count : Int,
+) -> (DriftbirdGame, Array[String]) {
   let inputs = scripted_demo_inputs(frame_count)
-  let (state, frames) = run_driftbird(inputs)
+  let (state, frames) = run_driftbird(bundle, inputs)
   let ascii_frames = frames.map(frame => frame.to_ascii())
   (state, ascii_frames)
 }

@@ -1,0 +1,6 @@
+{
+  "id": "driftbird",
+  "title": "Driftbird",
+  "status_text": "HUD is in-canvas (S/F/H). Audio events are configurable in Sound tab.",
+  "export_filename": "driftbird_assets.dsl"
+}

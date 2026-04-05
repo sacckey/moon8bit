@@ -1,4 +1,20 @@
 ///|
+
+///|
+fn test_bundle() -> AssetBundle {
+  let dsl = [
+    "palette t", "color 0 #000000", "color 1 #111111", "color 2 #222222", "color 3 #333333",
+    "color 4 #444444", "color 5 #555555", "color 6 #666666", "color 7 #777777", "end",
+    "", "sprite bird 8 8", "33333333", "33333333", "33333333", "33333333", "33333333",
+    "33333333", "33333333", "33333333", "end",
+  ].join("\n")
+  match parse_assets_dsl(dsl) {
+    Ok(bundle) => bundle
+    Err(_) => panic()
+  }
+}
+
+///|
 test "root facade exposes metadata and defaults" {
   assert_eq(version_tag(), "moon8bit-v0.1-mvp")
 
@@ -19,7 +35,7 @@ test "assets cli output covers success and parse errors" {
 
 ///|
 test "root facade runs driftbird demo" {
-  let (state, frames) = run_driftbird_demo(24)
+  let (state, frames) = run_driftbird_demo(test_bundle(), 24)
   assert_eq(frames.length(), 24)
   assert_true(state.score() >= 0)
   assert_true(frames[23].length() > 0)

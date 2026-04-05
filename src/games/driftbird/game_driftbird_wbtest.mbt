@@ -1,8 +1,31 @@
 ///|
+
+///|
+fn test_bundle() -> @model.AssetBundle {
+  let pixels : Array[Int] = []
+  for _ in 0..<64 {
+    pixels.push(3)
+  }
+
+  @model.AssetBundle::{
+    palette: @model.Palette::{
+      name: "test",
+      colors: [
+        "#000000", "#111111", "#222222", "#333333", "#444444", "#555555", "#666666",
+        "#777777",
+      ],
+    },
+    sprites: [@model.Sprite::{ name: "bird", width: 8, height: 8, pixels }],
+    tilemaps: [],
+  }
+}
+
+///|
 test "engine deterministic with identical inputs" {
+  let bundle = test_bundle()
   let inputs = scripted_demo_inputs(48)
-  let (state1, frames1) = run_driftbird(inputs)
-  let (state2, frames2) = run_driftbird(inputs)
+  let (state1, frames1) = run_driftbird(bundle, inputs)
+  let (state2, frames2) = run_driftbird(bundle, inputs)
 
   assert_eq(state1, state2)
   assert_eq(frames1, frames2)
@@ -10,6 +33,7 @@ test "engine deterministic with identical inputs" {
 
 ///|
 test "reset input restores game state" {
+  let bundle = test_bundle()
   let inputs = [
     @model.input_none,
     InputState::{ flap: true, reset: false },
@@ -17,7 +41,7 @@ test "reset input restores game state" {
     @model.input_none,
   ]
 
-  let (state, _) = run_driftbird(inputs)
+  let (state, _) = run_driftbird(bundle, inputs)
   assert_true(!state.is_over())
   assert_eq(state.score(), 0)
 }
@@ -62,10 +86,7 @@ test "collider API ignores empty collider boxes" {
 ///|
 test "engine step records pipe collision hit tag" {
   let config = default_engine_config()
-  let state = @engine.engine_init(
-    new_driftbird_game(load_sample_assets()),
-    config,
-  )
+  let state = @engine.engine_init(new_driftbird_game(test_bundle()), config)
 
   state.is_started = true
   state.bird_x = 8
@@ -86,10 +107,7 @@ test "engine step records pipe collision hit tag" {
 ///|
 test "engine step increments score when passing a pipe" {
   let config = default_engine_config()
-  let state = @engine.engine_init(
-    new_driftbird_game(load_sample_assets()),
-    config,
-  )
+  let state = @engine.engine_init(new_driftbird_game(test_bundle()), config)
 
   state.is_started = true
   state.is_over = false
@@ -111,10 +129,7 @@ test "engine step increments score when passing a pipe" {
 ///|
 test "parity score baseline increments once per pipe pass" {
   let config = default_engine_config()
-  let state = @engine.engine_init(
-    new_driftbird_game(load_sample_assets()),
-    config,
-  )
+  let state = @engine.engine_init(new_driftbird_game(test_bundle()), config)
   state.is_started = true
   state.is_over = false
   state.score = 0
@@ -136,10 +151,7 @@ test "parity score baseline increments once per pipe pass" {
 ///|
 test "parity collision baseline reports ground hit" {
   let config = default_engine_config()
-  let state = @engine.engine_init(
-    new_driftbird_game(load_sample_assets()),
-    config,
-  )
+  let state = @engine.engine_init(new_driftbird_game(test_bundle()), config)
 
   state.is_started = true
   state.bird_y = Double::from_int(config.height - 4)
@@ -161,7 +173,7 @@ test "parity reset baseline restores zeroed run state" {
     @model.input_none,
   ]
   let config = default_engine_config()
-  let (state, _) = run_driftbird(inputs, config~)
+  let (state, _) = run_driftbird(test_bundle(), inputs, config~)
 
   assert_true(!state.is_started())
   assert_true(!state.is_over())

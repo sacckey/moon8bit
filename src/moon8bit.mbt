@@ -315,16 +315,6 @@ pub fn spr(frame : Frame, sprite : Sprite, x : Int, y : Int) -> Unit {
 }
 
 ///|
-pub fn sample_assets_dsl() -> String {
-  @driftbird.sample_assets_dsl()
-}
-
-///|
-pub fn load_sample_assets() -> AssetBundle {
-  @driftbird.load_sample_assets()
-}
-
-///|
 pub fn new_driftbird_game(bundle : AssetBundle) -> DriftbirdGame {
   @driftbird.new_driftbird_game(bundle)
 }
@@ -336,15 +326,19 @@ pub fn scripted_demo_inputs(frame_count : Int) -> Array[InputState] {
 
 ///|
 pub fn run_driftbird(
+  bundle : AssetBundle,
   inputs : Array[InputState],
   config? : EngineConfig = default_engine_config(),
 ) -> (DriftbirdGame, Array[Frame]) {
-  @driftbird.run_driftbird(inputs, config~)
+  @driftbird.run_driftbird(bundle, inputs, config~)
 }
 
 ///|
-pub fn run_driftbird_demo(frame_count : Int) -> (DriftbirdGame, Array[String]) {
-  @driftbird.run_driftbird_demo(frame_count)
+pub fn run_driftbird_demo(
+  bundle : AssetBundle,
+  frame_count : Int,
+) -> (DriftbirdGame, Array[String]) {
+  @driftbird.run_driftbird_demo(bundle, frame_count)
 }
 
 ///|
@@ -358,7 +352,12 @@ pub fn assets_cli_output(dsl : String) -> String {
 ///|
 pub fn demo_snapshot(frame_count : Int) -> String {
   let safe_count = if frame_count <= 0 { 1 } else { frame_count }
-  let (_, ascii_frames) = run_driftbird_demo(safe_count)
+  let empty_bundle : AssetBundle = {
+    palette: palette_default(),
+    sprites: [],
+    tilemaps: [],
+  }
+  let (_, ascii_frames) = run_driftbird_demo(empty_bundle, safe_count)
   if ascii_frames.length() == 0 {
     ""
   } else {

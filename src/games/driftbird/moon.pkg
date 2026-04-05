@@ -1,5 +1,4 @@
 import {
   "sacckey/moon8bit/model" @model,
-  "sacckey/moon8bit/assets" @assets,
   "sacckey/moon8bit/engine" @engine,
 }
