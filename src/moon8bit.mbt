@@ -320,11 +320,6 @@ pub fn new_driftbird_game(bundle : AssetBundle) -> DriftbirdGame {
 }
 
 ///|
-pub fn scripted_demo_inputs(frame_count : Int) -> Array[InputState] {
-  @driftbird.scripted_demo_inputs(frame_count)
-}
-
-///|
 pub fn run_driftbird(
   bundle : AssetBundle,
   inputs : Array[InputState],
@@ -334,33 +329,9 @@ pub fn run_driftbird(
 }
 
 ///|
-pub fn run_driftbird_demo(
-  bundle : AssetBundle,
-  frame_count : Int,
-) -> (DriftbirdGame, Array[String]) {
-  @driftbird.run_driftbird_demo(bundle, frame_count)
-}
-
-///|
 pub fn assets_cli_output(dsl : String) -> String {
   match parse_assets_dsl_to_json_string(dsl) {
     Ok(json) => json
     Err(error) => "error(line=\{error.line}): \{error.message}"
-  }
-}
-
-///|
-pub fn demo_snapshot(frame_count : Int) -> String {
-  let safe_count = if frame_count <= 0 { 1 } else { frame_count }
-  let empty_bundle : AssetBundle = {
-    palette: palette_default(),
-    sprites: [],
-    tilemaps: [],
-  }
-  let (_, ascii_frames) = run_driftbird_demo(empty_bundle, safe_count)
-  if ascii_frames.length() == 0 {
-    ""
-  } else {
-    ascii_frames[ascii_frames.length() - 1]
   }
 }

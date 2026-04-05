@@ -15,6 +15,16 @@ fn test_bundle() -> AssetBundle {
 }
 
 ///|
+fn test_inputs(frame_count : Int) -> Array[InputState] {
+  let inputs : Array[InputState] = []
+  for i in 0..<frame_count {
+    let flap = every(i, 8) || every(i, 13)
+    inputs.push(input_state(flap, false))
+  }
+  inputs
+}
+
+///|
 test "root facade exposes metadata and defaults" {
   assert_eq(version_tag(), "moon8bit-v0.1-mvp")
 
@@ -34,11 +44,11 @@ test "assets cli output covers success and parse errors" {
 }
 
 ///|
-test "root facade runs driftbird demo" {
-  let (state, frames) = run_driftbird_demo(test_bundle(), 24)
+test "root facade runs driftbird with generated inputs" {
+  let (state, frames) = run_driftbird(test_bundle(), test_inputs(24))
   assert_eq(frames.length(), 24)
   assert_true(state.score() >= 0)
-  assert_true(frames[23].length() > 0)
+  assert_true(frames[23].to_ascii().length() > 0)
 }
 
 ///|

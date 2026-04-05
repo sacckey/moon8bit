@@ -99,18 +99,8 @@ fn default_engine_config() -> EngineConfig {
 }
 
 ///|
-fn btn(flap : Bool, reset : Bool) -> InputState {
-  @engine.btn(flap, reset)
-}
-
-///|
 fn btnp(current : Bool, previous : Bool) -> Bool {
   @engine.btnp(current, previous)
-}
-
-///|
-fn every(frame : Int, interval : Int) -> Bool {
-  @engine.every(frame, interval)
 }
 
 ///|
@@ -599,16 +589,6 @@ pub impl @engine.Game for DriftbirdGame with draw(self, ctx) {
 }
 
 ///|
-pub fn scripted_demo_inputs(frame_count : Int) -> Array[InputState] {
-  let inputs : Array[InputState] = []
-  for i in 0..<frame_count {
-    let flap = every(i, 8) || every(i, 13)
-    inputs.push(btn(flap, false))
-  }
-  inputs
-}
-
-///|
 pub fn run_driftbird(
   bundle : AssetBundle,
   inputs : Array[InputState],
@@ -616,15 +596,4 @@ pub fn run_driftbird(
 ) -> (DriftbirdGame, Array[Frame]) {
   let initial = new_driftbird_game(bundle)
   run(initial, config, inputs)
-}
-
-///|
-pub fn run_driftbird_demo(
-  bundle : AssetBundle,
-  frame_count : Int,
-) -> (DriftbirdGame, Array[String]) {
-  let inputs = scripted_demo_inputs(frame_count)
-  let (state, frames) = run_driftbird(bundle, inputs)
-  let ascii_frames = frames.map(frame => frame.to_ascii())
-  (state, ascii_frames)
 }

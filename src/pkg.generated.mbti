@@ -38,8 +38,6 @@ pub fn config(Int, Int, fps? : Int, scale? : Int, palette? : @model.Palette) -> 
 
 pub fn default_engine_config() -> @model.EngineConfig
 
-pub fn demo_snapshot(Int) -> String
-
 pub fn[T : @engine.Game] engine_init(T, @model.EngineConfig) -> T
 
 pub fn[T : @engine.Game] engine_step(T, @model.EngineConfig, @model.InputState, Int) -> (T, @model.Frame)
@@ -74,11 +72,7 @@ pub fn[T : @engine.Game] run(T, @model.EngineConfig, Array[@model.InputState]) -
 
 pub fn run_driftbird(@model.AssetBundle, Array[@model.InputState], config? : @model.EngineConfig) -> (@driftbird.DriftbirdGame, Array[@model.Frame])
 
-pub fn run_driftbird_demo(@model.AssetBundle, Int) -> (@driftbird.DriftbirdGame, Array[String])
-
 pub fn[T : @engine.Game] run_fixed_frames(T, @model.EngineConfig, Array[@model.InputState]) -> (T, Array[@model.Frame])
-
-pub fn scripted_demo_inputs(Int) -> Array[@model.InputState]
 
 pub fn spr(@model.Frame, @model.Sprite, Int, Int) -> Unit
 

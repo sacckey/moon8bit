@@ -15,6 +15,16 @@ fn wrapper_test_bundle() -> AssetBundle {
 }
 
 ///|
+fn wrapper_test_inputs(frame_count : Int) -> Array[InputState] {
+  let inputs : Array[InputState] = []
+  for i in 0..<frame_count {
+    let flap = every(i, 8) || every(i, 13)
+    inputs.push(input_state(flap, false))
+  }
+  inputs
+}
+
+///|
 test "root wrapper step and run remain equivalent to engine primitives" {
   let bundle = wrapper_test_bundle()
   let cfg = default_engine_config()
@@ -29,7 +39,7 @@ test "root wrapper step and run remain equivalent to engine primitives" {
   assert_eq(next_wrapped, next_base)
   assert_eq(frame_wrapped, frame_base)
 
-  let inputs = scripted_demo_inputs(24)
+  let inputs = wrapper_test_inputs(24)
   let (final_base, frames_base) = run_fixed_frames(
     new_driftbird_game(bundle),
     cfg,

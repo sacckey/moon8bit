@@ -21,9 +21,19 @@ fn test_bundle() -> @model.AssetBundle {
 }
 
 ///|
+fn test_inputs(frame_count : Int) -> Array[InputState] {
+  let inputs : Array[InputState] = []
+  for i in 0..<frame_count {
+    let flap = i % 8 == 0 || i % 13 == 0
+    inputs.push(@model.input_state(flap, false))
+  }
+  inputs
+}
+
+///|
 test "engine deterministic with identical inputs" {
   let bundle = test_bundle()
-  let inputs = scripted_demo_inputs(48)
+  let inputs = test_inputs(48)
   let (state1, frames1) = run_driftbird(bundle, inputs)
   let (state2, frames2) = run_driftbird(bundle, inputs)
 

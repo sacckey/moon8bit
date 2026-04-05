@@ -21,12 +21,22 @@ fn test_bundle() -> @model.AssetBundle {
 }
 
 ///|
-test "run_driftbird_demo returns requested frame count" {
+fn test_inputs(frame_count : Int) -> Array[@model.InputState] {
+  let inputs : Array[@model.InputState] = []
+  for i in 0..<frame_count {
+    let flap = i % 8 == 0 || i % 13 == 0
+    inputs.push(@model.input_state(flap, false))
+  }
+  inputs
+}
+
+///|
+test "run_driftbird returns requested frame count" {
   let bundle = test_bundle()
-  let (state, frames) = @driftbird.run_driftbird_demo(bundle, 24)
+  let (state, frames) = @driftbird.run_driftbird(bundle, test_inputs(24))
   assert_eq(frames.length(), 24)
   assert_true(state.score() >= 0)
-  assert_true(frames[23].length() > 0)
+  assert_true(frames[23].to_ascii().length() > 0)
 }
 
 ///|
