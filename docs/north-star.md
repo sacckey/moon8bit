@@ -111,6 +111,20 @@ This section is the fixed planning baseline for remaining SCC work.
   - README usage example
 - No delayed "wrapper later" feature delivery.
 
+### Architecture Rule (Fixed: 2026-04-05)
+
+- Prioritize design consistency over demo speed.
+- Shared packages must stay game-neutral:
+  - no game-specific nouns in shared types/functions
+  - no game-specific branching in `cmd/web` runtime path
+- Input is modeled as raw device state in shared layer:
+  - keys/pointer snapshot + edge state
+  - game meaning is resolved only in game packages
+- "Minimal" must be achieved in this order:
+  1. internal boundary correctness
+  2. deterministic behavior/tests
+  3. thin ergonomic wrappers
+
 ### Non-Goals (Fixed)
 
 - Chasing full-feature parity with broad ECS/3D engines.

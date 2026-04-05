@@ -32,7 +32,16 @@ pub fn config(
   palette? : Palette = palette_default(),
 ) -> EngineConfig
 
-pub fn btn(flap : Bool, reset : Bool) -> InputState
+pub fn btn(
+  keys_down : Array[String],
+  keys_pressed? : Array[String] = [],
+  keys_released? : Array[String] = [],
+  pointer_x? : Int = 0,
+  pointer_y? : Int = 0,
+  pointer_down? : Bool = false,
+  pointer_pressed? : Bool = false,
+  pointer_released? : Bool = false,
+) -> InputState
 
 pub fn[T : Game] step(
   game : T,
@@ -66,7 +75,7 @@ pub fn spr(frame : Frame, sprite : Sprite, x : Int, y : Int) -> Unit
 ## Mapping to Existing APIs
 
 - `config` -> `EngineConfig::{ ... }` (same default values as `default_engine_config()`).
-- `btn` -> `input_state(flap, reset)`.
+- `btn` -> `input_state(raw_keys/pointer_snapshot...)`.
 - `step` -> `engine_step(game, config, input, frame)`.
 - `run` -> `run_fixed_frames(game, config, inputs)`.
 - `cls` -> `Frame::clear(color)`.
@@ -115,5 +124,10 @@ pub fn spr(frame : Frame, sprite : Sprite, x : Int, y : Int) -> Unit
 ## Open Questions to Resolve Before Merge
 
 - Should `config` also offer an overload that starts from `default_engine_config()` and only overrides selected fields?
-- Should we expose tiny aliases for booleans (`btnf`, `btnr`) or keep only explicit `btn(flap, reset)`?
+- Should we expose compact key helpers (for example `key_down("Space")`) in the wrapper layer, or keep only explicit raw snapshots?
 - Should we expose a CLI/web toggle to compare classic calls vs wrapped calls in the same demo?
+
+## Note (2026-04-05)
+
+- Shared input semantics are now raw-device-first; game-action naming in shared APIs is deprecated in planning docs.
+- This document is retained as wrapper-history context; source of truth for direction is `docs/north-star.md` + `docs/decision-log.md`.

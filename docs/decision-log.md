@@ -79,3 +79,27 @@ Use one short entry per decision to prevent direction drift.
   - Wrapper additions are not postponed to a later refactor phase.
   - Each feature change includes: behavior tests, deterministic/reproducibility checks (when applicable), and a minimal README usage example.
   - External engines may be referenced for design ideas only; moon8bit implementation code remains original.
+
+- Date: 2026-04-05
+- Decision: Prioritize architecture consistency over speed-to-demo.
+- Why: Direction drift repeatedly occurred when short-term demo convenience overrode package boundaries.
+- Impact:
+  - Shared packages are reviewed with a "game-neutral" gate before merge.
+  - Wrapper/API polish does not bypass internal boundary corrections.
+
+- Date: 2026-04-05
+- Decision: Standardize shared input model as raw device state (keys/pointer), not game actions.
+- Why: Game-specific terms in shared types (`flap/reset`) caused coupling and blocked multi-game reuse.
+- Impact:
+  - Shared input APIs expose only raw keys/pointer state and edge transitions.
+  - Action semantics (jump/reset/etc.) are resolved only in game packages.
+
+- Date: 2026-04-05
+- Decision: Adopt minimal internal redesign order for upcoming work.
+- Why: Avoid large rewrites while preventing more surface-level API patches on unstable internals.
+- Impact:
+  - Next internal steps are fixed in order:
+    1. input pipeline consistency
+    2. runtime boundary clarity (`update/draw` responsibilities)
+    3. minimal event handoff cleanup
+  - Large feature additions are paused until this order is complete.
