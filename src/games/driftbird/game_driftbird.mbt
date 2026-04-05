@@ -450,6 +450,34 @@ pub fn DriftbirdGame::last_hit_tag(self : DriftbirdGame) -> String? {
 }
 
 ///|
+pub fn audio_events_for_step(
+  previous : DriftbirdGame,
+  next : DriftbirdGame,
+  input : InputState,
+) -> Array[String] {
+  let events : Array[String] = []
+  if input.flap {
+    events.push("flap")
+  }
+  if input.reset {
+    events.push("reset")
+    events.push("@bgm_stop")
+  }
+
+  if !previous.is_started() && next.is_started() {
+    events.push("@bgm_start")
+  }
+  if previous.is_over() && !next.is_over() && next.is_started() {
+    events.push("@bgm_start")
+  }
+  if !previous.is_over() && next.is_over() {
+    events.push("hit")
+    events.push("@bgm_stop")
+  }
+  events
+}
+
+///|
 fn step_running(
   game : DriftbirdGame,
   ctx : RuntimeContext,

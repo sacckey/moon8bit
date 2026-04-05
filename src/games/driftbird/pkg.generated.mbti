@@ -7,6 +7,8 @@ import {
 }
 
 // Values
+pub fn audio_events_for_step(DriftbirdGame, DriftbirdGame, @model.InputState) -> Array[String]
+
 pub fn load_sample_assets() -> @model.AssetBundle
 
 pub fn new_driftbird_game(@model.AssetBundle) -> DriftbirdGame

@@ -1,30 +1,15 @@
 ///|
-struct GameSoundEvents {
-  flap : String
-  reset : String
-  hit : String
-}
-
-///|
 struct WebGameSpec {
   id : String
   title : String
   status_text : String
   export_filename : String
   default_assets_dsl : String
-  sound_events : GameSoundEvents
 }
 
 ///|
 enum WebGame {
   Driftbird(@lib.DriftbirdGame)
-}
-
-///|
-let driftbird_sound_events : GameSoundEvents = {
-  flap: "flap",
-  reset: "reset",
-  hit: "hit",
 }
 
 ///|
@@ -34,7 +19,6 @@ let driftbird_spec : WebGameSpec = {
   status_text: "HUD is in-canvas (S/F/H). Audio events are configurable in Sound tab.",
   export_filename: "driftbird_assets.dsl",
   default_assets_dsl: @lib.sample_assets_dsl(),
-  sound_events: driftbird_sound_events,
 }
 
 ///|
@@ -98,15 +82,13 @@ fn step_web_game(
 }
 
 ///|
-fn game_started(game : WebGame) -> Bool {
-  match game {
-    Driftbird(inner) => inner.is_started()
-  }
-}
-
-///|
-fn game_over(game : WebGame) -> Bool {
-  match game {
-    Driftbird(inner) => inner.is_over()
+fn audio_events_for_step(
+  previous : WebGame,
+  next : WebGame,
+  input : @lib.InputState,
+) -> Array[String] {
+  match (previous, next) {
+    (Driftbird(prev), Driftbird(curr)) =>
+      @driftbird.audio_events_for_step(prev, curr, input)
   }
 }

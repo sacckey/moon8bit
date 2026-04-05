@@ -93,31 +93,17 @@ fn start_bgm_if_needed() -> Unit {
 fn tick() -> Unit {
   let frame_index = frame_ref.val
   let input = poll_input()
-  let prev_started = game_started(state_ref.val)
-  let prev_over = game_over(state_ref.val)
-  let (next, rendered) = step_web_game(
-    state_ref.val,
-    config,
-    input,
-    frame_index,
-  )
+  let previous = state_ref.val
+  let (next, rendered) = step_web_game(previous, config, input, frame_index)
 
-  if input.flap {
-    web_audio_play_sfx(current_spec.sound_events.flap)
-  }
-  if input.reset {
-    web_audio_play_sfx(current_spec.sound_events.reset)
-    stop_bgm_if_playing()
-  }
-  if !prev_started && game_started(next) {
-    start_bgm_if_needed()
-  }
-  if prev_over && !game_over(next) && game_started(next) {
-    start_bgm_if_needed()
-  }
-  if !prev_over && game_over(next) {
-    web_audio_play_sfx(current_spec.sound_events.hit)
-    stop_bgm_if_playing()
+  for event in audio_events_for_step(previous, next, input) {
+    if event == "@bgm_start" {
+      start_bgm_if_needed()
+    } else if event == "@bgm_stop" {
+      stop_bgm_if_playing()
+    } else {
+      web_audio_play_sfx(event)
+    }
   }
 
   state_ref.val = next

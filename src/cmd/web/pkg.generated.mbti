@@ -6,6 +6,9 @@ package "sacckey/moon8bit/cmd/web"
 // Errors
 
 // Types and methods
+type WebGame
+
+type WebGameSpec
 
 // Type aliases
 

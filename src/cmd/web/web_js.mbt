@@ -320,31 +320,17 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       bgmBaseFreq: 110,
   #|       bgmLfoFreq: 0.35,
   #|       bgmLfoDepth: 2.5,
-  #|       sfx: {
-  #|         flap: { type: "triangle", attack: 0.001, decay: 0.06, peak: 0.12, f0: 900, f1: 620 },
-  #|         hit: { type: "square", attack: 0.003, decay: 0.12, peak: 0.045, f0: 440, f1: 220 },
-  #|         reset: { type: "sine", attack: 0.003, decay: 0.10, peak: 0.06, f0: 420, f1: 620 },
-  #|       },
+  #|       sfx: {},
   #|     };
   #|   }
   #|   const audioState = globalThis.__moon8bit_audio_state;
   #|   if (!audioState.sfx) audioState.sfx = {};
-  #|   if (!audioState.sfx.flap) audioState.sfx.flap = { type: "triangle", attack: 0.001, decay: 0.06, peak: 0.12, f0: 900, f1: 620 };
-  #|   if (!audioState.sfx.hit) audioState.sfx.hit = { type: "square", attack: 0.003, decay: 0.12, peak: 0.045, f0: 440, f1: 220 };
-  #|   if (!audioState.sfx.reset) audioState.sfx.reset = { type: "sine", attack: 0.003, decay: 0.10, peak: 0.06, f0: 420, f1: 620 };
   #|
   #|   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
   #|   const defaultProfiles = {
-  #|     flap: { type: "triangle", attack: 0.001, decay: 0.06, peak: 0.12, f0: 900, f1: 620 },
-  #|     hit: { type: "square", attack: 0.003, decay: 0.12, peak: 0.045, f0: 440, f1: 220 },
-  #|     reset: { type: "sine", attack: 0.003, decay: 0.10, peak: 0.06, f0: 420, f1: 620 },
   #|     generic: { type: "square", attack: 0.003, decay: 0.10, peak: 0.07, f0: 520, f1: 360 },
   #|   };
-  #|   const fallbackSoundEvents = [
-  #|     { key: "flap", label: "Flap" },
-  #|     { key: "hit", label: "Hit" },
-  #|     { key: "reset", label: "Reset" },
-  #|   ];
+  #|   const fallbackSoundEvents = [];
   #|   const soundKeyToId = (key) =>
   #|     key.toLowerCase().replace(/[^a-z0-9_-]/g, "_");
   #|   const ensureSfxProfile = (key) => {
@@ -475,12 +461,10 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       if (!ctx) return;
   #|
   #|       const defaults = {
-  #|         flap: { type: "triangle", attack: 0.001, decay: 0.06, peak: 0.12, f0: 900, f1: 620 },
-  #|         hit: { type: "square", attack: 0.003, decay: 0.12, peak: 0.045, f0: 440, f1: 220 },
-  #|         reset: { type: "sine", attack: 0.003, decay: 0.10, peak: 0.06, f0: 420, f1: 620 },
+  #|         generic: { type: "square", attack: 0.003, decay: 0.10, peak: 0.07, f0: 520, f1: 360 },
   #|       };
   #|       const state = globalThis.__moon8bit_audio_state || {};
-  #|       const sfx = (state.sfx && state.sfx[kind]) || defaults[kind] || defaults.flap;
+  #|       const sfx = (state.sfx && state.sfx[kind]) || defaults.generic;
   #|       const master = Number(state.master ?? 1.0);
   #|       const sfxVol = Number(state.sfxVolume ?? 1.0);
   #|
@@ -507,21 +491,6 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       gain.gain.setValueAtTime(0.0001, now);
   #|       gain.gain.linearRampToValueAtTime(peak, now + attack);
   #|       gain.gain.exponentialRampToValueAtTime(0.0001, now + decay);
-  #|
-  #|       if (kind === "hit") {
-  #|         const osc2 = ctx.createOscillator();
-  #|         const gain2 = ctx.createGain();
-  #|         osc2.type = "triangle";
-  #|         osc2.frequency.setValueAtTime(660, now);
-  #|         osc2.frequency.exponentialRampToValueAtTime(330, now + 0.09);
-  #|         gain2.gain.setValueAtTime(0.0001, now);
-  #|         gain2.gain.linearRampToValueAtTime(0.03, now + 0.002);
-  #|         gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
-  #|         osc2.connect(gain2);
-  #|         gain2.connect(ctx.destination);
-  #|         osc2.start(now);
-  #|         osc2.stop(now + 0.11);
-  #|       }
   #|
   #|       osc.start(now);
   #|       osc.stop(now + decay + 0.02);
@@ -756,6 +725,14 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|
   #|       renderSfxCard(event.key, event.label);
   #|     });
+  #|     if (events.length === 0) {
+  #|       const note = document.createElement("div");
+  #|       note.style.fontFamily = "monospace";
+  #|       note.style.fontSize = "12px";
+  #|       note.style.color = "#9fb3c8";
+  #|       note.textContent = "No # sfx-event metadata in DSL. Add lines like: # sfx-event <key> <label>";
+  #|       eventControls.appendChild(note);
+  #|     }
   #|   };
   #|
   #|   if (textarea && !globalThis.__moon8bit_sound_bound) {

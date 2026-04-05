@@ -1,5 +1,6 @@
 import {
   "sacckey/moon8bit" @lib,
+  "sacckey/moon8bit/games/driftbird" @driftbird,
   "moonbitlang/core/ref",
 }
 
