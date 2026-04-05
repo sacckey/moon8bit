@@ -6,6 +6,9 @@ import {
 options(
   targets: {
     "web_js.mbt": [ "js" ],
+    "web_js_input_bootstrap.mbt": [ "js" ],
+    "web_js_io.mbt": [ "js" ],
+    "web_js_tools.mbt": [ "js" ],
     "web_stub.mbt": [ "wasm", "wasm-gc", "native", "llvm" ],
   },
 )
