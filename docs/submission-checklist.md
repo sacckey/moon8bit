@@ -105,3 +105,41 @@ Expected:
 2. Freeze complete E2E flow and record final demo video/GIF.
 3. Decide WebGPU final-scope (minimal MVP or defer with explicit note).
 4. Finalize submission text with implementation-fact wording only.
+
+## Full Buildout Checklist (Minimal + WebGPU Complete)
+
+- [ ] [P01] Freeze final minimal runtime/API principles (single source of truth).
+- [ ] [P02] Define and fix game template contract for new games (`init/update/draw` + assets path).
+- [ ] [P03] Refactor `game_driftbird.mbt` toward minimal authoring style (major line-count reduction).
+- [ ] [P04] Finalize minimal drawing API surface (core only; extras separated).
+- [ ] [P05] Finalize input API surface (raw-first + minimal helpers).
+- [ ] [P06] Finalize `EngineCommand`/`EngineEvent` vocabulary as game-neutral primitives.
+- [ ] [P07] Finalize scheduler semantics (`timeout/interval/cancel`) and lock tests.
+- [ ] [P08] Freeze shared web runtime boundary (`cmd/web` game-neutral contract).
+- [ ] [P09] Add automated new-game scaffolding (template + generation command/script).
+- [ ] [P10] Freeze `assets.dsl` core grammar and extension points.
+- [ ] [P11] Complete sprite editor workflow (edit/apply/save/restore).
+- [ ] [P12] Define sound data model (waveform/ADSR/pitch/volume/loop).
+- [ ] [P13] Implement sound text format integration into project asset flow.
+- [ ] [P14] Complete sound editor UX (preset/slider/test + DSL sync).
+- [ ] [P15] Integrate audio runtime path (engine events to playback behavior).
+- [ ] [P16] Finalize BGM/SFX policy (mixing, priority, stop rules).
+- [ ] [P17] Introduce renderer abstraction (`Canvas2D` / `WebGPU` backends).
+- [ ] [P18] Move current Canvas2D renderer into renderer abstraction.
+- [ ] [P19] Implement WebGPU minimum path (`Frame` upload + render).
+- [ ] [P20] Implement WebGPU native path for practical parity (sprite/tilemap/text draw route).
+- [ ] [P21] Optimize WebGPU path (buffer reuse, upload strategy, pipeline tuning).
+- [ ] [P22] Add WebGPU resilience (feature detection, fallback, device-lost recovery).
+- [ ] [P23] Normalize pixel-perfect scaling behavior across Canvas/WebGPU.
+- [ ] [P24] Complete in-browser asset workflow consistency (DSL/Sprite/Sound end-to-end).
+- [ ] [P25] Finalize import/export contract for full asset round-trip.
+- [ ] [P26] Finalize apply/reload semantics between editor and running game.
+- [ ] [P27] Complete multi-game path workflow (`/g/<id>/` discovery/build/publish).
+- [ ] [P28] Strengthen CI for all games (check/test/per-game web build/bundle generation).
+- [ ] [P29] Add deterministic E2E replay coverage for game behavior stability.
+- [ ] [P30] Add Canvas/WebGPU parity validation and acceptable-diff policy.
+- [ ] [P31] Add audio regression checks for event-to-sound behavior.
+- [ ] [P32] Finalize API/architecture docs for minimal principles and non-goals.
+- [ ] [P33] Add at least one additional game sample written in the minimal style.
+- [ ] [P34] Measure and optimize runtime/package footprint (fps/memory/bundle size).
+- [ ] [P35] Final cleanup pass (naming, module boundaries, dead-code removal) before feature freeze.
