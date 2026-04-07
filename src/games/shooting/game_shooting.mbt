@@ -11,9 +11,6 @@ let hud_h = 9
 let play_y : Int = hud_h
 
 ///|
-let play_h : Int = screen_h - play_y
-
-///|
 let player_speed = 2
 
 ///|
@@ -41,6 +38,9 @@ let bullet_h = 4
 let shoot_interval = 12
 
 ///|
+let star_count = 30
+
+///|
 struct Bullet {
   x : Int
   mut y : Int
@@ -54,6 +54,14 @@ struct Enemy {
 } derive(Eq, Show)
 
 ///|
+struct Star {
+  mut x : Int
+  mut y : Int
+  mut speed : Int
+  mut color : Int
+} derive(Eq, Show)
+
+///|
 pub struct ShootingGame {
   bundle : @model.AssetBundle
   mut player_x : Int
@@ -64,13 +72,15 @@ pub struct ShootingGame {
   mut lives : Int
   mut shoot_timer : Int
   mut spawn_timer : Int
+  stars : Array[Star]
   mut seed : Int
+  mut star_seed : Int
   mut is_over : Bool
-  mut scroll : Int
 } derive(Eq, Show)
 
 ///|
 fn new_shooting_game(bundle : @model.AssetBundle) -> ShootingGame {
+  let (stars, star_seed) = init_stars(424242, star_count)
   ShootingGame::{
     bundle,
     player_x: screen_w / 2 - player_w / 2,
@@ -81,15 +91,45 @@ fn new_shooting_game(bundle : @model.AssetBundle) -> ShootingGame {
     lives: 3,
     shoot_timer: 0,
     spawn_timer: 0,
+    stars,
     seed: 99991,
+    star_seed,
     is_over: false,
-    scroll: 0,
   }
 }
 
 ///|
 fn next_seed(seed : Int) -> Int {
   (seed * 1664525 + 1013904223).land(0x7FFFFFFF)
+}
+
+///|
+fn init_stars(seed : Int, count : Int) -> (Array[Star], Int) {
+  let stars : Array[Star] = []
+  let mut s = seed
+  for _ in 0..<count {
+    s = next_seed(s)
+    let x = @engine.rand(s, 0, screen_w)
+    s = next_seed(s)
+    let y = @engine.rand(s, play_y, screen_h)
+    s = next_seed(s)
+    let speed = if @engine.rand(s, 0, 4) == 0 { 2 } else { 1 }
+    let color = if speed == 2 { 6 } else { 1 }
+    stars.push(Star::{ x, y, speed, color })
+  }
+  (stars, s)
+}
+
+///|
+fn reset_star_to_top(star : Star, seed : Int) -> Int {
+  let mut s = next_seed(seed)
+  star.x = @engine.rand(s, 0, screen_w)
+  s = next_seed(s)
+  star.y = play_y + @engine.rand(s, 0, 2)
+  s = next_seed(s)
+  star.speed = if @engine.rand(s, 0, 4) == 0 { 2 } else { 1 }
+  star.color = if star.speed == 2 { 6 } else { 1 }
+  s
 }
 
 ///|
@@ -106,8 +146,13 @@ pub impl @engine.Game for ShootingGame with update(self, ctx) {
     return self
   }
 
-  // scroll background
-  self.scroll = (self.scroll + 1) % screen_h
+  // star background
+  for star in self.stars {
+    star.y += star.speed
+    if star.y >= screen_h {
+      self.star_seed = reset_star_to_top(star, self.star_seed)
+    }
+  }
 
   // player movement
   if @engine.key_down(ctx.input, "ArrowLeft") ||
@@ -211,13 +256,9 @@ pub impl @engine.Game for ShootingGame with update(self, ctx) {
 pub impl @engine.Game for ShootingGame with draw(self, _ctx) {
   let frame = @model.Frame::new(screen_w, screen_h, fill=0)
 
-  // scrolling star background
-  for i in 0..<30 {
-    let sx = @engine.rand(i * 7 + 1, 0, screen_w)
-    let sy = (@engine.rand(i * 13 + 3, 0, screen_h) + self.scroll) % play_h +
-      play_y
-    let c = if i % 3 == 0 { 6 } else { 1 }
-    frame.set_pixel(sx, sy, c)
+  // star background
+  for star in self.stars {
+    frame.set_pixel(star.x, star.y, star.color)
   }
 
   // enemies
