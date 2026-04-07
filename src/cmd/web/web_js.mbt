@@ -112,6 +112,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   canvas.style.height = `${height * scale}px`;
   #|   canvas.style.imageRendering = "pixelated";
   #|   canvas.style.border = "2px solid #333";
+  #|   globalThis.__moon8bit_scale = scale;
   #|
   #|   let status = document.getElementById("moon8bit-status");
   #|   if (!status) {
@@ -124,12 +125,10 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     tabUi.game.panel.appendChild(status);
   #|   }
   #|
-  #|   const ctx = canvas.getContext("2d", { alpha: false });
-  #|   if (!ctx) {
-  #|     throw new Error("2d context is unavailable");
-  #|   }
-  #|   ctx.imageSmoothingEnabled = false;
-  #|   globalThis.__moon8bit_ctx = ctx;
+  #|   // Rendering backend is initialized in web_init_gpu:
+  #|   // - WebGPU if available
+  #|   // - Canvas2D fallback otherwise
+  #|   globalThis.__moon8bit_ctx = null;
   #|   globalThis.__moon8bit_keys = new Set();
   #|   if (!globalThis.__moon8bit_pointer) {
   #|     globalThis.__moon8bit_pointer = { x: 0, y: 0, down: false };

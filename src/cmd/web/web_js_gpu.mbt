@@ -48,55 +48,74 @@ extern "js" fn web_render_frame(
   #|   // --- dispatch to active renderer ---
   #|   if (globalThis.__moon8bit_render_fn) {
   #|     globalThis.__moon8bit_render_fn(buf, width, height);
-  #|     return;
-  #|   }
-  #|
-  #|   // Renderer not yet ready — use Canvas2D as immediate fallback.
-  #|   const ctx2d = globalThis.__moon8bit_ctx;
-  #|   if (!ctx2d) return;
-  #|   const imgData = new ImageData(globalThis.__moon8bit_pixel_buf_clamped, width, height);
-  #|   ctx2d.putImageData(imgData, 0, 0);
-  #|   const scale = (ctx2d.canvas.width / width) | 0;
-  #|   if (scale > 1) {
-  #|     ctx2d.drawImage(ctx2d.canvas, 0, 0, width, height, 0, 0, width * scale, height * scale);
   #|   }
   #| }
 
 ///|
 extern "js" fn web_init_gpu(width : Int, height : Int) -> Unit =
   #| (width, height) => {
-  #|   if (!navigator.gpu) return;  // WebGPU not available
+  #|   const canvas = document.getElementById("moon8bit-canvas");
+  #|   if (!canvas) return;
+  #|   const scale = Math.max(1, Number(globalThis.__moon8bit_scale || 1) | 0);
+  #|
+  #|   const applyCanvasSize = (w, h) => {
+  #|     if (canvas.width !== w) canvas.width = w;
+  #|     if (canvas.height !== h) canvas.height = h;
+  #|     canvas.style.width = `${w * scale}px`;
+  #|     canvas.style.height = `${h * scale}px`;
+  #|   };
+  #|
+  #|   const init2dFallback = () => {
+  #|     const ctx2d = canvas.getContext("2d", { alpha: false });
+  #|     if (!ctx2d) return;
+  #|     ctx2d.imageSmoothingEnabled = false;
+  #|     globalThis.__moon8bit_ctx = ctx2d;
+  #|     globalThis.__moon8bit_renderer_kind = "2d";
+  #|     globalThis.__moon8bit_render_fn = (pixelBuf, w, h) => {
+  #|       applyCanvasSize(w, h);
+  #|       const clamped = new Uint8ClampedArray(
+  #|         pixelBuf.buffer,
+  #|         pixelBuf.byteOffset,
+  #|         pixelBuf.byteLength,
+  #|       );
+  #|       const imgData = new ImageData(clamped, w, h);
+  #|       ctx2d.putImageData(imgData, 0, 0);
+  #|     };
+  #|   };
+  #|
+  #|   applyCanvasSize(width, height);
+  #|
+  #|   if (!navigator.gpu) {
+  #|     init2dFallback();
+  #|     return;
+  #|   }
   #|
   #|   const initWebGPU = async () => {
   #|     try {
   #|       const adapter = await navigator.gpu.requestAdapter();
-  #|       if (!adapter) return;
+  #|       if (!adapter) {
+  #|         init2dFallback();
+  #|         return;
+  #|       }
   #|
   #|       const device = await adapter.requestDevice();
+  #|       if (!device) {
+  #|         init2dFallback();
+  #|         return;
+  #|       }
   #|
   #|       // Handle device lost — fall back to Canvas2D
   #|       device.lost.then(() => {
-  #|         globalThis.__moon8bit_render_fn = null;
+  #|         init2dFallback();
   #|       });
   #|
-  #|       const canvas = document.getElementById("moon8bit-canvas");
-  #|       if (!canvas) return;
-  #|
-  #|       // Re-configure canvas for WebGPU
-  #|       const gpuCanvas = canvas;
-  #|       const context = gpuCanvas.getContext("webgpu");
-  #|       if (!context) return;
+  #|       const context = canvas.getContext("webgpu");
+  #|       if (!context) {
+  #|         init2dFallback();
+  #|         return;
+  #|       }
   #|
   #|       const format = navigator.gpu.getPreferredCanvasFormat();
-  #|       context.configure({ device, format, alphaMode: "opaque" });
-  #|
-  #|       // Texture: game framebuffer (pixel-index -> RGBA already resolved on CPU)
-  #|       const texture = device.createTexture({
-  #|         size: [width, height],
-  #|         format: "rgba8unorm",
-  #|         usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
-  #|       });
-  #|
   #|       const sampler = device.createSampler({
   #|         magFilter: "nearest",
   #|         minFilter: "nearest",
@@ -142,57 +161,80 @@ extern "js" fn web_init_gpu(width : Int, height : Int) -> Unit =
   #|         primitive: { topology: "triangle-list" },
   #|       });
   #|
-  #|       const bindGroup = device.createBindGroup({
-  #|         layout: pipeline.getBindGroupLayout(0),
-  #|         entries: [
-  #|           { binding: 0, resource: texture.createView() },
-  #|           { binding: 1, resource: sampler },
-  #|         ],
-  #|       });
+  #|       let texW = 0;
+  #|       let texH = 0;
+  #|       let texture = null;
+  #|       let bindGroup = null;
+  #|       let uploadBuffer = null;
+  #|       let bytesPerRow = 0;
+  #|       let staging = null;
   #|
-  #|       // Upload buffer: CPU writes RGBA pixels here, then copies to texture
-  #|       const bytesPerRow = Math.ceil(width * 4 / 256) * 256;
-  #|       const uploadBuffer = device.createBuffer({
-  #|         size: bytesPerRow * height,
-  #|         usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.MAP_WRITE,
-  #|         mappedAtCreation: false,
-  #|       });
+  #|       const ensureResources = (w, h) => {
+  #|         if (w === texW && h === texH) return;
+  #|         texW = w;
+  #|         texH = h;
+  #|         applyCanvasSize(w, h);
+  #|         context.configure({ device, format, alphaMode: "opaque" });
+  #|
+  #|         texture = device.createTexture({
+  #|           size: [w, h],
+  #|           format: "rgba8unorm",
+  #|           usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+  #|         });
+  #|
+  #|         bindGroup = device.createBindGroup({
+  #|           layout: pipeline.getBindGroupLayout(0),
+  #|           entries: [
+  #|             { binding: 0, resource: texture.createView() },
+  #|             { binding: 1, resource: sampler },
+  #|           ],
+  #|         });
+  #|
+  #|         bytesPerRow = Math.ceil((w * 4) / 256) * 256;
+  #|         uploadBuffer = device.createBuffer({
+  #|           size: bytesPerRow * h,
+  #|           usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
+  #|         });
+  #|         staging = new Uint8Array(bytesPerRow * h);
+  #|       };
   #|
   #|       // Render function — called every frame
   #|       globalThis.__moon8bit_render_fn = (pixelBuf, w, h) => {
-  #|         uploadBuffer.mapAsync(GPUMapMode.WRITE).then(() => {
-  #|           const dst = new Uint8Array(uploadBuffer.getMappedRange());
-  #|           // Copy row-by-row to respect bytesPerRow alignment
-  #|           for (let row = 0; row < h; row++) {
-  #|             dst.set(pixelBuf.subarray(row * w * 4, (row + 1) * w * 4), row * bytesPerRow);
-  #|           }
-  #|           uploadBuffer.unmap();
+  #|         ensureResources(w, h);
+  #|         for (let row = 0; row < h; row++) {
+  #|           const src0 = row * w * 4;
+  #|           const src1 = src0 + w * 4;
+  #|           staging.set(pixelBuf.subarray(src0, src1), row * bytesPerRow);
+  #|         }
   #|
-  #|           const encoder = device.createCommandEncoder();
-  #|           encoder.copyBufferToTexture(
-  #|             { buffer: uploadBuffer, bytesPerRow, rowsPerImage: h },
-  #|             { texture },
-  #|             [w, h],
-  #|           );
-  #|           const pass = encoder.beginRenderPass({
-  #|             colorAttachments: [{
-  #|               view: context.getCurrentTexture().createView(),
-  #|               loadOp: "clear",
-  #|               storeOp: "store",
-  #|               clearValue: { r: 0, g: 0, b: 0, a: 1 },
-  #|             }],
-  #|           });
-  #|           pass.setPipeline(pipeline);
-  #|           pass.setBindGroup(0, bindGroup);
-  #|           pass.draw(3);
-  #|           pass.end();
-  #|           device.queue.submit([encoder.finish()]);
+  #|         device.queue.writeBuffer(uploadBuffer, 0, staging);
+  #|
+  #|         const encoder = device.createCommandEncoder();
+  #|         encoder.copyBufferToTexture(
+  #|           { buffer: uploadBuffer, bytesPerRow, rowsPerImage: h },
+  #|           { texture },
+  #|           [w, h],
+  #|         );
+  #|
+  #|         const pass = encoder.beginRenderPass({
+  #|           colorAttachments: [{
+  #|             view: context.getCurrentTexture().createView(),
+  #|             loadOp: "clear",
+  #|             storeOp: "store",
+  #|             clearValue: { r: 0, g: 0, b: 0, a: 1 },
+  #|           }],
   #|         });
+  #|         pass.setPipeline(pipeline);
+  #|         pass.setBindGroup(0, bindGroup);
+  #|         pass.draw(3);
+  #|         pass.end();
+  #|         device.queue.submit([encoder.finish()]);
   #|       };
+  #|       globalThis.__moon8bit_renderer_kind = "webgpu";
   #|
   #|     } catch (_) {
   #|       // requestAdapter / requestDevice failed — stay on Canvas2D
-  #|       globalThis.__moon8bit_render_fn = null;
+  #|       init2dFallback();
   #|     }
   #|   };
   #|
