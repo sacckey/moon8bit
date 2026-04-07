@@ -1,0 +1,43 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "sacckey/moon8bit/games/shooting"
+
+import {
+  "sacckey/moon8bit/engine",
+  "sacckey/moon8bit/model",
+}
+
+// Values
+pub fn init_game(@model.AssetBundle, @model.EngineConfig) -> @engine.EngineInstance[ShootingGame]
+
+pub fn step_game(@engine.EngineInstance[ShootingGame], @model.InputState) -> (@engine.EngineInstance[ShootingGame], @model.Frame)
+
+// Errors
+
+// Types and methods
+type Bullet derive(Eq, Show)
+
+type Enemy derive(Eq, Show)
+
+pub struct ShootingGame {
+  bundle : @model.AssetBundle
+  mut player_x : Int
+  mut player_y : Int
+  mut bullets : Array[Bullet]
+  mut enemies : Array[Enemy]
+  mut score : Int
+  mut lives : Int
+  mut shoot_timer : Int
+  mut spawn_timer : Int
+  stars : Array[Star]
+  mut seed : Int
+  mut star_seed : Int
+  mut is_over : Bool
+} derive(Eq, Show)
+pub impl @engine.Game for ShootingGame
+
+type Star derive(Eq, Show)
+
+// Type aliases
+
+// Traits
+

@@ -46,20 +46,6 @@ fn web_bootstrap_game(
 }
 
 ///|
-fn web_clear(color : String) -> Unit {
-  ignore(color)
-}
-
-///|
-fn web_fill_rect(x : Int, y : Int, w : Int, h : Int, color : String) -> Unit {
-  ignore(x)
-  ignore(y)
-  ignore(w)
-  ignore(h)
-  ignore(color)
-}
-
-///|
 fn web_set_status(text : String) -> Unit {
   ignore(text)
 }
@@ -130,4 +116,23 @@ fn web_audio_play_sfx(kind : String) -> Unit {
 fn web_start_loop(cb : () -> Unit, fps : Int) -> Unit {
   ignore(fps)
   cb()
+}
+
+///|
+fn web_render_frame(
+  pixels : Array[Int],
+  width : Int,
+  height : Int,
+  colors : Array[String],
+) -> Unit {
+  ignore(pixels)
+  ignore(width)
+  ignore(height)
+  ignore(colors)
+}
+
+///|
+fn web_init_gpu(width : Int, height : Int) -> Unit {
+  ignore(width)
+  ignore(height)
 }
