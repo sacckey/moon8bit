@@ -1,0 +1,6 @@
+{
+  "id": "snake",
+  "title": "Snake",
+  "status_text": "Arrow keys or WASD to move.",
+  "export_filename": "snake_assets.dsl"
+}

@@ -219,7 +219,7 @@ pub fn rand(seed : Int, min : Int, max : Int) -> Int {
     return min
   }
   let mixed = seed * 1664525 + 1013904223
-  let non_negative = if mixed < 0 { -mixed } else { mixed }
+  let non_negative = mixed.land(0x7FFFFFFF)
   min + non_negative % (max - min)
 }
 
