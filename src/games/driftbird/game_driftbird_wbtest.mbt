@@ -105,11 +105,11 @@ test "engine step records pipe collision hit tag" {
 
   state.is_started = true
   state.bird_x = 8
-  state.bird_y = 4.0
+  state.bird_y = 10.0
   state.bird_vy = 0.0
   state.pipe_x = 10
-  state.pipe_width = 5
-  state.pipe_gap_y = 8
+  state.pipe_width = 7
+  state.pipe_gap_y = 14
   state.gap_height = 11
   state.is_over = false
   state.last_hit_tag = None

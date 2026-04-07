@@ -2,6 +2,24 @@
 pub type DriftbirdRuntime = @engine.EngineInstance[DriftbirdGame]
 
 ///|
+let hud_h = 9
+
+///|
+let play_y : Int = hud_h
+
+///|
+let game_w = 128
+
+///|
+let game_h = 128
+
+///|
+let ground_rows = 2
+
+///|
+let ground_y : Int = game_h - ground_rows
+
+///|
 pub struct DriftbirdGame {
   bundle : @model.AssetBundle
   mut bird_x : Int
@@ -60,14 +78,14 @@ pub fn new_driftbird_game(bundle : @model.AssetBundle) -> DriftbirdGame {
 }
 
 ///|
-fn reset(game : DriftbirdGame, config : @model.EngineConfig) -> DriftbirdGame {
+fn reset(game : DriftbirdGame, _config : @model.EngineConfig) -> DriftbirdGame {
   game.bird_x = 8
-  game.bird_y = Double::from_int(config.height / 2)
+  game.bird_y = Double::from_int((play_y + ground_y) / 2)
   game.bird_vy = 0.0
-  game.pipe_width = 5
-  game.gap_height = 11
-  game.pipe_x = config.width + 4
-  game.pipe_gap_y = @engine.rand(11, 5, config.height - 2 - game.gap_height - 3)
+  game.pipe_width = 20
+  game.gap_height = 25
+  game.pipe_x = game_w + 2
+  game.pipe_gap_y = @engine.rand(11, play_y + 2, ground_y - game.gap_height - 2)
   game.score = 0
   game.terrain_offset = 0
   game.is_started = false
@@ -80,18 +98,17 @@ fn reset(game : DriftbirdGame, config : @model.EngineConfig) -> DriftbirdGame {
 ///|
 fn pipe_colliders(
   game : DriftbirdGame,
-  config : @model.EngineConfig,
+  _config : @model.EngineConfig,
 ) -> Array[@model.Collider] {
-  let ground_y = config.height - 2
   let bottom_y = game.pipe_gap_y + game.gap_height
   let bottom_h = ground_y - bottom_y
   let cols = [
     @model.collider_box(
       "pipe_top",
       game.pipe_x,
-      0,
+      play_y,
       game.pipe_width,
-      game.pipe_gap_y,
+      game.pipe_gap_y - play_y,
     ),
   ]
   if bottom_h > 0 {
@@ -110,9 +127,8 @@ fn pipe_colliders(
 
 ///|
 fn detect_hit(game : DriftbirdGame, config : @model.EngineConfig) -> String? {
-  let ground_y = config.height - 2
   let by = game.bird_y.to_int()
-  if game.bird_y < 0.0 {
+  if game.bird_y < Double::from_int(play_y) {
     return Some("ceiling")
   }
   if by + 3 > ground_y {
@@ -127,25 +143,33 @@ fn step_physics(
   ctx : @engine.UpdateContext,
   flap : Bool,
 ) -> DriftbirdGame {
+  let flap_impulse = -3.1
+  let gravity_up = 0.26
+  let gravity_down_base = 0.12
+  let gravity_down_gain = 0.03
+  let gravity_down_max = 0.22
+  let min_vy = -3.3
+  let max_vy = 4.2
+
   if flap {
-    game.bird_vy = -2.5
+    game.bird_vy = flap_impulse
   }
   let g = if game.bird_vy < 0.0 {
-    0.42
+    gravity_up
   } else {
-    let gd = 0.16 + game.bird_vy * 0.04
-    if gd > 0.28 {
-      0.28
+    let gd = gravity_down_base + game.bird_vy * gravity_down_gain
+    if gd > gravity_down_max {
+      gravity_down_max
     } else {
       gd
     }
   }
   game.bird_vy = game.bird_vy + g
-  if game.bird_vy < -2.35 {
-    game.bird_vy = -2.35
+  if game.bird_vy < min_vy {
+    game.bird_vy = min_vy
   }
-  if game.bird_vy > 4.8 {
-    game.bird_vy = 4.8
+  if game.bird_vy > max_vy {
+    game.bird_vy = max_vy
   }
   game.bird_y += game.bird_vy
 
@@ -155,15 +179,15 @@ fn step_physics(
     game.pipe_scored = true
   }
   if game.pipe_x + game.pipe_width < 0 {
-    game.pipe_x = ctx.config.width + 6
+    game.pipe_x = game_w + 2
     game.pipe_gap_y = @engine.rand(
       ctx.tick + 97,
-      5,
-      ctx.config.height - 2 - game.gap_height - 3,
+      play_y + 2,
+      ground_y - game.gap_height - 2,
     )
     game.pipe_scored = false
   }
-  game.terrain_offset = (game.terrain_offset + 1) % ctx.config.width
+  game.terrain_offset = (game.terrain_offset + 1) % game_w
 
   match detect_hit(game, ctx.config) {
     Some(tag) => {
@@ -255,16 +279,15 @@ pub impl @engine.Game for DriftbirdGame with update(self, ctx) {
 }
 
 ///|
-pub impl @engine.Game for DriftbirdGame with draw(self, ctx) {
-  let w = ctx.config.width
-  let h = ctx.config.height
-  let ground_rows = 2
-  let ground_y = h - ground_rows
+pub impl @engine.Game for DriftbirdGame with draw(self, _ctx) {
+  let w = game_w
+  let h = game_h
+  let sky_rows = ground_y - play_y
   let frame = @model.Frame::new(w, h, fill=0)
 
   match @model.find_tilemap(self.bundle, "bg") {
     Some(tm) =>
-      draw_tilemap_rows(frame, tm, self.terrain_offset / 2, 0, w, ground_y)
+      draw_tilemap_rows(frame, tm, self.terrain_offset / 2, play_y, w, sky_rows)
     None => ()
   }
   match @model.find_tilemap(self.bundle, "ground") {
@@ -281,7 +304,13 @@ pub impl @engine.Game for DriftbirdGame with draw(self, ctx) {
   }
 
   // pipes
-  frame.draw_rect(self.pipe_x, 0, self.pipe_width, self.pipe_gap_y, 2)
+  frame.draw_rect(
+    self.pipe_x,
+    play_y,
+    self.pipe_width,
+    self.pipe_gap_y - play_y,
+    2,
+  )
   let bottom_y = self.pipe_gap_y + self.gap_height
   let bottom_h = ground_y - bottom_y
   if bottom_h > 0 {
