@@ -1,144 +1,9 @@
 ///|
-type Sprite = @model.Sprite
-
-///|
-type Tilemap = @model.Tilemap
-
-///|
-type AssetBundle = @model.AssetBundle
-
-///|
-type Collider = @model.Collider
-
-///|
-type EngineConfig = @model.EngineConfig
-
-///|
-type InputState = @model.InputState
-
-///|
-type UpdateContext = @engine.UpdateContext
-
-///|
-type DrawContext = @engine.DrawContext
-
-///|
-type Frame = @model.Frame
-
-///|
-type EngineEvent = @engine.EngineEvent
-
-///|
 pub type DriftbirdRuntime = @engine.EngineInstance[DriftbirdGame]
 
 ///|
-fn find_sprite(bundle : AssetBundle, name : String) -> Sprite? {
-  @model.find_sprite(bundle, name)
-}
-
-///|
-fn find_tilemap(bundle : AssetBundle, name : String) -> Tilemap? {
-  @model.find_tilemap(bundle, name)
-}
-
-///|
-fn tile_at(tilemap : Tilemap, x : Int, y : Int) -> Int? {
-  @model.tile_at(tilemap, x, y)
-}
-
-///|
-fn collider_box(tag : String, x : Int, y : Int, w : Int, h : Int) -> Collider {
-  @model.collider_box(tag, x, y, w, h)
-}
-
-///|
-fn aabb_hit_tag(
-  x : Int,
-  y : Int,
-  w : Int,
-  h : Int,
-  obstacles : Array[Collider],
-) -> String? {
-  @engine.aabb_hit_tag(x, y, w, h, obstacles)
-}
-
-///|
-fn ui_center_x(total_width : Int, item_width : Int) -> Int {
-  @engine.ui_center_x(total_width, item_width)
-}
-
-///|
-fn ui_center_y(total_height : Int, item_height : Int) -> Int {
-  @engine.ui_center_y(total_height, item_height)
-}
-
-///|
-fn ui_panel(
-  frame : Frame,
-  x : Int,
-  y : Int,
-  w : Int,
-  h : Int,
-  fill : Int,
-  border? : Int = -1,
-) -> Unit {
-  @engine.ui_panel(frame, x, y, w, h, fill, border~)
-}
-
-///|
-fn ui_text_width(text : String, scale? : Int = 1) -> Int {
-  @engine.ui_text_width(text, scale~)
-}
-
-///|
-fn ui_text(
-  frame : Frame,
-  x : Int,
-  y : Int,
-  text : String,
-  color : Int,
-  scale? : Int = 1,
-) -> Unit {
-  @engine.ui_text(frame, x, y, text, color, scale~)
-}
-
-///|
-fn default_engine_config() -> EngineConfig {
-  @model.default_engine_config()
-}
-
-///|
-fn key_pressed(input : InputState, key : String) -> Bool {
-  @model.key_pressed(input, key)
-}
-
-///|
-fn pset(frame : Frame, x : Int, y : Int, color : Int) -> Unit {
-  @engine.pset(frame, x, y, color)
-}
-
-///|
-fn rect(frame : Frame, x : Int, y : Int, w : Int, h : Int, color : Int) -> Unit {
-  @engine.rect(frame, x, y, w, h, color)
-}
-
-///|
-fn spr(frame : Frame, sprite : Sprite, x : Int, y : Int) -> Unit {
-  @engine.spr(frame, sprite, x, y)
-}
-
-///|
-fn[T : @engine.Game] run(
-  game : T,
-  config : EngineConfig,
-  inputs : Array[InputState],
-) -> (@engine.EngineInstance[T], Array[Frame]) {
-  @engine.run(game, config, inputs)
-}
-
-///|
 pub struct DriftbirdGame {
-  bundle : AssetBundle
+  bundle : @model.AssetBundle
   mut bird_x : Int
   mut bird_y : Double
   mut bird_vy : Double
@@ -153,219 +18,6 @@ pub struct DriftbirdGame {
   mut last_hit_tag : String?
   mut pipe_scored : Bool
 } derive(Eq, Show)
-
-///|
-fn clamp_double(
-  value : Double,
-  min_value : Double,
-  max_value : Double,
-) -> Double {
-  if value < min_value {
-    min_value
-  } else if value > max_value {
-    max_value
-  } else {
-    value
-  }
-}
-
-///|
-fn floor_to_int(value : Double) -> Int {
-  let truncated = value.to_int()
-  let truncated_double = Double::from_int(truncated)
-  if value < truncated_double {
-    truncated - 1
-  } else {
-    truncated
-  }
-}
-
-///|
-fn bird_y_px(game : DriftbirdGame) -> Int {
-  floor_to_int(game.bird_y)
-}
-
-///|
-fn next_gap_y(seed : Int, config : EngineConfig, gap_height : Int) -> Int {
-  let ground_y = config.height - 2
-  let min_gap_top = 5
-  let max_gap_top = ground_y - gap_height - 3
-  @engine.rand(seed, min_gap_top, max_gap_top + 1)
-}
-
-///|
-fn reset_driftbird(
-  game : DriftbirdGame,
-  config : EngineConfig,
-) -> DriftbirdGame {
-  game.bird_x = 8
-  game.bird_y = Double::from_int(config.height / 2)
-  game.bird_vy = 0.0
-  game.pipe_width = 5
-  game.gap_height = 11
-  game.pipe_x = config.width + 4
-  game.pipe_gap_y = next_gap_y(11, config, game.gap_height)
-  game.score = 0
-  game.terrain_offset = 0
-  game.is_started = false
-  game.is_over = false
-  game.last_hit_tag = None
-  game.pipe_scored = false
-  game
-}
-
-///|
-fn draw_scrolling_tilemap_rows(
-  frame : Frame,
-  tilemap : Tilemap,
-  scroll_x : Int,
-  start_y : Int,
-  screen_width : Int,
-  rows : Int,
-) -> Unit {
-  if tilemap.width <= 0 || tilemap.height <= 0 || rows <= 0 {
-    return
-  }
-
-  for row in 0..<rows {
-    let tile_y = row % tilemap.height
-    for x in 0..<screen_width {
-      let tile_x = (x + scroll_x) % tilemap.width
-      let color = match tile_at(tilemap, tile_x, tile_y) {
-        Some(v) => v
-        None => 3
-      }
-      pset(frame, x, start_y + row, color)
-    }
-  }
-}
-
-///|
-fn hit_code(tag : String?) -> Int {
-  match tag {
-    Some("ground") => 1
-    Some("ceiling") => 2
-    Some("pipe_top") => 3
-    Some("pipe_bottom") => 4
-    _ => 0
-  }
-}
-
-///|
-fn draw_hud(
-  frame : Frame,
-  game : DriftbirdGame,
-  config : EngineConfig,
-  tick : Int,
-) -> Unit {
-  ui_panel(frame, 0, 0, config.width, 9, 0)
-  let hud = "S\{game.score} F\{tick} H\{hit_code(game.last_hit_tag)}"
-  ui_text(frame, 1, 1, hud, 6)
-}
-
-///|
-fn draw_state_overlay(
-  frame : Frame,
-  game : DriftbirdGame,
-  config : EngineConfig,
-) -> Unit {
-  let line1 = if game.is_over { "GAME" } else { "SPACE" }
-  let line2 = if game.is_over { "OVER" } else { "" }
-  let line1_w = ui_text_width(line1)
-  let line2_w = ui_text_width(line2)
-  let content_w = if line1_w > line2_w { line1_w } else { line2_w }
-  let content_h = if line2 == "" { 7 } else { 15 }
-  let panel_w = content_w + 4
-  let panel_h = content_h + 4
-  let panel_x = ui_center_x(config.width, panel_w)
-  let panel_y = ui_center_y(config.height, panel_h)
-  let fill = if game.is_over { 4 } else { 6 }
-  let text_color = if game.is_over { 6 } else { 0 }
-
-  ui_panel(frame, panel_x, panel_y, panel_w, panel_h, fill, border=0)
-  ui_text(
-    frame,
-    panel_x + 2 + (content_w - line1_w) / 2,
-    panel_y + 2,
-    line1,
-    text_color,
-  )
-  if line2 != "" {
-    ui_text(
-      frame,
-      panel_x + 2 + (content_w - line2_w) / 2,
-      panel_y + 10,
-      line2,
-      text_color,
-    )
-  }
-}
-
-///|
-fn pipe_colliders(
-  game : DriftbirdGame,
-  config : EngineConfig,
-) -> Array[Collider] {
-  let ground_y = config.height - 2
-  let colliders : Array[Collider] = []
-  colliders.push(
-    collider_box("pipe_top", game.pipe_x, 0, game.pipe_width, game.pipe_gap_y),
-  )
-
-  let bottom_y = game.pipe_gap_y + game.gap_height
-  let bottom_h = ground_y - bottom_y
-  if bottom_h > 0 {
-    colliders.push(
-      collider_box(
-        "pipe_bottom",
-        game.pipe_x,
-        bottom_y,
-        game.pipe_width,
-        bottom_h,
-      ),
-    )
-  }
-
-  colliders
-}
-
-///|
-fn detect_collision_tag(game : DriftbirdGame, config : EngineConfig) -> String? {
-  let ground_y = config.height - 2
-  let bird_top = bird_y_px(game)
-  let bird_x = game.bird_x
-  let bird_w = 5
-  let bird_h = 3
-
-  if game.bird_y < 0.0 {
-    return Some("ceiling")
-  }
-  if bird_top + bird_h > ground_y {
-    return Some("ground")
-  }
-
-  aabb_hit_tag(bird_x, bird_top, bird_w, bird_h, pipe_colliders(game, config))
-}
-
-///|
-pub fn new_driftbird_game(bundle : AssetBundle) -> DriftbirdGame {
-  DriftbirdGame::{
-    bundle,
-    bird_x: 8,
-    bird_y: 0.0,
-    bird_vy: 0.0,
-    pipe_x: 0,
-    pipe_gap_y: 0,
-    pipe_width: 0,
-    gap_height: 0,
-    score: 0,
-    terrain_offset: 0,
-    is_started: false,
-    is_over: false,
-    last_hit_tag: None,
-    pipe_scored: false,
-  }
-}
 
 ///|
 pub fn DriftbirdGame::score(self : DriftbirdGame) -> Int {
@@ -388,50 +40,113 @@ pub fn DriftbirdGame::last_hit_tag(self : DriftbirdGame) -> String? {
 }
 
 ///|
-pub fn init_game(
-  bundle : AssetBundle,
-  config : EngineConfig,
-) -> DriftbirdRuntime {
-  @engine.engine_init(new_driftbird_game(bundle), config)
-}
-
-///|
-pub fn step_game(
-  game : DriftbirdRuntime,
-  input : InputState,
-) -> (DriftbirdRuntime, Frame) {
-  @engine.engine_step(game, input)
-}
-
-///|
-fn step_running(
-  game : DriftbirdGame,
-  ctx : UpdateContext,
-  flap_pressed : Bool,
-) -> DriftbirdGame {
-  let flap_impulse : Double = -2.5
-  let gravity_up : Double = 0.42
-  let gravity_base_down : Double = 0.16
-  let gravity_down_gain : Double = 0.04
-  let gravity_down_max : Double = 0.28
-  let min_vy : Double = -2.35
-  let max_vy : Double = 4.8
-
-  if flap_pressed {
-    game.bird_vy = flap_impulse
+pub fn new_driftbird_game(bundle : @model.AssetBundle) -> DriftbirdGame {
+  DriftbirdGame::{
+    bundle,
+    bird_x: 8,
+    bird_y: 0.0,
+    bird_vy: 0.0,
+    pipe_x: 0,
+    pipe_gap_y: 0,
+    pipe_width: 0,
+    gap_height: 0,
+    score: 0,
+    terrain_offset: 0,
+    is_started: false,
+    is_over: false,
+    last_hit_tag: None,
+    pipe_scored: false,
   }
+}
 
-  // Keep apex transition smooth: falling gravity ramps up with current down speed.
-  let g = if game.bird_vy < 0.0 {
-    gravity_up
-  } else {
-    clamp_double(
-      gravity_base_down + game.bird_vy * gravity_down_gain,
-      gravity_base_down,
-      gravity_down_max,
+///|
+fn reset(game : DriftbirdGame, config : @model.EngineConfig) -> DriftbirdGame {
+  game.bird_x = 8
+  game.bird_y = Double::from_int(config.height / 2)
+  game.bird_vy = 0.0
+  game.pipe_width = 5
+  game.gap_height = 11
+  game.pipe_x = config.width + 4
+  game.pipe_gap_y = @engine.rand(11, 5, config.height - 2 - game.gap_height - 3)
+  game.score = 0
+  game.terrain_offset = 0
+  game.is_started = false
+  game.is_over = false
+  game.last_hit_tag = None
+  game.pipe_scored = false
+  game
+}
+
+///|
+fn pipe_colliders(
+  game : DriftbirdGame,
+  config : @model.EngineConfig,
+) -> Array[@model.Collider] {
+  let ground_y = config.height - 2
+  let bottom_y = game.pipe_gap_y + game.gap_height
+  let bottom_h = ground_y - bottom_y
+  let cols = [
+    @model.collider_box(
+      "pipe_top",
+      game.pipe_x,
+      0,
+      game.pipe_width,
+      game.pipe_gap_y,
+    ),
+  ]
+  if bottom_h > 0 {
+    cols.push(
+      @model.collider_box(
+        "pipe_bottom",
+        game.pipe_x,
+        bottom_y,
+        game.pipe_width,
+        bottom_h,
+      ),
     )
   }
-  game.bird_vy = clamp_double(game.bird_vy + g, min_vy, max_vy)
+  cols
+}
+
+///|
+fn detect_hit(game : DriftbirdGame, config : @model.EngineConfig) -> String? {
+  let ground_y = config.height - 2
+  let by = game.bird_y.to_int()
+  if game.bird_y < 0.0 {
+    return Some("ceiling")
+  }
+  if by + 3 > ground_y {
+    return Some("ground")
+  }
+  @engine.aabb_hit_tag(game.bird_x, by, 5, 3, pipe_colliders(game, config))
+}
+
+///|
+fn step_physics(
+  game : DriftbirdGame,
+  ctx : @engine.UpdateContext,
+  flap : Bool,
+) -> DriftbirdGame {
+  if flap {
+    game.bird_vy = -2.5
+  }
+  let g = if game.bird_vy < 0.0 {
+    0.42
+  } else {
+    let gd = 0.16 + game.bird_vy * 0.04
+    if gd > 0.28 {
+      0.28
+    } else {
+      gd
+    }
+  }
+  game.bird_vy = game.bird_vy + g
+  if game.bird_vy < -2.35 {
+    game.bird_vy = -2.35
+  }
+  if game.bird_vy > 4.8 {
+    game.bird_vy = 4.8
+  }
   game.bird_y += game.bird_vy
 
   game.pipe_x -= 1
@@ -441,37 +156,60 @@ fn step_running(
   }
   if game.pipe_x + game.pipe_width < 0 {
     game.pipe_x = ctx.config.width + 6
-    game.pipe_gap_y = next_gap_y(ctx.tick + 97, ctx.config, game.gap_height)
+    game.pipe_gap_y = @engine.rand(
+      ctx.tick + 97,
+      5,
+      ctx.config.height - 2 - game.gap_height - 3,
+    )
     game.pipe_scored = false
   }
-
   game.terrain_offset = (game.terrain_offset + 1) % ctx.config.width
 
-  match detect_collision_tag(game, ctx.config) {
+  match detect_hit(game, ctx.config) {
     Some(tag) => {
       game.last_hit_tag = Some(tag)
       game.is_over = true
     }
     None => ()
   }
-
   game
 }
 
 ///|
-pub impl @engine.Game for DriftbirdGame with init(self, config : EngineConfig) {
-  reset_driftbird(self, config)
+fn draw_tilemap_rows(
+  frame : @model.Frame,
+  tilemap : @model.Tilemap,
+  scroll_x : Int,
+  start_y : Int,
+  w : Int,
+  rows : Int,
+) -> Unit {
+  for row in 0..<rows {
+    let ty = row % tilemap.height
+    for x in 0..<w {
+      let tx = (x + scroll_x) % tilemap.width
+      match @model.tile_at(tilemap, tx, ty) {
+        Some(c) => frame.set_pixel(x, start_y + row, c)
+        None => ()
+      }
+    }
+  }
 }
 
 ///|
-pub impl @engine.Game for DriftbirdGame with update(self, ctx : UpdateContext) {
-  let flap_pressed = @engine.key_pressed_any(ctx.input, ["Space", "ArrowUp"])
-  let reset_pressed = key_pressed(ctx.input, "KeyR")
+pub impl @engine.Game for DriftbirdGame with init(self, config) {
+  reset(self, config)
+}
 
-  if flap_pressed {
+///|
+pub impl @engine.Game for DriftbirdGame with update(self, ctx) {
+  let flap = @engine.key_pressed_any(ctx.input, ["Space", "ArrowUp"])
+  let r = @engine.key_pressed(ctx.input, "KeyR")
+
+  if flap {
     ctx.sfx("flap")
   }
-  if reset_pressed {
+  if r {
     ctx.clear_timers()
     ctx.sfx("reset")
     ctx.bgm_stop()
@@ -480,107 +218,133 @@ pub impl @engine.Game for DriftbirdGame with update(self, ctx : UpdateContext) {
   let was_started = self.is_started
   let was_over = self.is_over
 
-  let next = if reset_pressed {
-    reset_driftbird(self, ctx.config)
+  let next = if r {
+    reset(self, ctx.config)
   } else if self.is_over {
-    if !flap_pressed {
-      self
+    if flap {
+      let g = reset(self, ctx.config)
+      g.is_started = true
+      step_physics(g, ctx, flap)
     } else {
-      let restarted = reset_driftbird(self, ctx.config)
-      restarted.is_started = true
-      step_running(restarted, ctx, flap_pressed)
+      self
     }
-  } else if !self.is_started && !flap_pressed {
-    self
-  } else {
-    if !self.is_started {
+  } else if !self.is_started {
+    if flap {
       self.is_started = true
     }
-    step_running(self, ctx, flap_pressed)
+    if self.is_started {
+      step_physics(self, ctx, flap)
+    } else {
+      self
+    }
+  } else {
+    step_physics(self, ctx, flap)
   }
 
   if !was_started && next.is_started {
-    ctx.set_timeout(1, EngineEvent::BgmStart)
+    ctx.set_timeout(1, @engine.EngineEvent::BgmStart)
   }
   if was_over && !next.is_over && next.is_started {
-    ctx.set_timeout(1, EngineEvent::BgmStart)
+    ctx.set_timeout(1, @engine.EngineEvent::BgmStart)
   }
   if !was_over && next.is_over {
-    ctx.set_timeout(1, EngineEvent::Sfx("hit"))
+    ctx.set_timeout(1, @engine.EngineEvent::Sfx("hit"))
     ctx.bgm_stop()
   }
-
   next
 }
 
 ///|
-pub impl @engine.Game for DriftbirdGame with draw(self, ctx : DrawContext) {
-  let frame = Frame::new(ctx.config.width, ctx.config.height, fill=0)
-  let ground_rows = if ctx.config.height >= 2 { 2 } else { ctx.config.height }
-  let ground_y = ctx.config.height - ground_rows
-  let background_rows = if ground_y > 0 { ground_y } else { 0 }
+pub impl @engine.Game for DriftbirdGame with draw(self, ctx) {
+  let w = ctx.config.width
+  let h = ctx.config.height
+  let ground_rows = 2
+  let ground_y = h - ground_rows
+  let frame = @model.Frame::new(w, h, fill=0)
 
-  match find_tilemap(self.bundle, "bg") {
-    Some(tilemap) =>
-      draw_scrolling_tilemap_rows(
-        frame,
-        tilemap,
-        self.terrain_offset / 2,
-        0,
-        ctx.config.width,
-        background_rows,
-      )
-    None =>
-      for x in 0..<ctx.config.width {
-        if (x + self.terrain_offset) % 7 == 0 {
-          pset(frame, x, 1, 1)
-        }
-        if (x + self.terrain_offset) % 11 == 0 {
-          pset(frame, x, 3, 1)
-        }
-      }
+  match @model.find_tilemap(self.bundle, "bg") {
+    Some(tm) =>
+      draw_tilemap_rows(frame, tm, self.terrain_offset / 2, 0, w, ground_y)
+    None => ()
   }
-
-  match find_tilemap(self.bundle, "ground") {
-    Some(tilemap) =>
-      draw_scrolling_tilemap_rows(
+  match @model.find_tilemap(self.bundle, "ground") {
+    Some(tm) =>
+      draw_tilemap_rows(
         frame,
-        tilemap,
+        tm,
         self.terrain_offset,
         ground_y,
-        ctx.config.width,
+        w,
         ground_rows,
       )
-    None => rect(frame, 0, ground_y, ctx.config.width, ground_rows, 3)
+    None => frame.draw_rect(0, ground_y, w, ground_rows, 3)
   }
 
-  rect(frame, self.pipe_x, 0, self.pipe_width, self.pipe_gap_y, 2)
+  // pipes
+  frame.draw_rect(self.pipe_x, 0, self.pipe_width, self.pipe_gap_y, 2)
   let bottom_y = self.pipe_gap_y + self.gap_height
   let bottom_h = ground_y - bottom_y
   if bottom_h > 0 {
-    rect(frame, self.pipe_x, bottom_y, self.pipe_width, bottom_h, 2)
+    frame.draw_rect(self.pipe_x, bottom_y, self.pipe_width, bottom_h, 2)
   }
 
-  match find_sprite(self.bundle, "bird") {
-    Some(sprite) => spr(frame, sprite, self.bird_x, bird_y_px(self))
-    None => ()
+  // bird
+  match @model.find_sprite(self.bundle, "bird") {
+    Some(spr) => frame.blit(spr, self.bird_x, self.bird_y.to_int())
+    None => frame.draw_rect(self.bird_x, self.bird_y.to_int(), 5, 3, 3)
   }
 
-  draw_hud(frame, self, ctx.config, ctx.tick)
+  // HUD
+  frame.draw_rect(0, 0, w, 9, 0)
+  @engine.ui_text(frame, 1, 1, "S\{self.score}", 6)
+
+  // overlay
   if !self.is_started || self.is_over {
-    draw_state_overlay(frame, self, ctx.config)
+    let msg1 = if self.is_over { "GAME" } else { "SPACE" }
+    let msg2 = if self.is_over { "OVER" } else { "" }
+    let cw = @engine.ui_text_width(msg1)
+    let ch = if msg2 == "" { 7 } else { 15 }
+    let pw = cw + 4
+    let ph = ch + 4
+    let px = @engine.ui_center_x(w, pw)
+    let py = @engine.ui_center_y(h, ph)
+    let fill = if self.is_over { 4 } else { 6 }
+    let tc = if self.is_over { 6 } else { 0 }
+    @engine.ui_panel(frame, px, py, pw, ph, fill, border=0)
+    @engine.ui_text(frame, px + 2, py + 2, msg1, tc)
+    if msg2 != "" {
+      @engine.ui_text(frame, px + 2, py + 10, msg2, tc)
+    }
   }
-
   frame
 }
 
 ///|
+pub fn init_game(
+  bundle : @model.AssetBundle,
+  config : @model.EngineConfig,
+) -> DriftbirdRuntime {
+  @engine.engine_init(new_driftbird_game(bundle), config)
+}
+
+///|
+pub fn step_game(
+  game : DriftbirdRuntime,
+  input : @model.InputState,
+) -> (DriftbirdRuntime, @model.Frame) {
+  @engine.engine_step(game, input)
+}
+
+///|
 pub fn run_driftbird(
-  bundle : AssetBundle,
-  inputs : Array[InputState],
-  config? : EngineConfig = default_engine_config(),
-) -> (DriftbirdGame, Array[Frame]) {
-  let initial = new_driftbird_game(bundle)
-  let (runtime, frames) = run(initial, config, inputs)
+  bundle : @model.AssetBundle,
+  inputs : Array[@model.InputState],
+  config? : @model.EngineConfig = @model.default_engine_config(),
+) -> (DriftbirdGame, Array[@model.Frame]) {
+  let (runtime, frames) = @engine.run(
+    new_driftbird_game(bundle),
+    config,
+    inputs,
+  )
   (@engine.engine_game(runtime), frames)
 }

@@ -21,8 +21,8 @@ fn test_bundle() -> @model.AssetBundle {
 }
 
 ///|
-fn test_inputs(frame_count : Int) -> Array[InputState] {
-  let inputs : Array[InputState] = []
+fn test_inputs(frame_count : Int) -> Array[@model.InputState] {
+  let inputs : Array[@model.InputState] = []
   for i in 0..<frame_count {
     let flap = i % 8 == 0 || i % 13 == 0
     if flap {
@@ -72,10 +72,10 @@ test "rect intersection basics" {
 
 ///|
 test "collider API detects hits against multiple obstacles" {
-  let bird = collider_box("bird", 5, 5, 3, 3)
+  let bird = @model.collider_box("bird", 5, 5, 3, 3)
   let obstacles = [
-    collider_box("pipe_top", 0, 0, 3, 3),
-    collider_box("pipe_bottom", 6, 6, 4, 4),
+    @model.collider_box("pipe_top", 0, 0, 3, 3),
+    @model.collider_box("pipe_bottom", 6, 6, 4, 4),
   ]
 
   assert_true(@model.collider_hits_any(bird, obstacles))
@@ -88,9 +88,9 @@ test "collider API detects hits against multiple obstacles" {
 
 ///|
 test "collider API ignores empty collider boxes" {
-  let bird = collider_box("bird", 5, 5, 3, 3)
-  let empty = collider_box("pipe", 6, 6, 0, 4)
-  let solid = collider_box("pipe", 20, 20, 4, 4)
+  let bird = @model.collider_box("bird", 5, 5, 3, 3)
+  let empty = @model.collider_box("pipe", 6, 6, 0, 4)
+  let solid = @model.collider_box("pipe", 20, 20, 4, 4)
 
   assert_true(!@model.collider_intersects(bird, empty))
   assert_true(!@model.collider_hits_any(bird, [empty, solid]))
@@ -99,7 +99,7 @@ test "collider API ignores empty collider boxes" {
 
 ///|
 test "engine step records pipe collision hit tag" {
-  let config = default_engine_config()
+  let config = @model.default_engine_config()
   let runtime = @engine.engine_init(new_driftbird_game(test_bundle()), config)
   let state = @engine.engine_game(runtime)
 
@@ -123,7 +123,7 @@ test "engine step records pipe collision hit tag" {
 
 ///|
 test "engine step increments score when passing a pipe" {
-  let config = default_engine_config()
+  let config = @model.default_engine_config()
   let runtime = @engine.engine_init(new_driftbird_game(test_bundle()), config)
   let state = @engine.engine_game(runtime)
 
@@ -148,7 +148,7 @@ test "engine step increments score when passing a pipe" {
 
 ///|
 test "parity score baseline increments once per pipe pass" {
-  let config = default_engine_config()
+  let config = @model.default_engine_config()
   let runtime = @engine.engine_init(new_driftbird_game(test_bundle()), config)
   let state = @engine.engine_game(runtime)
   state.is_started = true
@@ -174,7 +174,7 @@ test "parity score baseline increments once per pipe pass" {
 
 ///|
 test "parity collision baseline reports ground hit" {
-  let config = default_engine_config()
+  let config = @model.default_engine_config()
   let runtime = @engine.engine_init(new_driftbird_game(test_bundle()), config)
   let state = @engine.engine_game(runtime)
 
@@ -199,7 +199,7 @@ test "parity reset baseline restores zeroed run state" {
     @model.input_state(["KeyR"], ["KeyR"], []),
     @model.input_none,
   ]
-  let config = default_engine_config()
+  let config = @model.default_engine_config()
   let (state, _) = run_driftbird(test_bundle(), inputs, config~)
 
   assert_true(!state.is_started())
