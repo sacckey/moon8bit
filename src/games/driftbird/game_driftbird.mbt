@@ -190,14 +190,7 @@ fn next_gap_y(seed : Int, config : EngineConfig, gap_height : Int) -> Int {
   let ground_y = config.height - 2
   let min_gap_top = 5
   let max_gap_top = ground_y - gap_height - 3
-  if max_gap_top <= min_gap_top {
-    return min_gap_top
-  }
-
-  let span = max_gap_top - min_gap_top + 1
-  let mixed = seed * 37 + 17
-  let non_negative = if mixed < 0 { -mixed } else { mixed }
-  min_gap_top + non_negative % span
+  @engine.rand(seed, min_gap_top, max_gap_top + 1)
 }
 
 ///|

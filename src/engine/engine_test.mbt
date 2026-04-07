@@ -339,3 +339,16 @@ test "engine emits timer events before immediate command events in same frame" {
   ])
   assert_eq(@engine.events(cleared), [])
 }
+
+///|
+test "rand returns value in [min, max) and is deterministic" {
+  let v = @engine.rand(42, 0, 10)
+  assert_true(v >= 0 && v < 10)
+  assert_eq(@engine.rand(42, 0, 10), v)
+  assert_eq(@engine.rand(42, 5, 5), 5)
+  assert_eq(@engine.rand(42, 3, 4), 3)
+  for seed in 0..<50 {
+    let r = @engine.rand(seed, 10, 20)
+    assert_true(r >= 10 && r < 20)
+  }
+}

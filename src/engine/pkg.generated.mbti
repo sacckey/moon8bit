@@ -58,6 +58,8 @@ pub fn key_released_any(@model.InputState, Array[String]) -> Bool
 
 pub fn pset(@model.Frame, Int, Int, Int) -> Unit
 
+pub fn rand(Int, Int, Int) -> Int
+
 pub fn rect(@model.Frame, Int, Int, Int, Int, Int) -> Unit
 
 pub fn[T : Game] run(T, @model.EngineConfig, Array[@model.InputState]) -> (EngineInstance[T], Array[@model.Frame])

@@ -203,6 +203,16 @@ pub fn[T] take_events(
 }
 
 ///|
+pub fn rand(seed : Int, min : Int, max : Int) -> Int {
+  if max <= min {
+    return min
+  }
+  let mixed = seed * 1664525 + 1013904223
+  let non_negative = if mixed < 0 { -mixed } else { mixed }
+  min + non_negative % (max - min)
+}
+
+///|
 pub fn cls(frame : Frame, color : Int) -> Unit {
   frame.clear(color)
 }
