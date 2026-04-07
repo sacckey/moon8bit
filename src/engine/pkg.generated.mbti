@@ -130,14 +130,21 @@ pub(all) struct UpdateContext {
   prev_input : @model.InputState
   tick : Int
   dt_ms : Int
+  commands : Array[EngineCommand]
 } derive(Eq, Show)
+pub fn UpdateContext::bgm_start(Self) -> Unit
+pub fn UpdateContext::bgm_stop(Self) -> Unit
+pub fn UpdateContext::clear_timers(Self) -> Unit
+pub fn UpdateContext::set_interval(Self, Int, EngineEvent) -> Unit
+pub fn UpdateContext::set_timeout(Self, Int, EngineEvent) -> Unit
+pub fn UpdateContext::sfx(Self, String) -> Unit
 
 // Type aliases
 
 // Traits
 pub(open) trait Game {
   init(Self, @model.EngineConfig) -> Self
-  update(Self, UpdateContext) -> (Self, Array[EngineCommand])
+  update(Self, UpdateContext) -> Self
   draw(Self, DrawContext) -> @model.Frame
 }
 

@@ -17,7 +17,7 @@ pub impl @engine.Game for WrapperTestGame with update(self, ctx) {
   } else if key_pressed(ctx.input, "Space") {
     self.count = self.count + 1
   }
-  (self, [])
+  self
 }
 
 ///|

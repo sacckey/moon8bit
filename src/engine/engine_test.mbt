@@ -15,7 +15,7 @@ pub impl @engine.Game for CounterGame with init(self, _ctx) {
 pub impl @engine.Game for CounterGame with update(self, ctx) {
   self.ticks += 1
   self.last_flap = @engine.key_pressed(ctx.input, "Space")
-  (self, [])
+  self
 }
 
 ///|
@@ -46,12 +46,11 @@ pub impl @engine.Game for CommandGame with init(self, _ctx) {
 ///|
 pub impl @engine.Game for CommandGame with update(self, ctx) {
   self.ticks += 1
-  let commands : Array[@engine.EngineCommand] = []
   if ctx.tick == 0 {
-    commands.push(@engine.sfx("now"))
-    commands.push(@engine.set_timeout_cmd(2, @engine.EngineEvent::Sfx("timer")))
+    ctx.sfx("now")
+    ctx.set_timeout(2, @engine.EngineEvent::Sfx("timer"))
   }
-  (self, commands)
+  self
 }
 
 ///|
@@ -75,11 +74,10 @@ pub impl @engine.Game for TimeoutCommandGame with init(self, _ctx) {
 ///|
 pub impl @engine.Game for TimeoutCommandGame with update(self, ctx) {
   self.ticks += 1
-  let commands : Array[@engine.EngineCommand] = []
   if ctx.tick == 0 {
-    commands.push(@engine.set_timeout_cmd(2, @engine.EngineEvent::Sfx("beep")))
+    ctx.set_timeout(2, @engine.EngineEvent::Sfx("beep"))
   }
-  (self, commands)
+  self
 }
 
 ///|
@@ -103,11 +101,10 @@ pub impl @engine.Game for IntervalCommandGame with init(self, _ctx) {
 ///|
 pub impl @engine.Game for IntervalCommandGame with update(self, ctx) {
   self.ticks += 1
-  let commands : Array[@engine.EngineCommand] = []
   if ctx.tick == 0 {
-    commands.push(@engine.set_interval_cmd(2, @engine.EngineEvent::BgmStart))
+    ctx.set_interval(2, @engine.EngineEvent::BgmStart)
   }
-  (self, commands)
+  self
 }
 
 ///|
@@ -131,16 +128,13 @@ pub impl @engine.Game for EventOrderGame with init(self, _ctx) {
 ///|
 pub impl @engine.Game for EventOrderGame with update(self, ctx) {
   self.ticks += 1
-  let commands : Array[@engine.EngineCommand] = []
   if ctx.tick == 0 {
-    commands.push(
-      @engine.set_interval_cmd(1, @engine.EngineEvent::Sfx("timer")),
-    )
+    ctx.set_interval(1, @engine.EngineEvent::Sfx("timer"))
   }
   if ctx.tick == 1 {
-    commands.push(@engine.sfx("now"))
+    ctx.sfx("now")
   }
-  (self, commands)
+  self
 }
 
 ///|

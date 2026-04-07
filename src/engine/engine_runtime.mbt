@@ -36,7 +36,46 @@ pub(all) struct UpdateContext {
   prev_input : InputState
   tick : Int
   dt_ms : Int
+  commands : Array[EngineCommand]
 } derive(Eq, Show)
+
+///|
+pub fn UpdateContext::sfx(self : UpdateContext, name : String) -> Unit {
+  self.commands.push(EngineCommand::Emit(EngineEvent::Sfx(name)))
+}
+
+///|
+pub fn UpdateContext::bgm_start(self : UpdateContext) -> Unit {
+  self.commands.push(EngineCommand::Emit(EngineEvent::BgmStart))
+}
+
+///|
+pub fn UpdateContext::bgm_stop(self : UpdateContext) -> Unit {
+  self.commands.push(EngineCommand::Emit(EngineEvent::BgmStop))
+}
+
+///|
+pub fn UpdateContext::set_timeout(
+  self : UpdateContext,
+  frames : Int,
+  event : EngineEvent,
+) -> Unit {
+  self.commands.push(EngineCommand::SetTimeout(frames, event))
+}
+
+///|
+pub fn UpdateContext::set_interval(
+  self : UpdateContext,
+  frames : Int,
+  event : EngineEvent,
+) -> Unit {
+  self.commands.push(EngineCommand::SetInterval(frames, event))
+}
+
+///|
+pub fn UpdateContext::clear_timers(self : UpdateContext) -> Unit {
+  self.commands.push(EngineCommand::ClearTimers)
+}
 
 ///|
 pub(all) struct DrawContext {
@@ -60,7 +99,7 @@ let input_none : InputState = @model.input_none
 ///|
 pub(open) trait Game {
   init(Self, EngineConfig) -> Self
-  update(Self, UpdateContext) -> (Self, Array[EngineCommand])
+  update(Self, UpdateContext) -> Self
   draw(Self, DrawContext) -> Frame
 }
 
@@ -84,6 +123,7 @@ fn[T] make_update_context(
     prev_input: state.prev_input,
     tick: state.tick,
     dt_ms: dt_ms(state.config),
+    commands: [],
   }
 }
 
@@ -189,7 +229,8 @@ pub fn[T : Game] engine_step(
   input : InputState,
 ) -> (EngineInstance[T], Frame) {
   let update_ctx = make_update_context(state, input)
-  let (next_game, commands) = Game::update(state.game, update_ctx)
+  let next_game = Game::update(state.game, update_ctx)
+  let commands = update_ctx.commands
   let (next_timers, timer_emitted) = advance_timers(state.timers)
   let (final_timers, command_emitted) = apply_commands(next_timers, commands)
   let all_emitted : Array[EngineEvent] = []
