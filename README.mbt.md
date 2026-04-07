@@ -36,7 +36,7 @@ Implemented in this repository:
 - Asset conversion helper:
   - DSL -> JSON string
 - Sample games:
-  - driftbird side scroller variants (`driftbird`, `driftbird-night`)
+  - driftbird side scroller (`driftbird`)
   - collision detection and scrolling obstacles
   - web demo audio cues (BGM + flap/reset/hit SFX)
 - CLI:

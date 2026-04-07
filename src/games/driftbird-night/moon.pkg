@@ -1,4 +1,0 @@
-import {
-  "sacckey/moon8bit/model" @model,
-  "sacckey/moon8bit/games/driftbird" @driftbird,
-}
