@@ -159,7 +159,12 @@ fn step_physics(game : BreakoutGame, ctx : @engine.UpdateContext) -> Unit {
     ctx.sfx("hit")
   }
 
-  // block collision
+  // block collision — collect all hit blocks, bounce once
+  let cx = game.ball_x.to_int()
+  let cy = game.ball_y.to_int()
+  let mut total_overlap_y = 0
+  let mut total_overlap_x = 0
+  let mut hit_count = 0
   for i in 0..<(block_cols * block_rows) {
     if game.blocks[i] == 0 {
       continue
@@ -168,33 +173,45 @@ fn step_physics(game : BreakoutGame, ctx : @engine.UpdateContext) -> Unit {
     let br = i / block_cols
     let bk_x = blocks_off_x + bc * block_w
     let bk_y = blocks_off_y + br * block_h
-    let cx = game.ball_x.to_int()
-    let cy = game.ball_y.to_int()
     if cx + ball_r > bk_x &&
       cx - ball_r < bk_x + block_w &&
       cy + ball_r > bk_y &&
       cy - ball_r < bk_y + block_h {
       game.blocks[i] = 0
       game.score += 10
-      // bounce vertically or horizontally based on overlap
-      let overlap_y = if game.ball_vy < 0.0 {
+      hit_count += 1
+      let oy = if game.ball_vy < 0.0 {
         cy + ball_r - bk_y
       } else {
         bk_y + block_h - (cy - ball_r)
       }
-      let overlap_x = if game.ball_vx < 0.0 {
+      let ox = if game.ball_vx < 0.0 {
         cx + ball_r - bk_x
       } else {
         bk_x + block_w - (cx - ball_r)
       }
-      if overlap_y < overlap_x {
-        game.ball_vy = -game.ball_vy
-      } else {
-        game.ball_vx = -game.ball_vx
-      }
-      ctx.sfx("break")
-      break
+      total_overlap_y += oy
+      total_overlap_x += ox
     }
+  }
+  if hit_count > 0 {
+    // bounce based on dominant overlap direction across all hit blocks
+    if total_overlap_y < total_overlap_x {
+      game.ball_vy = -game.ball_vy
+      if game.ball_vy > 0.0 {
+        game.ball_y = Double::from_int(cy + total_overlap_y)
+      } else {
+        game.ball_y = Double::from_int(cy - total_overlap_y)
+      }
+    } else {
+      game.ball_vx = -game.ball_vx
+      if game.ball_vx > 0.0 {
+        game.ball_x = Double::from_int(cx + total_overlap_x)
+      } else {
+        game.ball_x = Double::from_int(cx - total_overlap_x)
+      }
+    }
+    ctx.sfx("break")
   }
 
   // ball lost
