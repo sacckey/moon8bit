@@ -37,7 +37,7 @@ let pad_y : Int = screen_h - 10
 let ball_r = 2
 
 ///|
-let block_cols = 10
+let block_cols = 11
 
 ///|
 let block_rows = 5
@@ -117,6 +117,8 @@ fn blocks_remaining(game : BreakoutGame) -> Int {
 
 ///|
 fn step_physics(game : BreakoutGame, ctx : @engine.UpdateContext) -> Unit {
+  let prev_x = game.ball_x
+  let prev_y = game.ball_y
   game.ball_x += game.ball_vx
   game.ball_y += game.ball_vy
 
@@ -159,11 +161,24 @@ fn step_physics(game : BreakoutGame, ctx : @engine.UpdateContext) -> Unit {
     ctx.sfx("hit")
   }
 
-  // block collision — collect all hit blocks, bounce once
+  // block collision — collect hits, resolve with a single stable bounce
   let cx = game.ball_x.to_int()
   let cy = game.ball_y.to_int()
-  let mut total_overlap_y = 0
-  let mut total_overlap_x = 0
+  let prev_cx = prev_x.to_int()
+  let prev_cy = prev_y.to_int()
+  let now_left = cx - ball_r
+  let now_right = cx + ball_r
+  let now_top = cy - ball_r
+  let now_bottom = cy + ball_r
+  let prev_left = prev_cx - ball_r
+  let prev_right = prev_cx + ball_r
+  let prev_top = prev_cy - ball_r
+  let prev_bottom = prev_cy + ball_r
+
+  let mut hit_x = false
+  let mut hit_y = false
+  let mut min_overlap_x = screen_w
+  let mut min_overlap_y = screen_h
   let mut hit_count = 0
   for i in 0..<(block_cols * block_rows) {
     if game.blocks[i] == 0 {
@@ -173,43 +188,67 @@ fn step_physics(game : BreakoutGame, ctx : @engine.UpdateContext) -> Unit {
     let br = i / block_cols
     let bk_x = blocks_off_x + bc * block_w
     let bk_y = blocks_off_y + br * block_h
-    if cx + ball_r > bk_x &&
-      cx - ball_r < bk_x + block_w &&
-      cy + ball_r > bk_y &&
-      cy - ball_r < bk_y + block_h {
+    let bk_right = bk_x + block_w
+    let bk_bottom = bk_y + block_h
+    if now_right > bk_x &&
+      now_left < bk_right &&
+      now_bottom > bk_y &&
+      now_top < bk_bottom {
       game.blocks[i] = 0
       game.score += 10
       hit_count += 1
-      let oy = if game.ball_vy < 0.0 {
-        cy + ball_r - bk_y
-      } else {
-        bk_y + block_h - (cy - ball_r)
+
+      let entered_x = (prev_right <= bk_x && now_right > bk_x) ||
+        (prev_left >= bk_right && now_left < bk_right)
+      let entered_y = (prev_bottom <= bk_y && now_bottom > bk_y) ||
+        (prev_top >= bk_bottom && now_top < bk_bottom)
+      if entered_x {
+        hit_x = true
       }
-      let ox = if game.ball_vx < 0.0 {
-        cx + ball_r - bk_x
-      } else {
-        bk_x + block_w - (cx - ball_r)
+      if entered_y {
+        hit_y = true
       }
-      total_overlap_y += oy
-      total_overlap_x += ox
+
+      let overlap_x = (if now_right < bk_right { now_right } else { bk_right }) -
+        (if now_left > bk_x { now_left } else { bk_x })
+      let overlap_y = (if now_bottom < bk_bottom {
+          now_bottom
+        } else {
+          bk_bottom
+        }) -
+        (if now_top > bk_y { now_top } else { bk_y })
+      if overlap_x > 0 && overlap_x < min_overlap_x {
+        min_overlap_x = overlap_x
+      }
+      if overlap_y > 0 && overlap_y < min_overlap_y {
+        min_overlap_y = overlap_y
+      }
     }
   }
   if hit_count > 0 {
-    // bounce based on dominant overlap direction across all hit blocks
-    if total_overlap_y < total_overlap_x {
+    // If entry axis is ambiguous (touching seams/corners), pick the shallower penetration axis.
+    if !hit_x && !hit_y {
+      if min_overlap_y < min_overlap_x {
+        hit_y = true
+      } else {
+        hit_x = true
+      }
+    } else if hit_x && hit_y {
+      if min_overlap_y < min_overlap_x {
+        hit_x = false
+      } else {
+        hit_y = false
+      }
+    }
+
+    // Reflect once and rewind only on reflected axis to avoid jitter/explosions.
+    if hit_y {
       game.ball_vy = -game.ball_vy
-      if game.ball_vy > 0.0 {
-        game.ball_y = Double::from_int(cy + total_overlap_y)
-      } else {
-        game.ball_y = Double::from_int(cy - total_overlap_y)
-      }
-    } else {
+      game.ball_y = prev_y
+    }
+    if hit_x {
       game.ball_vx = -game.ball_vx
-      if game.ball_vx > 0.0 {
-        game.ball_x = Double::from_int(cx + total_overlap_x)
-      } else {
-        game.ball_x = Double::from_int(cx - total_overlap_x)
-      }
+      game.ball_x = prev_x
     }
     ctx.sfx("break")
   }
