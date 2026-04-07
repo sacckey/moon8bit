@@ -1,0 +1,6 @@
+{
+  "id": "shooting",
+  "title": "Shooting",
+  "status_text": "Arrow keys or WASD to move. Space to shoot.",
+  "export_filename": "shooting_assets.dsl"
+}
