@@ -51,6 +51,11 @@ fn web_set_status(text : String) -> Unit {
 }
 
 ///|
+fn web_renderer_kind() -> String {
+  "stub"
+}
+
+///|
 fn web_get_editor_text() -> String {
   ""
 }

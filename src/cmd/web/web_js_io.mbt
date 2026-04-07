@@ -26,6 +26,10 @@ extern "js" fn web_set_status(text : String) -> Unit =
   #| }
 
 ///|
+extern "js" fn web_renderer_kind() -> String =
+  #| () => String(globalThis.__moon8bit_renderer_kind || "pending")
+
+///|
 extern "js" fn web_get_editor_text() -> String =
   #| () => {
   #|   const input = document.getElementById("moon8bit-dsl-input");

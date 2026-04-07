@@ -129,6 +129,9 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   // - WebGPU if available
   #|   // - Canvas2D fallback otherwise
   #|   globalThis.__moon8bit_ctx = null;
+  #|   if (!globalThis.__moon8bit_renderer_kind) {
+  #|     globalThis.__moon8bit_renderer_kind = "pending";
+  #|   }
   #|   globalThis.__moon8bit_keys = new Set();
   #|   if (!globalThis.__moon8bit_pointer) {
   #|     globalThis.__moon8bit_pointer = { x: 0, y: 0, down: false };
