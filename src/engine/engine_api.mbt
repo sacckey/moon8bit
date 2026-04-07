@@ -203,6 +203,17 @@ pub fn[T] take_events(
 }
 
 ///|
+pub fn clamp(value : Int, min : Int, max : Int) -> Int {
+  if value < min {
+    min
+  } else if value > max {
+    max
+  } else {
+    value
+  }
+}
+
+///|
 pub fn rand(seed : Int, min : Int, max : Int) -> Int {
   if max <= min {
     return min

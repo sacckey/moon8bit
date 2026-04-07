@@ -18,6 +18,8 @@ pub fn btn(Array[String], keys_pressed? : Array[String], keys_released? : Array[
 
 pub fn btnp(Bool, Bool) -> Bool
 
+pub fn clamp(Int, Int, Int) -> Int
+
 pub fn clear_timers_cmd() -> EngineCommand
 
 pub fn cls(@model.Frame, Int) -> Unit

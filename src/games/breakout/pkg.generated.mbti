@@ -1,0 +1,37 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "sacckey/moon8bit/games/breakout"
+
+import {
+  "sacckey/moon8bit/engine",
+  "sacckey/moon8bit/model",
+}
+
+// Values
+pub fn init_game(@model.AssetBundle, @model.EngineConfig) -> @engine.EngineInstance[BreakoutGame]
+
+pub fn new_breakout_game() -> BreakoutGame
+
+pub fn step_game(@engine.EngineInstance[BreakoutGame], @model.InputState) -> (@engine.EngineInstance[BreakoutGame], @model.Frame)
+
+// Errors
+
+// Types and methods
+pub struct BreakoutGame {
+  mut pad_x : Int
+  mut ball_x : Double
+  mut ball_y : Double
+  mut ball_vx : Double
+  mut ball_vy : Double
+  blocks : Array[Int]
+  mut score : Int
+  mut lives : Int
+  mut is_started : Bool
+  mut is_over : Bool
+  mut is_clear : Bool
+} derive(Eq, Show)
+pub impl @engine.Game for BreakoutGame
+
+// Type aliases
+
+// Traits
+

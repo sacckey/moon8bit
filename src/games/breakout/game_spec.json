@@ -1,0 +1,6 @@
+{
+  "id": "breakout",
+  "title": "Breakout",
+  "status_text": "Arrow keys or A/D to move. Space to launch.",
+  "export_filename": "breakout_assets.dsl"
+}
