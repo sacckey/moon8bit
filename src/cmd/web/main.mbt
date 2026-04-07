@@ -10,13 +10,21 @@ pub fn[G] run_web_game(
   let display_scale = config.scale
   let title_ref : Ref[String] = @ref.new("Game")
   let status_text_ref : Ref[String] = @ref.new("Ready")
+  let status_line_ref : Ref[String] = @ref.new("")
   let export_filename_ref : Ref[String] = @ref.new("assets.dsl")
   let state_ref : Ref[@lib.EngineInstance[G]?] = @ref.new(None)
   let palette_ref : Ref[@lib.Palette] = @ref.new(@lib.palette_default())
-  let default_palette = @lib.palette_default()
   let prev_keys_down_ref : Ref[Array[String]] = @ref.new([])
   let pointer_prev_down_ref : Ref[Bool] = @ref.new(false)
   let bgm_playing_ref : Ref[Bool] = @ref.new(false)
+
+  let refresh_status = fn(force : Bool) -> Unit {
+    let next = "\{title_ref.val}: \{status_text_ref.val} [renderer=\{web_renderer_kind()}]"
+    if force || next != status_line_ref.val {
+      status_line_ref.val = next
+      web_set_status(next)
+    }
+  }
 
   let has_key = fn(keys : Array[String], key : String) -> Bool {
     for current in keys {
@@ -38,17 +46,6 @@ pub fn[G] run_web_game(
       }
     }
     diff
-  }
-
-  let palette_color = fn(index : Int) -> String {
-    let palette = palette_ref.val
-    if index >= 0 && index < palette.colors.length() {
-      palette.colors[index]
-    } else if index >= 0 && index < default_palette.colors.length() {
-      default_palette.colors[index]
-    } else {
-      "#101820"
-    }
   }
 
   let poll_input = fn() -> @lib.InputState {
@@ -76,15 +73,8 @@ pub fn[G] run_web_game(
   }
 
   let draw_frame = fn(frame : @lib.Frame) -> Unit {
-    web_clear(palette_color(0))
-    for y in 0..<frame.height {
-      for x in 0..<frame.width {
-        let color = frame.pixels[y * frame.width + x]
-        if color >= 0 {
-          web_fill_rect(x, y, 1, 1, palette_color(color))
-        }
-      }
-    }
+    let colors = palette_ref.val.colors
+    web_render_frame(frame.pixels, frame.width, frame.height, colors)
   }
 
   let stop_bgm_if_playing = fn() -> Unit {
@@ -106,6 +96,7 @@ pub fn[G] run_web_game(
       Some(game) => game
       None => return
     }
+    refresh_status(false)
 
     let input = poll_input()
     let (next, rendered) = step_game(previous, input)
@@ -157,7 +148,9 @@ pub fn[G] run_web_game(
   }
 
   web_init_canvas(config.width, config.height, display_scale)
-  web_set_status("Loading game...")
+  web_init_gpu(config.width, config.height)
+  status_text_ref.val = "Loading game..."
+  refresh_status(true)
   web_bind_apply(on_apply)
   web_bind_export(on_export)
   web_bind_import(on_import)
@@ -167,7 +160,7 @@ pub fn[G] run_web_game(
       title_ref.val = title
       status_text_ref.val = status_text
       export_filename_ref.val = export_filename
-      web_set_status("\{title_ref.val}: \{status_text_ref.val}")
+      refresh_status(true)
       web_set_editor_text(dsl_text)
       web_sprite_editor_refresh()
       apply_dsl_text(dsl_text)
@@ -175,7 +168,8 @@ pub fn[G] run_web_game(
       web_start_loop(tick, config.fps)
     },
     fn(error_message) {
-      web_set_status("Boot error")
+      status_text_ref.val = "Boot error"
+      refresh_status(true)
       web_set_editor_feedback(error_message, true)
     },
   )

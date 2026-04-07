@@ -1,28 +1,4 @@
 ///|
-extern "js" fn web_clear(color : String) -> Unit =
-  #| (color) => {
-  #|   const ctx = globalThis.__moon8bit_ctx;
-  #|   if (!ctx) return;
-  #|   ctx.fillStyle = color;
-  #|   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  #| }
-
-///|
-extern "js" fn web_fill_rect(
-  x : Int,
-  y : Int,
-  w : Int,
-  h : Int,
-  color : String,
-) -> Unit =
-  #| (x, y, w, h, color) => {
-  #|   const ctx = globalThis.__moon8bit_ctx;
-  #|   if (!ctx) return;
-  #|   ctx.fillStyle = color;
-  #|   ctx.fillRect(x, y, w, h);
-  #| }
-
-///|
 extern "js" fn web_set_status(text : String) -> Unit =
   #| (text) => {
   #|   const id = "moon8bit-status";
@@ -48,6 +24,10 @@ extern "js" fn web_set_status(text : String) -> Unit =
   #|   }
   #|   el.textContent = text;
   #| }
+
+///|
+extern "js" fn web_renderer_kind() -> String =
+  #| () => String(globalThis.__moon8bit_renderer_kind || "pending")
 
 ///|
 extern "js" fn web_get_editor_text() -> String =

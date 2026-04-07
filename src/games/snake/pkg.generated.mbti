@@ -1,0 +1,38 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "sacckey/moon8bit/games/snake"
+
+import {
+  "sacckey/moon8bit/engine",
+  "sacckey/moon8bit/model",
+}
+
+// Values
+pub fn init_game(@model.AssetBundle, @model.EngineConfig) -> @engine.EngineInstance[SnakeGame]
+
+pub fn new_snake_game() -> SnakeGame
+
+pub fn step_game(@engine.EngineInstance[SnakeGame], @model.InputState) -> (@engine.EngineInstance[SnakeGame], @model.Frame)
+
+// Errors
+
+// Types and methods
+type Dir derive(Eq, Show)
+
+type Pos derive(Eq, Show)
+
+pub struct SnakeGame {
+  mut body : Array[Pos]
+  mut dir : Dir
+  mut next_dir : Dir
+  mut food : Pos
+  mut score : Int
+  mut timer : Int
+  mut is_over : Bool
+  mut seed : Int
+} derive(Eq, Show)
+pub impl @engine.Game for SnakeGame
+
+// Type aliases
+
+// Traits
+
