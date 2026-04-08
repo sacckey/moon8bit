@@ -13,23 +13,24 @@ Build `moon8bit` as a retro 2D engine that is easy for both humans and AI to use
 
 ## In Scope (v1)
 
-- Engine core with `init/update/draw` model and fixed-step runtime.
-- DSL v1 for `palette`, `sprite`, `tilemap`.
-- CLI conversion path (DSL -> JSON).
-- Web demo with live DSL apply and visible gameplay effect.
-- Basic tests for parser, runtime determinism, and sample game integration.
-- Practical baseline capability expansion before final deadline:
-  - WebGPU rendering path (minimum viable backend parity with current frame primitives)
-  - sound playback path (BGM + core SFX)
-  - minimal GUI editing path (sprite + sound authoring)
+- [x] Engine core with `init/update/draw` model and fixed-step runtime.
+- [x] DSL v1 for `palette`, `sprite`, `tilemap`.
+- [x] CLI conversion path (DSL -> JSON).
+- [x] Web demo with live DSL apply and visible gameplay effect.
+- [x] Basic tests for parser, runtime determinism, and sample game integration.
+- [x] WebGPU rendering path (Canvas2D fallback, nearest sampler, palette cache).
+- [x] Sound playback path (BGM + core SFX via Web Audio API).
+- [x] Minimal GUI editing path (sprite editor + sound editor tabs).
+- [x] Imperative game API (`ctx.sfx`, `ctx.set_timeout`, `ctx.bgm_stop` etc.).
+- [x] Multiple sample games (driftbird, breakout, snake, shooting).
 
 ## Out of Scope (v1)
 
 - Built-in external LLM API integration.
 - Full editor suite / full IDE.
 - Large-scale ECS, physics stack, or full game framework.
-- high-end audio tooling (full DAW-style sequencing/mixing)
-- advanced visual editors beyond minimum authoring workflow
+- High-end audio tooling (full DAW-style sequencing/mixing).
+- Advanced visual editors beyond minimum authoring workflow.
 
 ## Non-Negotiables
 
@@ -50,7 +51,7 @@ Build `moon8bit` as a retro 2D engine that is easy for both humans and AI to use
 ## Baseline vs Unique
 
 - Baseline (expected for a practical retro engine):
-  - rendering, input loop, assets, audio, and basic editor workflows
+  - rendering (Canvas2D + WebGPU), input loop, assets, audio, and basic editor workflows
 - moon8bit-specific value (what we emphasize):
   - text-first AI iteration workflow
   - deterministic behavior + reproducible validation
@@ -58,60 +59,15 @@ Build `moon8bit` as a retro 2D engine that is easy for both humans and AI to use
 
 ## Success Criteria by Final Submission (2026-04-21)
 
-- Reproducible build/run flow for reviewers.
-- One playable driftbird side-scroller demo on Web.
-- Clear docs for architecture decisions and AI usage.
-- Sufficient tests covering core paths and edge cases.
+- [x] Reproducible build/run flow for reviewers.
+- [x] Multiple playable game demos on Web.
+- [x] WebGPU rendering path functional.
+- [x] Clear docs for architecture decisions and AI usage.
+- [x] Sufficient tests covering core paths and edge cases.
+- [ ] Demo video/GIF recorded.
+- [ ] Final application text frozen.
 
-## Locked Definition (2026-04-04)
-
-This section is the fixed planning baseline for remaining SCC work.
-
-### Product Goal (Fixed)
-
-- Deliver a complete and runnable MoonBit-centered retro engine application by 2026-04-21.
-- Keep the engine minimal while still practical for real game authoring.
-- Keep game authoring short, readable, and AI-assisted-friendly.
-
-### Core Value We Must Prove
-
-1. Minimal engine surface (small API, small conceptual cost).
-2. Short game code (wrapper-driven authoring with low boilerplate).
-3. Small text-first assets (diff-friendly, AI-editable).
-4. Fast debug/iteration loop (line-number diagnostics + deterministic behavior).
-
-### Differentiation vs Selene (Comparison Axis)
-
-- We do not compete on total engine breadth (ECS/3D/full editor scope).
-- We compete on focused retro iteration speed and simplicity.
-- We emphasize measurable AI/human iteration efficiency:
-  - fewer steps to first playable result
-  - shorter sample code
-  - deterministic replay/testing
-  - clearer parser/runtime error feedback
-
-### Required Capability Tracks
-
-- Baseline track (must exist in runnable form):
-  - WebGPU path with minimum practical parity for current frame primitives
-  - Sound path with BGM + core SFX
-  - Browser GUI authoring for sprite + sound
-  - Browser editing + local rebuild workflow for practical iteration
-- moon8bit unique track (must remain central):
-  - text-first asset workflow
-  - deterministic runtime + reproducible validation
-  - AI-friendly diagnostics and compact wrappers
-
-### Delivery Rule for New Features
-
-- Every new capability is shipped as one set:
-  - Primitive runtime implementation
-  - User-facing wrapper API
-  - tests (including reproducibility/parity where applicable)
-  - README usage example
-- No delayed "wrapper later" feature delivery.
-
-### Architecture Rule (Fixed: 2026-04-05)
+## Architecture Rule (Fixed: 2026-04-05)
 
 - Prioritize design consistency over demo speed.
 - Shared packages must stay game-neutral:
@@ -120,12 +76,8 @@ This section is the fixed planning baseline for remaining SCC work.
 - Input is modeled as raw device state in shared layer:
   - keys/pointer snapshot + edge state
   - game meaning is resolved only in game packages
-- "Minimal" must be achieved in this order:
-  1. internal boundary correctness
-  2. deterministic behavior/tests
-  3. thin ergonomic wrappers
 
-### Non-Goals (Fixed)
+## Non-Goals (Fixed)
 
 - Chasing full-feature parity with broad ECS/3D engines.
 - Expanding into large generalized framework scope before completing core minimal goals.

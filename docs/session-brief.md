@@ -2,33 +2,36 @@
 
 ## Session
 
-- Date: 2026-04-01
-- Timebox: 1 hour
+- Date: 2026-04-09
 - Branch: `main`
+- Deadline: 2026-04-21 (12 days)
 
-## Today Focus (max 2)
+## Current State
 
-1. Submit Stage 1 form and record timestamp/evidence.
-2. Ensure docs match showcase-style project information structure.
+- 42 tests passing
+- 4 sample games: driftbird, breakout, snake, shooting
+- WebGPU rendering live (Canvas2D fallback)
+- Audio, sprite editor, sound editor all working
 
-## Done Definition
+## Remaining Work (Priority Order)
 
-- Stage 1 form is submitted and timestamp is recorded in `docs/handoff.md`.
-- `application-draft`, `README`, and checklist all include scope/target/architecture/feasibility.
-- Reproducibility and environment requirements are explicit and current.
+1. **Tests** — breakout / snake / shooting have no automated tests yet
+2. **application-draft.md** — freeze final 300+ word text (implementation-fact only)
+3. **Demo video/GIF** — record 30-45s following `docs/demo-script.md`
+4. **Docs/README sync** — ensure everything matches current implementation
+5. **Final submission** — freeze, verify, submit
 
-## Explicitly Out of Scope Today
+## Out of Scope for Remaining Sessions
 
-- Major gameplay refactor.
-- Wrapper API implementation work.
-- New rendering backend work.
+- New gameplay features
+- New rendering features
+- Architecture refactors
 
-## Constraints / Assumptions
+## Quick Restart Commands
 
-- Stage 1 submission completion is higher priority than new features.
-- Existing playable driftbird behavior must remain unchanged.
-
-## Verification Plan
-
-- Review updated docs for consistency and concrete claims.
-- Run verification commands only if source code changes are introduced.
+```bash
+moon check
+moon test
+./scripts/update_demo_bundle.sh
+python3 -m http.server 8000 --directory site
+```

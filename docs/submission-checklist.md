@@ -4,7 +4,7 @@
 
 - Submission target: MoonBit SCC 2026
 - Deadline: 2026-04-21
-- Current status date: 2026-04-06
+- Last updated: 2026-04-09
 
 ## Stage 1 Gates
 
@@ -12,40 +12,47 @@
 - [x] Submission timestamp recorded in `docs/handoff.md`
 - [x] Stage 1 acceptance received (2026-04-02)
 
-## Acceptance Expectations (2026-04-02)
-
-- [x] MoonBit is central in architecture/runtime logic
-- [x] Final target is tracked as a complete runnable application
-- [x] E2E runnable path is documented
-- [x] Distribution path is explicit (GitHub Pages)
-
 ## Messaging Safety
 
 - [ ] Claims are implementation-fact based only
 - [ ] No uniqueness/superiority claims without proof
 - [ ] Public-facing docs avoid unnecessary competitor comparisons
 
-## Showcase Readiness
+## Core Implementation (Capability Track)
 
-- [x] Application text covers goal/users/architecture/feasibility
-- [x] Public kickoff evidence exists (active public repo + commit history)
-- [x] README covers goals/scope/usage/environment
-- [x] README covers reproducible build/run/test path
-- [x] Core-path tests and edge-case validation are documented
+- [x] Engine core: `init/update/draw` fixed-step runtime
+- [x] DSL v1: `palette`, `sprite`, `tilemap` with line-numbered diagnostics
+- [x] CLI flow: DSL conversion and validation
+- [x] Web Canvas2D rendering path
+- [x] WebGPU rendering path with Canvas2D fallback
+- [x] Renderer status display (`renderer=webgpu` / `renderer=2d`)
+- [x] Audio: BGM + SFX via Web Audio API
+- [x] Input: raw key/pointer state + edge transitions
+- [x] Collision: `Rect`, `Collider`, AABB with hit tags
+- [x] Scheduler: `set_timeout`, `set_interval`, `clear_timers` via `EngineCommand`
+- [x] Imperative game API: `ctx.sfx()`, `ctx.bgm_stop()`, `ctx.set_timeout()` etc.
+- [x] Utility: `rand(seed, min, max)`, `clamp(value, min, max)`
+- [x] Browser editor: DSL apply/import/export loop
+- [x] Sprite editor GUI tab
+- [x] Sound editor GUI tab
+- [x] Per-game web pages under `site/g/<game_id>/`
 
-## Capability Track (Current)
+## Sample Games
 
-- [ ] WebGPU path reaches minimum parity for current frame primitives
-- [x] Audio path supports practical BGM + SFX playback
-- [x] Minimal GUI authoring path exists for sprite + sound editing
-- [x] Browser editing loop supports apply/import/export of `assets.dsl`
+- [x] driftbird (side-scroller: input / collision / scrolling / audio)
+- [x] breakout (ball physics: subframe collision / entry-axis detection)
+- [x] snake (grid game: wrap / food spawn / growth)
+- [x] shooting (shooter: star parallax / enemy / sprites)
 
-## moon8bit Unique Value Track
+## Engineering Quality
 
-- [x] Text-first asset workflow is central
-- [x] Deterministic runtime remains testable/reproducible
-- [x] AI-friendly diagnostics remain (line-numbered parser errors)
-- [x] Baseline vs moon8bit-specific value is documented
+- [x] 42 tests passing (`moon test`)
+- [x] Deterministic runtime: same inputs → same frames
+- [x] Collision regression tests (pipe hit / ground hit / score increment)
+- [x] Timer/event ordering tests
+- [x] Parser error tests (line-numbered diagnostics)
+- [ ] Test coverage for breakout / snake / shooting
+- [ ] E2E replay coverage per game
 
 ## Required Artifacts
 
@@ -55,7 +62,7 @@
 - [x] README reproducible run steps
 - [ ] Demo video/GIF ready and viewable
 
-## Repository Docs to Confirm
+## Repository Docs
 
 - [x] `README.mbt.md`
 - [x] `docs/application-draft.md`
@@ -83,63 +90,26 @@ Open:
 
 Expected:
 
-- [ ] Game tab is playable (`Space` / `ArrowUp`, `R`)
+- [ ] Driftbird Game tab is playable (`Space` / `ArrowUp`, `R`)
+- [ ] Status bar shows `renderer=webgpu` or `renderer=2d`
 - [ ] DSL tab `Apply` updates screen output
 - [ ] DSL `Import` loads local file and applies
 - [ ] DSL `Export` downloads current editor text
 - [ ] Sprite tab can edit sprite pixels and write back to DSL
 - [ ] Sound tab can preview/tune BGM/SFX
-- [ ] In-canvas HUD updates (`S`, `F`, `H`)
 
 ## Final Submission Pass
 
-- [ ] Freeze major features (docs/bugfix only)
+- [ ] Freeze major features (docs/bugfix only after this point)
 - [ ] Re-run reproducibility checks
 - [ ] Ensure docs match implementation
 - [ ] Ensure commit history is clean/readable
 - [ ] Submit final application text + demo link
 
-## Current Priorities (2026-04-06)
+## Remaining Priorities (2026-04-09)
 
-1. Finalize docs/README sync to current architecture and URL paths.
-2. Freeze complete E2E flow and record final demo video/GIF.
-3. Decide WebGPU final-scope (minimal MVP or defer with explicit note).
-4. Finalize submission text with implementation-fact wording only.
-
-## Full Buildout Checklist (Minimal + WebGPU Complete)
-
-- [ ] [P01] Freeze final minimal runtime/API principles (single source of truth).
-- [ ] [P02] Define and fix game template contract for new games (`init/update/draw` + assets path).
-- [ ] [P03] Refactor `game_driftbird.mbt` toward minimal authoring style (major line-count reduction).
-- [ ] [P04] Finalize minimal drawing API surface (core only; extras separated).
-- [ ] [P05] Finalize input API surface (raw-first + minimal helpers).
-- [ ] [P06] Finalize `EngineCommand`/`EngineEvent` vocabulary as game-neutral primitives.
-- [ ] [P07] Finalize scheduler semantics (`timeout/interval/cancel`) and lock tests.
-- [ ] [P08] Freeze shared web runtime boundary (`cmd/web` game-neutral contract).
-- [ ] [P09] Add automated new-game scaffolding (template + generation command/script).
-- [ ] [P10] Freeze `assets.dsl` core grammar and extension points.
-- [ ] [P11] Complete sprite editor workflow (edit/apply/save/restore).
-- [ ] [P12] Define sound data model (waveform/ADSR/pitch/volume/loop).
-- [ ] [P13] Implement sound text format integration into project asset flow.
-- [ ] [P14] Complete sound editor UX (preset/slider/test + DSL sync).
-- [ ] [P15] Integrate audio runtime path (engine events to playback behavior).
-- [ ] [P16] Finalize BGM/SFX policy (mixing, priority, stop rules).
-- [ ] [P17] Introduce renderer abstraction (`Canvas2D` / `WebGPU` backends).
-- [ ] [P18] Move current Canvas2D renderer into renderer abstraction.
-- [ ] [P19] Implement WebGPU minimum path (`Frame` upload + render).
-- [ ] [P20] Implement WebGPU native path for practical parity (sprite/tilemap/text draw route).
-- [ ] [P21] Optimize WebGPU path (buffer reuse, upload strategy, pipeline tuning).
-- [ ] [P22] Add WebGPU resilience (feature detection, fallback, device-lost recovery).
-- [ ] [P23] Normalize pixel-perfect scaling behavior across Canvas/WebGPU.
-- [ ] [P24] Complete in-browser asset workflow consistency (DSL/Sprite/Sound end-to-end).
-- [ ] [P25] Finalize import/export contract for full asset round-trip.
-- [ ] [P26] Finalize apply/reload semantics between editor and running game.
-- [ ] [P27] Complete multi-game path workflow (`/g/<id>/` discovery/build/publish).
-- [ ] [P28] Strengthen CI for all games (check/test/per-game web build/bundle generation).
-- [ ] [P29] Add deterministic E2E replay coverage for game behavior stability.
-- [ ] [P30] Add Canvas/WebGPU parity validation and acceptable-diff policy.
-- [ ] [P31] Add audio regression checks for event-to-sound behavior.
-- [ ] [P32] Finalize API/architecture docs for minimal principles and non-goals.
-- [ ] [P33] Add at least one additional game sample written in the minimal style.
-- [ ] [P34] Measure and optimize runtime/package footprint (fps/memory/bundle size).
-- [ ] [P35] Final cleanup pass (naming, module boundaries, dead-code removal) before feature freeze.
+1. Add tests for breakout / snake / shooting.
+2. Update application-draft.md to reflect WebGPU + 4 games.
+3. Record demo video/GIF.
+4. Final docs/README sync.
+5. Freeze and submit.
