@@ -1,6 +1,4 @@
 # moon8bit asset DSL v1
-# sfx-event eat Eat
-# sfx-event die Die
 palette snake
 color 0 #0a1a0a
 color 1 #1a3a1a
@@ -10,4 +8,22 @@ color 4 #e84040
 color 5 #f0c040
 color 6 #f0f0f0
 color 7 #2a5a2a
+end
+
+sound eat
+wave square
+attack 0.002
+decay 0.08
+peak 0.07
+f0 660
+f1 980
+end
+
+sound die
+wave sawtooth
+attack 0.003
+decay 0.18
+peak 0.09
+f0 260
+f1 90
 end

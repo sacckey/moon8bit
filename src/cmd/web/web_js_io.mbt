@@ -184,6 +184,12 @@ extern "js" fn web_apply_sound_bundle(
   #|     state.bgmStepSec = b.step_sec;
   #|     state.bgmLoop = b.loop_;
   #|     state.bgmNotes = b.notes; // Array of MIDI numbers (-1 = rest)
+  #|   } else {
+  #|     state.bgmWave = null;
+  #|     state.bgmVolume = 0.0;
+  #|     state.bgmStepSec = 0.125;
+  #|     state.bgmLoop = true;
+  #|     state.bgmNotes = [];
   #|   }
   #|
   #|   // Refresh sound editor UI if available

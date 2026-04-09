@@ -1,7 +1,4 @@
 # moon8bit asset DSL v1
-# sfx-event flap Flap
-# sfx-event hit Hit
-# sfx-event reset Reset
 palette dawn
 color 0 #0f1a20
 color 1 #274060
@@ -11,6 +8,41 @@ color 4 #e94f37
 color 5 #8f6f4f
 color 6 #f6f7eb
 color 7 #7f5af0
+end
+
+sound flap
+wave square
+attack 0.003
+decay 0.10
+peak 0.07
+f0 520
+f1 360
+end
+
+sound hit
+wave triangle
+attack 0.002
+decay 0.16
+peak 0.09
+f0 300
+f1 110
+end
+
+sound reset
+wave sine
+attack 0.003
+decay 0.12
+peak 0.08
+f0 240
+f1 420
+end
+
+bgm main
+wave square
+volume 0.04
+step_sec 0.125
+loop true
+notes C4 E4 G4 E4 C4 E4 G4 R
 end
 
 sprite bird 8 8

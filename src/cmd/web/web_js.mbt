@@ -352,10 +352,10 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       master: 1.0,
   #|       sfxVolume: 1.0,
   #|       bgmVolume: 0.0,
-  #|       bgmWave: "square",
-  #|       bgmBaseFreq: 110,
-  #|       bgmLfoFreq: 0.35,
-  #|       bgmLfoDepth: 2.5,
+  #|       bgmWave: null,
+  #|       bgmStepSec: 0.125,
+  #|       bgmLoop: true,
+  #|       bgmNotes: [],
   #|       sfx: {},
   #|     };
   #|   }
@@ -363,26 +363,10 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   if (!audioState.sfx) audioState.sfx = {};
   #|
   #|   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
-  #|   const defaultProfiles = {
-  #|     generic: { type: "square", attack: 0.003, decay: 0.10, peak: 0.07, f0: 520, f1: 360 },
-  #|   };
-  #|   const fallbackSoundEvents = [];
   #|   const soundKeyToId = (key) =>
   #|     key.toLowerCase().replace(/[^a-z0-9_-]/g, "_");
-  #|   const ensureSfxProfile = (key) => {
-  #|     if (audioState.sfx[key]) return audioState.sfx[key];
-  #|     const source = defaultProfiles[key] || defaultProfiles.generic;
-  #|     const profile = {
-  #|       type: source.type,
-  #|       attack: source.attack,
-  #|       decay: source.decay,
-  #|       peak: source.peak,
-  #|       f0: source.f0,
-  #|       f1: source.f1,
-  #|     };
-  #|     audioState.sfx[key] = profile;
-  #|     return profile;
-  #|   };
+  #|   const getSfxProfile = (key) =>
+  #|     audioState.sfx && audioState.sfx[key] ? audioState.sfx[key] : null;
   #|   const parseSoundEventsFromDsl = (text) => {
   #|     const lines = String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
   #|     const events = [];
@@ -398,17 +382,8 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|         }
   #|         continue;
   #|       }
-  #|       // Legacy: # sfx-event <key> [label]
-  #|       const cm = line.match(/^#\s*sfx-event\s+([A-Za-z0-9_-]+)(?:\s+(.+))?$/i);
-  #|       if (cm) {
-  #|         const key = cm[1].trim();
-  #|         if (key && !seen.has(key.toLowerCase())) {
-  #|           seen.add(key.toLowerCase());
-  #|           events.push({ key, label: (cm[2] || key).trim() });
-  #|         }
-  #|       }
   #|     }
-  #|     return events.length > 0 ? events : fallbackSoundEvents.slice();
+  #|     return events;
   #|   };
   #|
   #|   if (!globalThis.__moon8bit_audio_start_bgm_impl) {
@@ -426,12 +401,13 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|
   #|       const state = globalThis.__moon8bit_audio_state || {};
   #|       const master = Number(state.master ?? 1.0);
-  #|       const bgmVolume = Number(state.bgmVolume ?? 0.05);
-  #|       const wave = state.bgmWave || "square";
+  #|       const bgmVolume = Number(state.bgmVolume ?? 0.0);
+  #|       const wave = typeof state.bgmWave === "string" ? state.bgmWave : null;
   #|       const loopByDefault = Boolean(state.bgmLoop ?? true);
   #|       const notes = Array.isArray(state.bgmNotes) && state.bgmNotes.length > 0
   #|         ? state.bgmNotes : null;
   #|       const stepSec = Math.max(0.05, Number(state.bgmStepSec ?? 0.125));
+  #|       if (!wave || !notes) return;
   #|
   #|       const gain = ctx.createGain();
   #|       gain.gain.value = Math.max(0.0, Math.min(1.0, master * bgmVolume));
@@ -486,7 +462,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|         if (!nodes) return;
   #|         const st = globalThis.__moon8bit_audio_state || {};
   #|         const m = Number(st.master ?? 1.0);
-  #|         const v = Number(st.bgmVolume ?? 0.05);
+  #|         const v = Number(st.bgmVolume ?? 0.0);
   #|         try { nodes.gain.gain.setTargetAtTime(Math.max(0.0, Math.min(1.0, m * v)), ctx.currentTime, 0.03); } catch (_) {}
   #|       };
   #|     };
@@ -514,11 +490,9 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       const ctx = ensure();
   #|       if (!ctx) return;
   #|
-  #|       const defaults = {
-  #|         generic: { type: "square", attack: 0.003, decay: 0.10, peak: 0.07, f0: 520, f1: 360 },
-  #|       };
   #|       const state = globalThis.__moon8bit_audio_state || {};
-  #|       const sfx = (state.sfx && state.sfx[kind]) || defaults.generic;
+  #|       const sfx = state.sfx && state.sfx[kind] ? state.sfx[kind] : null;
+  #|       if (!sfx) return;
   #|       const master = Number(state.master ?? 1.0);
   #|       const sfxVol = Number(state.sfxVolume ?? 1.0);
   #|
@@ -698,7 +672,8 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   }
   #|
   #|   const renderSfxCard = (kind, title) => {
-  #|     const profile = ensureSfxProfile(kind);
+  #|     const profile = getSfxProfile(kind);
+  #|     if (!profile) return;
   #|     const slug = soundKeyToId(kind);
   #|     const card = document.createElement("div");
   #|     card.id = `moon8bit-sfx-${slug}-card`;
@@ -763,8 +738,6 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     globalThis.__moon8bit_sound_events = events;
   #|
   #|     events.forEach((event) => {
-  #|       ensureSfxProfile(event.key);
-  #|
   #|       const testBtn = document.createElement("button");
   #|       testBtn.textContent = `Test ${event.label}`;
   #|       testBtn.style.padding = "6px 10px";
