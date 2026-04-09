@@ -142,6 +142,8 @@ pub fn[T] with_game(@engine.EngineInstance[T], T) -> @engine.EngineInstance[T]
 // Type aliases
 pub using @model {type AssetBundle}
 
+pub using @model {type BgmDef}
+
 pub using @model {type Collider}
 
 pub using @engine {type DrawContext}
@@ -163,6 +165,8 @@ pub using @model {type InputState}
 pub using @model {type Palette}
 
 pub using @model {type Rect}
+
+pub using @model {type SoundDef}
 
 pub using @model {type Sprite}
 

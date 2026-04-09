@@ -11,6 +11,12 @@ type Sprite = @model.Sprite
 type Tilemap = @model.Tilemap
 
 ///|
+type SoundDef = @model.SoundDef
+
+///|
+type BgmDef = @model.BgmDef
+
+///|
 type AssetBundle = @model.AssetBundle
 
 ///|
@@ -293,6 +299,210 @@ fn parse_tilemap_block(
 }
 
 ///|
+fn parse_double_token(
+  token : String,
+  line : Int,
+  field : String,
+) -> Result[Double, DslError] {
+  try @string.parse_double(token[:]) |> Ok catch {
+    _ => err(line, "invalid number for \{field}: \{token}")
+  }
+}
+
+///|
+fn parse_wave_token(token : String, line : Int) -> Result[String, DslError] {
+  match token {
+    "sine" | "square" | "triangle" | "sawtooth" => Ok(token)
+    _ =>
+      err(
+        line,
+        "invalid wave: \{token} (expected sine/square/triangle/sawtooth)",
+      )
+  }
+}
+
+///|
+fn note_name_to_midi(name : String, line : Int) -> Result[Int, DslError] {
+  // White keys only: C D E F G A B
+  // MIDI: C4 = 60
+  if name == "R" {
+    return Ok(-1) // rest
+  }
+  if name.length() < 2 {
+    return err(line, "invalid note: \{name} (expected e.g. C4, D5, R)")
+  }
+  let letter = name.unsafe_get(0)
+  let octave_str = name[1:].to_string()
+  let semitone = match letter {
+    'C' => 0
+    'D' => 2
+    'E' => 4
+    'F' => 5
+    'G' => 7
+    'A' => 9
+    'B' => 11
+    _ =>
+      return err(
+        line,
+        "invalid note name: \{letter.to_string()} (use C D E F G A B or R)",
+      )
+  }
+  let octave = match parse_int_token(octave_str, line, "octave") {
+    Ok(v) => v
+    Err(e) => return Err(e)
+  }
+  if octave < 0 || octave > 9 {
+    return err(line, "octave out of range: \{octave} (expected 0..9)")
+  }
+  Ok(12 * (octave + 1) + semitone)
+}
+
+///|
+fn parse_sound_block(
+  lines : Array[String],
+  header : Array[String],
+  start_line_index : Int,
+) -> Result[(SoundDef, Int), DslError] {
+  let header_line = start_line_index + 1
+  if header.length() != 2 {
+    return err(header_line, "sound header must be: sound <name>")
+  }
+  let name = header[1]
+  let mut wave = "square"
+  let mut attack = 0.003
+  let mut decay = 0.10
+  let mut peak = 0.07
+  let mut f0 = 520
+  let mut f1 = 360
+  let mut cursor = start_line_index + 1
+  while cursor < lines.length() {
+    let raw = normalize_line(lines[cursor])
+    let line_no = cursor + 1
+    if is_ignorable_line(raw) {
+      cursor += 1
+      continue
+    }
+    if raw == "end" {
+      return Ok(
+        (SoundDef::{ name, wave, attack, decay, peak, f0, f1 }, cursor + 1),
+      )
+    }
+    let tokens = split_ws(raw)
+    if tokens.length() < 2 {
+      return err(line_no, "sound field must be: <key> <value>")
+    }
+    match tokens[0] {
+      "wave" =>
+        wave = match parse_wave_token(tokens[1], line_no) {
+          Ok(v) => v
+          Err(e) => return Err(e)
+        }
+      "attack" =>
+        attack = match parse_double_token(tokens[1], line_no, "attack") {
+          Ok(v) => v
+          Err(e) => return Err(e)
+        }
+      "decay" =>
+        decay = match parse_double_token(tokens[1], line_no, "decay") {
+          Ok(v) => v
+          Err(e) => return Err(e)
+        }
+      "peak" =>
+        peak = match parse_double_token(tokens[1], line_no, "peak") {
+          Ok(v) => v
+          Err(e) => return Err(e)
+        }
+      "f0" =>
+        f0 = match parse_int_token(tokens[1], line_no, "f0") {
+          Ok(v) => v
+          Err(e) => return Err(e)
+        }
+      "f1" =>
+        f1 = match parse_int_token(tokens[1], line_no, "f1") {
+          Ok(v) => v
+          Err(e) => return Err(e)
+        }
+      _ => return err(line_no, "unknown sound field: \{tokens[0]}")
+    }
+    cursor += 1
+  }
+  err(header_line, "sound block is missing `end`")
+}
+
+///|
+fn parse_bgm_block(
+  lines : Array[String],
+  header : Array[String],
+  start_line_index : Int,
+) -> Result[(BgmDef, Int), DslError] {
+  let header_line = start_line_index + 1
+  if header.length() != 2 {
+    return err(header_line, "bgm header must be: bgm <name>")
+  }
+  let name = header[1]
+  let mut wave = "square"
+  let mut volume = 0.05
+  let mut step_sec = 0.125
+  let mut loop_ = true
+  let mut notes : Array[Int] = []
+  let mut cursor = start_line_index + 1
+  while cursor < lines.length() {
+    let raw = normalize_line(lines[cursor])
+    let line_no = cursor + 1
+    if is_ignorable_line(raw) {
+      cursor += 1
+      continue
+    }
+    if raw == "end" {
+      return Ok(
+        (BgmDef::{ name, wave, volume, step_sec, loop_, notes }, cursor + 1),
+      )
+    }
+    let tokens = split_ws(raw)
+    if tokens.length() < 2 {
+      return err(line_no, "bgm field must be: <key> <value>")
+    }
+    match tokens[0] {
+      "wave" =>
+        wave = match parse_wave_token(tokens[1], line_no) {
+          Ok(v) => v
+          Err(e) => return Err(e)
+        }
+      "volume" =>
+        volume = match parse_double_token(tokens[1], line_no, "volume") {
+          Ok(v) => v
+          Err(e) => return Err(e)
+        }
+      "step_sec" =>
+        step_sec = match parse_double_token(tokens[1], line_no, "step_sec") {
+          Ok(v) => v
+          Err(e) => return Err(e)
+        }
+      "loop" =>
+        loop_ = match tokens[1] {
+          "true" => true
+          "false" => false
+          _ => return err(line_no, "loop must be true or false")
+        }
+      "notes" => {
+        let note_tokens = tokens[1:]
+        let parsed : Array[Int] = []
+        for token in note_tokens {
+          match note_name_to_midi(token.to_string(), line_no) {
+            Ok(midi) => parsed.push(midi)
+            Err(e) => return Err(e)
+          }
+        }
+        notes = parsed
+      }
+      _ => return err(line_no, "unknown bgm field: \{tokens[0]}")
+    }
+    cursor += 1
+  }
+  err(header_line, "bgm block is missing `end`")
+}
+
+///|
 pub fn parse_assets_dsl(input : String) -> Result[AssetBundle, DslError] {
   let normalized = input
     .replace_all(old="\r\n", new="\n")
@@ -305,6 +515,8 @@ pub fn parse_assets_dsl(input : String) -> Result[AssetBundle, DslError] {
   let mut palette : Palette? = None
   let sprites : Array[Sprite] = []
   let tilemaps : Array[Tilemap] = []
+  let sounds : Array[SoundDef] = []
+  let bgms : Array[BgmDef] = []
 
   let mut cursor = 0
   while cursor < lines.length() {
@@ -348,6 +560,22 @@ pub fn parse_assets_dsl(input : String) -> Result[AssetBundle, DslError] {
         tilemaps.push(parsed.0)
         cursor = parsed.1
       }
+      "sound" => {
+        let parsed = match parse_sound_block(lines, tokens, cursor) {
+          Ok(v) => v
+          Err(e) => return Err(e)
+        }
+        sounds.push(parsed.0)
+        cursor = parsed.1
+      }
+      "bgm" => {
+        let parsed = match parse_bgm_block(lines, tokens, cursor) {
+          Ok(v) => v
+          Err(e) => return Err(e)
+        }
+        bgms.push(parsed.0)
+        cursor = parsed.1
+      }
       _ => return err(cursor + 1, "unknown directive: \{tokens[0]}")
     }
   }
@@ -359,5 +587,7 @@ pub fn parse_assets_dsl(input : String) -> Result[AssetBundle, DslError] {
     },
     sprites,
     tilemaps,
+    sounds,
+    bgms,
   })
 }

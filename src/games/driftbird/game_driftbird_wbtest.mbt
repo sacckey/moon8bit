@@ -17,6 +17,8 @@ fn test_bundle() -> @model.AssetBundle {
     },
     sprites: [@model.Sprite::{ name: "bird", width: 8, height: 8, pixels }],
     tilemaps: [],
+    sounds: [],
+    bgms: [],
   }
 }
 

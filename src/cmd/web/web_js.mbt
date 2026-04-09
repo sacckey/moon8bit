@@ -386,24 +386,29 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   const parseSoundEventsFromDsl = (text) => {
   #|     const lines = String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
   #|     const events = [];
-  #|     for (const line of lines) {
-  #|       const m = line.match(/^#\s*sfx-event\s+([A-Za-z0-9_-]+)(?:\s+(.+))?$/i);
-  #|       if (!m) continue;
-  #|       const key = m[1].trim();
-  #|       if (!key) continue;
-  #|       const label = (m[2] || key).trim();
-  #|       events.push({ key, label: label || key });
-  #|     }
-  #|     if (events.length === 0) return fallbackSoundEvents.slice();
-  #|     const dedup = [];
   #|     const seen = new Set();
-  #|     for (const e of events) {
-  #|       const k = e.key.toLowerCase();
-  #|       if (seen.has(k)) continue;
-  #|       seen.add(k);
-  #|       dedup.push(e);
+  #|     for (const line of lines) {
+  #|       // New format: sound <name> block
+  #|       const sm = line.trim().match(/^sound\s+([A-Za-z0-9_-]+)$/i);
+  #|       if (sm) {
+  #|         const key = sm[1].trim();
+  #|         if (key && !seen.has(key.toLowerCase())) {
+  #|           seen.add(key.toLowerCase());
+  #|           events.push({ key, label: key });
+  #|         }
+  #|         continue;
+  #|       }
+  #|       // Legacy: # sfx-event <key> [label]
+  #|       const cm = line.match(/^#\s*sfx-event\s+([A-Za-z0-9_-]+)(?:\s+(.+))?$/i);
+  #|       if (cm) {
+  #|         const key = cm[1].trim();
+  #|         if (key && !seen.has(key.toLowerCase())) {
+  #|           seen.add(key.toLowerCase());
+  #|           events.push({ key, label: (cm[2] || key).trim() });
+  #|         }
+  #|       }
   #|     }
-  #|     return dedup.length > 0 ? dedup : fallbackSoundEvents.slice();
+  #|     return events.length > 0 ? events : fallbackSoundEvents.slice();
   #|   };
   #|
   #|   if (!globalThis.__moon8bit_audio_start_bgm_impl) {
@@ -421,50 +426,67 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|
   #|       const state = globalThis.__moon8bit_audio_state || {};
   #|       const master = Number(state.master ?? 1.0);
-  #|       const bgmVolume = Number(state.bgmVolume ?? 0.0);
+  #|       const bgmVolume = Number(state.bgmVolume ?? 0.05);
   #|       const wave = state.bgmWave || "square";
-  #|       const baseFreq = Math.max(40, Number(state.bgmBaseFreq ?? 110));
-  #|       const lfoFreq = Math.max(0.01, Number(state.bgmLfoFreq ?? 0.35));
-  #|       const lfoDepth = Math.max(0, Number(state.bgmLfoDepth ?? 2.5));
-  #|
-  #|       const osc = ctx.createOscillator();
-  #|       osc.type = wave;
-  #|       osc.frequency.value = baseFreq;
-  #|
-  #|       const lfo = ctx.createOscillator();
-  #|       lfo.type = "sine";
-  #|       lfo.frequency.value = lfoFreq;
-  #|
-  #|       const lfoGain = ctx.createGain();
-  #|       lfoGain.gain.value = lfoDepth;
+  #|       const loopByDefault = Boolean(state.bgmLoop ?? true);
+  #|       const notes = Array.isArray(state.bgmNotes) && state.bgmNotes.length > 0
+  #|         ? state.bgmNotes : null;
+  #|       const stepSec = Math.max(0.05, Number(state.bgmStepSec ?? 0.125));
   #|
   #|       const gain = ctx.createGain();
   #|       gain.gain.value = Math.max(0.0, Math.min(1.0, master * bgmVolume));
-  #|
-  #|       lfo.connect(lfoGain);
-  #|       lfoGain.connect(osc.frequency);
-  #|       osc.connect(gain);
   #|       gain.connect(ctx.destination);
   #|
-  #|       const now = ctx.currentTime;
-  #|       osc.start(now);
-  #|       lfo.start(now);
+  #|       // MIDI note number to Hz: 440 * 2^((midi-69)/12)
+  #|       const midiToHz = (midi) => 440 * Math.pow(2, (midi - 69) / 12);
   #|
-  #|       globalThis.__moon8bit_bgm_nodes = { osc, lfo, lfoGain, gain };
+  #|       let stopped = false;
+  #|       let stepIdx = 0;
+  #|       let nextTime = ctx.currentTime;
+  #|       const activeOscs = [];
+  #|
+  #|       const scheduleStep = () => {
+  #|         if (stopped) return;
+  #|         const lookahead = 0.1;
+  #|         while (nextTime < ctx.currentTime + lookahead) {
+  #|           const st = globalThis.__moon8bit_audio_state || {};
+  #|           const loopEnabled = Boolean(st.bgmLoop ?? loopByDefault);
+  #|           const ns = Array.isArray(st.bgmNotes) && st.bgmNotes.length > 0
+  #|             ? st.bgmNotes : notes;
+  #|           if (!ns || ns.length === 0) {
+  #|             if (!loopEnabled) { stopped = true; break; }
+  #|             nextTime += stepSec;
+  #|             continue;
+  #|           }
+  #|           if (!loopEnabled && stepIdx >= ns.length) {
+  #|             stopped = true;
+  #|             break;
+  #|           }
+  #|           const midi = loopEnabled ? ns[stepIdx % ns.length] : ns[stepIdx];
+  #|           stepIdx++;
+  #|           if (midi >= 0) {
+  #|             const osc = ctx.createOscillator();
+  #|             osc.type = st.bgmWave || wave;
+  #|             osc.frequency.value = midiToHz(midi);
+  #|             osc.connect(gain);
+  #|             osc.start(nextTime);
+  #|             osc.stop(nextTime + stepSec * 0.9);
+  #|             activeOscs.push(osc);
+  #|           }
+  #|           nextTime += stepSec;
+  #|         }
+  #|         if (!stopped) setTimeout(scheduleStep, 50);
+  #|       };
+  #|
+  #|       scheduleStep();
+  #|
+  #|       globalThis.__moon8bit_bgm_nodes = { gain, activeOscs, stopFn: () => { stopped = true; } };
   #|       globalThis.__moon8bit_audio_apply_bgm = () => {
   #|         const nodes = globalThis.__moon8bit_bgm_nodes;
   #|         if (!nodes) return;
   #|         const st = globalThis.__moon8bit_audio_state || {};
   #|         const m = Number(st.master ?? 1.0);
-  #|         const v = Number(st.bgmVolume ?? 0.0);
-  #|         const wav = st.bgmWave || "square";
-  #|         const f = Math.max(40, Number(st.bgmBaseFreq ?? 110));
-  #|         const lf = Math.max(0.01, Number(st.bgmLfoFreq ?? 0.35));
-  #|         const ld = Math.max(0, Number(st.bgmLfoDepth ?? 2.5));
-  #|         try { nodes.osc.type = wav; } catch (_) {}
-  #|         try { nodes.osc.frequency.setTargetAtTime(f, ctx.currentTime, 0.03); } catch (_) {}
-  #|         try { nodes.lfo.frequency.setTargetAtTime(lf, ctx.currentTime, 0.03); } catch (_) {}
-  #|         try { nodes.lfoGain.gain.setTargetAtTime(ld, ctx.currentTime, 0.03); } catch (_) {}
+  #|         const v = Number(st.bgmVolume ?? 0.05);
   #|         try { nodes.gain.gain.setTargetAtTime(Math.max(0.0, Math.min(1.0, m * v)), ctx.currentTime, 0.03); } catch (_) {}
   #|       };
   #|     };
@@ -476,12 +498,8 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       if (!nodes) return;
   #|       const now = (globalThis.__moon8bit_audio_ctx && globalThis.__moon8bit_audio_ctx.currentTime) || 0;
   #|       try { nodes.gain.gain.setTargetAtTime(0.0001, now, 0.05); } catch (_) {}
-  #|       try { nodes.osc.stop(now + 0.08); } catch (_) {}
-  #|       try { nodes.lfo.stop(now + 0.08); } catch (_) {}
+  #|       if (nodes.stopFn) try { nodes.stopFn(); } catch (_) {}
   #|       setTimeout(() => {
-  #|         try { nodes.osc.disconnect(); } catch (_) {}
-  #|         try { nodes.lfo.disconnect(); } catch (_) {}
-  #|         try { nodes.lfoGain.disconnect(); } catch (_) {}
   #|         try { nodes.gain.disconnect(); } catch (_) {}
   #|       }, 120);
   #|       globalThis.__moon8bit_bgm_nodes = null;
@@ -766,7 +784,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       note.style.fontFamily = "monospace";
   #|       note.style.fontSize = "12px";
   #|       note.style.color = "#9fb3c8";
-  #|       note.textContent = "No # sfx-event metadata in DSL. Add lines like: # sfx-event <key> <label>";
+  #|       note.textContent = "No sound metadata in DSL. Add lines like: sound <name> ... end";
   #|       eventControls.appendChild(note);
   #|     }
   #|   };

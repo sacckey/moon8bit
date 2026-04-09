@@ -11,6 +11,12 @@ pub type Tilemap = @model.Tilemap
 pub type AssetBundle = @model.AssetBundle
 
 ///|
+pub type SoundDef = @model.SoundDef
+
+///|
+pub type BgmDef = @model.BgmDef
+
+///|
 pub type DslError = @model.DslError
 
 ///|
