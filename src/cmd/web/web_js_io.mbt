@@ -193,8 +193,8 @@ extern "js" fn web_apply_sound_bundle(
   #|   }
   #|
   #|   // Refresh sound editor UI if available
-  #|   if (globalThis.__moon8bit_sound_refresh_from_bundle) {
-  #|     globalThis.__moon8bit_sound_refresh_from_bundle(sounds, bgms);
+  #|   if (globalThis.__moon8bit_sound_refresh) {
+  #|     globalThis.__moon8bit_sound_refresh();
   #|   }
   #| }
 
