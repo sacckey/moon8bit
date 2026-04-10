@@ -416,11 +416,14 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       bgms: [],
   #|       selectedBgmName: null,
   #|       dirty: false,
+  #|       transientErrors: {},
   #|     };
   #|   }
   #|   const audioState = globalThis.__moon8bit_audio_state;
   #|   if (!audioState.sfx) audioState.sfx = {};
   #|   if (!audioState.bgms) audioState.bgms = [];
+  #|   if (!audioState.transientErrors) audioState.transientErrors = {};
+  #|   const waveAllow = new Set(["sine", "square", "triangle", "sawtooth"]);
   #|
   #|   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
   #|   const soundKeyToId = (key) =>
@@ -434,6 +437,128 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   };
   #|   const getSfxProfile = (key) =>
   #|     audioState.sfx && audioState.sfx[key] ? audioState.sfx[key] : null;
+  #|
+  #|   let soundValidation = document.getElementById("moon8bit-sound-validation");
+  #|   if (!soundValidation) {
+  #|     soundValidation = document.createElement("div");
+  #|     soundValidation.id = "moon8bit-sound-validation";
+  #|     soundValidation.style.fontFamily = "monospace";
+  #|     soundValidation.style.fontSize = "12px";
+  #|     soundValidation.style.color = "#7bd389";
+  #|     soundValidation.style.whiteSpace = "pre-wrap";
+  #|     soundValidation.style.lineHeight = "1.4";
+  #|     soundEditor.appendChild(soundValidation);
+  #|   }
+  #|
+  #|   const setTransientError = (key, message) => {
+  #|     audioState.transientErrors[key] = message;
+  #|   };
+  #|   const clearTransientError = (key) => {
+  #|     if (audioState.transientErrors && key in audioState.transientErrors) {
+  #|       delete audioState.transientErrors[key];
+  #|     }
+  #|   };
+  #|   const clearTransientErrorsByPrefix = (prefix) => {
+  #|     if (!audioState.transientErrors) return;
+  #|     for (const key of Object.keys(audioState.transientErrors)) {
+  #|       if (String(key).startsWith(prefix)) {
+  #|         delete audioState.transientErrors[key];
+  #|       }
+  #|     }
+  #|   };
+  #|   const transientErrorMessages = () => {
+  #|     if (!audioState.transientErrors) return [];
+  #|     return Object.values(audioState.transientErrors).filter((x) => typeof x === "string" && x.length > 0);
+  #|   };
+  #|
+  #|   const validateAudioState = () => {
+  #|     const errors = [];
+  #|     const sfx = audioState.sfx || {};
+  #|     for (const [name, profile] of Object.entries(sfx)) {
+  #|       if (!/^[A-Za-z0-9_-]+$/.test(name)) {
+  #|         errors.push(`SFX "${name}": invalid name`);
+  #|       }
+  #|       const wave = String(profile && profile.type || "");
+  #|       if (!waveAllow.has(wave)) {
+  #|         errors.push(`SFX "${name}": wave must be sine/square/triangle/sawtooth`);
+  #|       }
+  #|       const numericChecks = [
+  #|         ["attack", profile.attack, 0.001, 0.1],
+  #|         ["decay", profile.decay, 0.02, 0.4],
+  #|         ["volume", profile.volume, 0.01, 0.25],
+  #|         ["f0", profile.f0, 60, 1800],
+  #|         ["f1", profile.f1, 40, 1600],
+  #|       ];
+  #|       for (const [k, v, min, max] of numericChecks) {
+  #|         const n = Number(v);
+  #|         if (!Number.isFinite(n) || n < min || n > max) {
+  #|           errors.push(`SFX "${name}": ${k} must be in [${min}, ${max}]`);
+  #|         }
+  #|       }
+  #|     }
+  #|
+  #|     const bgms = Array.isArray(audioState.bgms) ? audioState.bgms : [];
+  #|     const seenBgm = new Set();
+  #|     for (const bgm of bgms) {
+  #|       if (!/^[A-Za-z0-9_-]+$/.test(String(bgm.name || ""))) {
+  #|         errors.push(`BGM "${bgm.name}": invalid name`);
+  #|       }
+  #|       if (seenBgm.has(bgm.name)) {
+  #|         errors.push(`BGM "${bgm.name}": duplicated name`);
+  #|       }
+  #|       seenBgm.add(bgm.name);
+  #|       const wave = String(bgm.wave || "");
+  #|       if (!waveAllow.has(wave)) {
+  #|         errors.push(`BGM "${bgm.name}": wave must be sine/square/triangle/sawtooth`);
+  #|       }
+  #|       const volume = Number(bgm.volume);
+  #|       if (!Number.isFinite(volume) || volume < 0.0 || volume > 0.3) {
+  #|         errors.push(`BGM "${bgm.name}": volume must be in [0.0, 0.3]`);
+  #|       }
+  #|       const stepSec = Number(bgm.step_sec);
+  #|       if (!Number.isFinite(stepSec) || stepSec < 0.05 || stepSec > 1.5) {
+  #|         errors.push(`BGM "${bgm.name}": step_sec must be in [0.05, 1.5]`);
+  #|       }
+  #|       if (!Array.isArray(bgm.notes)) {
+  #|         errors.push(`BGM "${bgm.name}": notes must be an array`);
+  #|       } else {
+  #|         for (let i = 0; i < bgm.notes.length; i += 1) {
+  #|           const midi = Number(bgm.notes[i]);
+  #|           if (!Number.isInteger(midi) || (midi !== -1 && (midi < 0 || midi > 127))) {
+  #|             errors.push(`BGM "${bgm.name}": notes[${i}] must be -1 or MIDI 0..127`);
+  #|             break;
+  #|           }
+  #|         }
+  #|       }
+  #|     }
+  #|
+  #|     errors.push(...transientErrorMessages());
+  #|     return errors;
+  #|   };
+  #|
+  #|   const renderSoundValidation = () => {
+  #|     const errors = validateAudioState();
+  #|     if (errors.length == 0) {
+  #|       soundValidation.textContent = "Validation: OK";
+  #|       soundValidation.style.color = "#7bd389";
+  #|       soundWriteBtn.disabled = false;
+  #|       soundApplyBtn.disabled = false;
+  #|       return true;
+  #|     }
+  #|     let text = `Validation errors (${errors.length}):`;
+  #|     const maxLines = Math.min(6, errors.length);
+  #|     for (let i = 0; i < maxLines; i += 1) {
+  #|       text += `\n- ${errors[i]}`;
+  #|     }
+  #|     if (errors.length > maxLines) {
+  #|       text += `\n... and ${errors.length - maxLines} more`;
+  #|     }
+  #|     soundValidation.textContent = text;
+  #|     soundValidation.style.color = "#ef6f6c";
+  #|     soundWriteBtn.disabled = true;
+  #|     soundApplyBtn.disabled = true;
+  #|     return false;
+  #|   };
   #|   const parseSoundEventsFromDsl = (text) => {
   #|     const lines = String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
   #|     const events = [];
@@ -491,11 +616,21 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     }
   #|     return notes;
   #|   };
+  #|   const firstInvalidNoteToken = (text) => {
+  #|     const raw = String(text || "").trim();
+  #|     if (raw.length === 0) return null;
+  #|     const tokens = raw.split(/[\s,]+/).filter(Boolean);
+  #|     for (const token of tokens) {
+  #|       if (parseNoteToken(token) === null) return token;
+  #|     }
+  #|     return null;
+  #|   };
   #|
   #|   const parseSoundBundleFromDsl = (text) => {
   #|     const lines = String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
   #|     const sounds = [];
   #|     const bgms = [];
+  #|     const errors = [];
   #|     let i = 0;
   #|     while (i < lines.length) {
   #|       const line = lines[i].trim();
@@ -511,34 +646,53 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|           f1: 360,
   #|         };
   #|         i += 1;
+  #|         let foundEnd = false;
   #|         while (i < lines.length) {
   #|           const row = lines[i].trim();
   #|           if (row === "" || row.startsWith("#")) { i += 1; continue; }
-  #|           if (row === "end") { i += 1; break; }
+  #|           if (row === "end") { i += 1; foundEnd = true; break; }
+  #|           if (/^(sound|bgm)\s+[A-Za-z0-9_-]+$/i.test(row)) {
+  #|             errors.push(`sound ${sound.name}: missing end before "${row}"`);
+  #|             break;
+  #|           }
   #|           const tokens = row.split(/\s+/).filter(Boolean);
   #|           if (tokens.length >= 2) {
   #|             const key = tokens[0];
   #|             const value = tokens[1];
   #|             if (key === "wave") {
-  #|               sound.type = ["sine", "square", "triangle", "sawtooth"].includes(value) ? value : "square";
+  #|               if (waveAllow.has(value)) {
+  #|                 sound.type = value;
+  #|               } else {
+  #|                 errors.push(`sound ${sound.name}: invalid wave "${value}"`);
+  #|               }
   #|             } else if (key === "attack") {
   #|               const n = Number(value);
   #|               if (Number.isFinite(n)) sound.attack = n;
+  #|               else errors.push(`sound ${sound.name}: invalid attack "${value}"`);
   #|             } else if (key === "decay") {
   #|               const n = Number(value);
   #|               if (Number.isFinite(n)) sound.decay = n;
+  #|               else errors.push(`sound ${sound.name}: invalid decay "${value}"`);
   #|             } else if (key === "volume" || key === "peak") {
   #|               const n = Number(value);
   #|               if (Number.isFinite(n)) sound.volume = n;
+  #|               else errors.push(`sound ${sound.name}: invalid volume "${value}"`);
   #|             } else if (key === "f0") {
   #|               const n = Number(value);
   #|               if (Number.isFinite(n)) sound.f0 = Math.round(n);
+  #|               else errors.push(`sound ${sound.name}: invalid f0 "${value}"`);
   #|             } else if (key === "f1") {
   #|               const n = Number(value);
   #|               if (Number.isFinite(n)) sound.f1 = Math.round(n);
+  #|               else errors.push(`sound ${sound.name}: invalid f1 "${value}"`);
+  #|             } else {
+  #|               errors.push(`sound ${sound.name}: unknown field "${key}"`);
   #|             }
   #|           }
   #|           i += 1;
+  #|         }
+  #|         if (!foundEnd) {
+  #|           errors.push(`sound ${sound.name}: missing end`);
   #|         }
   #|         sounds.push(sound);
   #|         continue;
@@ -555,36 +709,60 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|           notes: [],
   #|         };
   #|         i += 1;
+  #|         let foundEnd = false;
   #|         while (i < lines.length) {
   #|           const row = lines[i].trim();
   #|           if (row === "" || row.startsWith("#")) { i += 1; continue; }
-  #|           if (row === "end") { i += 1; break; }
+  #|           if (row === "end") { i += 1; foundEnd = true; break; }
+  #|           if (/^(sound|bgm)\s+[A-Za-z0-9_-]+$/i.test(row)) {
+  #|             errors.push(`bgm ${bgm.name}: missing end before "${row}"`);
+  #|             break;
+  #|           }
   #|           const tokens = row.split(/\s+/).filter(Boolean);
   #|           if (tokens.length >= 2) {
   #|             const key = tokens[0];
   #|             if (key === "wave") {
-  #|               bgm.wave = ["sine", "square", "triangle", "sawtooth"].includes(tokens[1]) ? tokens[1] : "square";
+  #|               if (waveAllow.has(tokens[1])) {
+  #|                 bgm.wave = tokens[1];
+  #|               } else {
+  #|                 errors.push(`bgm ${bgm.name}: invalid wave "${tokens[1]}"`);
+  #|               }
   #|             } else if (key === "volume") {
   #|               const n = Number(tokens[1]);
   #|               if (Number.isFinite(n)) bgm.volume = n;
+  #|               else errors.push(`bgm ${bgm.name}: invalid volume "${tokens[1]}"`);
   #|             } else if (key === "step_sec") {
   #|               const n = Number(tokens[1]);
   #|               if (Number.isFinite(n)) bgm.step_sec = n;
+  #|               else errors.push(`bgm ${bgm.name}: invalid step_sec "${tokens[1]}"`);
   #|             } else if (key === "loop") {
-  #|               bgm.loop_ = tokens[1] === "true";
+  #|               if (tokens[1] === "true" || tokens[1] === "false") {
+  #|                 bgm.loop_ = tokens[1] === "true";
+  #|               } else {
+  #|                 errors.push(`bgm ${bgm.name}: invalid loop "${tokens[1]}"`);
+  #|               }
   #|             } else if (key === "notes") {
   #|               const noteTokens = tokens.slice(1);
   #|               const parsedNotes = [];
   #|               let ok = true;
   #|               for (const token of noteTokens) {
   #|                 const midi = parseNoteToken(token);
-  #|                 if (midi === null) { ok = false; break; }
+  #|                 if (midi === null) {
+  #|                   errors.push(`bgm ${bgm.name}: invalid note "${token}"`);
+  #|                   ok = false;
+  #|                   break;
+  #|                 }
   #|                 parsedNotes.push(midi);
   #|               }
   #|               if (ok) bgm.notes = parsedNotes;
+  #|             } else {
+  #|               errors.push(`bgm ${bgm.name}: unknown field "${key}"`);
   #|             }
   #|           }
   #|           i += 1;
+  #|         }
+  #|         if (!foundEnd) {
+  #|           errors.push(`bgm ${bgm.name}: missing end`);
   #|         }
   #|         bgms.push(bgm);
   #|         continue;
@@ -592,7 +770,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|
   #|       i += 1;
   #|     }
-  #|     return { sounds, bgms };
+  #|     return { sounds, bgms, errors };
   #|   };
   #|
   #|   const applySoundBundleToState = (bundle) => {
@@ -706,16 +884,33 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|
   #|   const writeSoundToDsl = (andApply) => {
   #|     if (!textarea) return;
+  #|     if (!renderSoundValidation()) {
+  #|       if (feedback) {
+  #|         feedback.textContent = "Sound DSL write aborted: fix validation errors first.";
+  #|         feedback.style.color = "#ef6f6c";
+  #|       }
+  #|       return false;
+  #|     }
   #|     const sourceLines = textarea.value.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
   #|     const kept = [];
   #|     let insertAt = null;
   #|     const isSoundHeader = (trimmed) =>
   #|       /^sound\s+[A-Za-z0-9_-]+$/i.test(trimmed) || /^bgm\s+[A-Za-z0-9_-]+$/i.test(trimmed);
+  #|     let sawSoundBlocks = false;
+  #|     let sawMeaningfulAfterSound = false;
   #|     let i = 0;
   #|     while (i < sourceLines.length) {
   #|       const row = sourceLines[i];
   #|       const trimmed = row.trim();
   #|       if (isSoundHeader(trimmed)) {
+  #|         if (sawMeaningfulAfterSound) {
+  #|           if (feedback) {
+  #|             feedback.textContent = "Sound DSL write aborted: sound/bgm blocks must be contiguous.";
+  #|             feedback.style.color = "#ef6f6c";
+  #|           }
+  #|           return false;
+  #|         }
+  #|         sawSoundBlocks = true;
   #|         if (insertAt === null) insertAt = kept.length;
   #|         i += 1;
   #|         let foundEnd = false;
@@ -740,6 +935,9 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|           return false;
   #|         }
   #|         continue;
+  #|       }
+  #|       if (sawSoundBlocks && trimmed !== "" && !trimmed.startsWith("#")) {
+  #|         sawMeaningfulAfterSound = true;
   #|       }
   #|       kept.push(row);
   #|       i += 1;
@@ -937,10 +1135,12 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   const markDirty = () => {
   #|     audioState.dirty = true;
   #|     updateSoundDirtyIndicator();
+  #|     renderSoundValidation();
   #|   };
   #|   const markSaved = () => {
   #|     audioState.dirty = false;
   #|     updateSoundDirtyIndicator();
+  #|     renderSoundValidation();
   #|   };
   #|
   #|   const ensureSlider = (id, label, min, max, step, getValue, setValue) => {
@@ -1264,7 +1464,14 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     bgmStepInput.dataset.bound = "1";
   #|     bgmStepInput.addEventListener("input", () => {
   #|       const n = Number(bgmStepInput.value);
-  #|       if (!Number.isFinite(n)) return;
+  #|       if (!Number.isFinite(n)) {
+  #|         bgmStepInput.style.border = "1px solid #ef6f6c";
+  #|         setTransientError("bgm:step_sec", "BGM: step_sec must be a number");
+  #|         renderSoundValidation();
+  #|         return;
+  #|       }
+  #|       bgmStepInput.style.border = "";
+  #|       clearTransientError("bgm:step_sec");
   #|       audioState.bgmStepSec = clamp(n, 0.05, 1.5);
   #|       const b = getSelectedBgm();
   #|       if (b) b.step_sec = audioState.bgmStepSec;
@@ -1314,10 +1521,17 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     bgmNotesInput.addEventListener("input", () => {
   #|       const notes = parseNotesText(bgmNotesInput.value);
   #|       if (notes === null) {
+  #|         const bad = firstInvalidNoteToken(bgmNotesInput.value);
   #|         bgmNotesInput.style.border = "1px solid #ef6f6c";
+  #|         setTransientError(
+  #|           "bgm:notes",
+  #|           `BGM: invalid note token${bad ? ` "${bad}"` : ""} (use C4 C#4 Db4 R)`,
+  #|         );
+  #|         renderSoundValidation();
   #|         return;
   #|       }
   #|       bgmNotesInput.style.border = "";
+  #|       clearTransientError("bgm:notes");
   #|       audioState.bgmNotes = notes;
   #|       const b = getSelectedBgm();
   #|       if (b) b.notes = notes.slice();
@@ -1471,7 +1685,15 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       input.value = String(profile[field.key]);
   #|       input.addEventListener("input", () => {
   #|         const n = Number(input.value);
-  #|         if (!Number.isFinite(n)) return;
+  #|         const errorKey = `sfx:${kind}:${field.key}`;
+  #|         if (!Number.isFinite(n)) {
+  #|           input.style.border = "1px solid #ef6f6c";
+  #|           setTransientError(errorKey, `SFX "${kind}": ${field.key} must be a number`);
+  #|           renderSoundValidation();
+  #|           return;
+  #|         }
+  #|         input.style.border = "";
+  #|         clearTransientError(errorKey);
   #|         profile[field.key] = clamp(n, field.min, field.max);
   #|         markDirty();
   #|       });
@@ -1556,6 +1778,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     if (bgmStepInput) {
   #|       bgmStepInput.value = String(bgm ? bgm.step_sec : Number(audioState.bgmStepSec ?? 0.125));
   #|       bgmStepInput.disabled = !defined;
+  #|       bgmStepInput.style.border = "";
   #|     }
   #|     if (bgmLoopInput) {
   #|       bgmLoopInput.checked = Boolean(bgm ? bgm.loop_ : (audioState.bgmLoop ?? true));
@@ -1666,6 +1889,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     }
   #|
   #|     updateSoundDirtyIndicator();
+  #|     renderSoundValidation();
   #|   };
   #|
   #|   if (textarea && !globalThis.__moon8bit_sound_bound) {
@@ -1673,6 +1897,19 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     soundSyncBtn.addEventListener("click", () => {
   #|       const bundle = parseSoundBundleFromDsl(textarea.value);
   #|       applySoundBundleToState(bundle);
+  #|       if (feedback) {
+  #|         if (Array.isArray(bundle.errors) && bundle.errors.length > 0) {
+  #|           const maxLines = Math.min(4, bundle.errors.length);
+  #|           let msg = `Sound DSL sync warnings (${bundle.errors.length}):`;
+  #|           for (let i = 0; i < maxLines; i += 1) msg += `\n- ${bundle.errors[i]}`;
+  #|           if (bundle.errors.length > maxLines) msg += `\n... and ${bundle.errors.length - maxLines} more`;
+  #|           feedback.textContent = msg;
+  #|           feedback.style.color = "#e8c547";
+  #|         } else {
+  #|           feedback.textContent = "Sound DSL synced.";
+  #|           feedback.style.color = "#9fb3c8";
+  #|         }
+  #|       }
   #|       refreshSoundEditorFromDsl();
   #|     });
   #|     soundWriteBtn.addEventListener("click", () => {
