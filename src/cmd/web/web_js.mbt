@@ -392,6 +392,17 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     "#2e8b57",
   #|     "#4aa96c",
   #|   );
+  #|   let soundDirtyIndicator = document.getElementById("moon8bit-sound-dirty");
+  #|   if (!soundDirtyIndicator) {
+  #|     soundDirtyIndicator = document.createElement("span");
+  #|     soundDirtyIndicator.id = "moon8bit-sound-dirty";
+  #|     soundDirtyIndicator.style.fontFamily = "monospace";
+  #|     soundDirtyIndicator.style.fontSize = "12px";
+  #|     soundDirtyIndicator.style.marginLeft = "4px";
+  #|     soundDirtyIndicator.textContent = "Saved";
+  #|     soundDirtyIndicator.style.color = "#7bd389";
+  #|     soundActionRow.appendChild(soundDirtyIndicator);
+  #|   }
   #|
   #|   if (!globalThis.__moon8bit_audio_state) {
   #|     globalThis.__moon8bit_audio_state = {
@@ -402,16 +413,152 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       bgmLoop: true,
   #|       bgmNotes: [],
   #|       sfx: {},
+  #|       bgms: [],
+  #|       selectedBgmName: null,
+  #|       dirty: false,
+  #|       transientErrors: {},
   #|     };
   #|   }
   #|   const audioState = globalThis.__moon8bit_audio_state;
   #|   if (!audioState.sfx) audioState.sfx = {};
+  #|   if (!audioState.bgms) audioState.bgms = [];
+  #|   if (!audioState.transientErrors) audioState.transientErrors = {};
+  #|   const waveAllow = new Set(["sine", "square", "triangle", "sawtooth"]);
   #|
   #|   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
   #|   const soundKeyToId = (key) =>
   #|     key.toLowerCase().replace(/[^a-z0-9_-]/g, "_");
+  #|   const nextUniqueName = (existing, base) => {
+  #|     const used = new Set(existing);
+  #|     if (!used.has(base)) return base;
+  #|     let i = 2;
+  #|     while (used.has(`${base}_${i}`)) i += 1;
+  #|     return `${base}_${i}`;
+  #|   };
   #|   const getSfxProfile = (key) =>
   #|     audioState.sfx && audioState.sfx[key] ? audioState.sfx[key] : null;
+  #|
+  #|   let soundValidation = document.getElementById("moon8bit-sound-validation");
+  #|   if (!soundValidation) {
+  #|     soundValidation = document.createElement("div");
+  #|     soundValidation.id = "moon8bit-sound-validation";
+  #|     soundValidation.style.fontFamily = "monospace";
+  #|     soundValidation.style.fontSize = "12px";
+  #|     soundValidation.style.color = "#7bd389";
+  #|     soundValidation.style.whiteSpace = "pre-wrap";
+  #|     soundValidation.style.lineHeight = "1.4";
+  #|     soundEditor.appendChild(soundValidation);
+  #|   }
+  #|
+  #|   const setTransientError = (key, message) => {
+  #|     audioState.transientErrors[key] = message;
+  #|   };
+  #|   const clearTransientError = (key) => {
+  #|     if (audioState.transientErrors && key in audioState.transientErrors) {
+  #|       delete audioState.transientErrors[key];
+  #|     }
+  #|   };
+  #|   const clearTransientErrorsByPrefix = (prefix) => {
+  #|     if (!audioState.transientErrors) return;
+  #|     for (const key of Object.keys(audioState.transientErrors)) {
+  #|       if (String(key).startsWith(prefix)) {
+  #|         delete audioState.transientErrors[key];
+  #|       }
+  #|     }
+  #|   };
+  #|   const transientErrorMessages = () => {
+  #|     if (!audioState.transientErrors) return [];
+  #|     return Object.values(audioState.transientErrors).filter((x) => typeof x === "string" && x.length > 0);
+  #|   };
+  #|
+  #|   const validateAudioState = () => {
+  #|     const errors = [];
+  #|     const sfx = audioState.sfx || {};
+  #|     for (const [name, profile] of Object.entries(sfx)) {
+  #|       if (!/^[A-Za-z0-9_-]+$/.test(name)) {
+  #|         errors.push(`SFX "${name}": invalid name`);
+  #|       }
+  #|       const wave = String(profile && profile.type || "");
+  #|       if (!waveAllow.has(wave)) {
+  #|         errors.push(`SFX "${name}": wave must be sine/square/triangle/sawtooth`);
+  #|       }
+  #|       const numericChecks = [
+  #|         ["attack", profile.attack, 0.001, 0.1],
+  #|         ["decay", profile.decay, 0.02, 0.4],
+  #|         ["volume", profile.volume, 0.01, 0.25],
+  #|         ["f0", profile.f0, 60, 1800],
+  #|         ["f1", profile.f1, 40, 1600],
+  #|       ];
+  #|       for (const [k, v, min, max] of numericChecks) {
+  #|         const n = Number(v);
+  #|         if (!Number.isFinite(n) || n < min || n > max) {
+  #|           errors.push(`SFX "${name}": ${k} must be in [${min}, ${max}]`);
+  #|         }
+  #|       }
+  #|     }
+  #|
+  #|     const bgms = Array.isArray(audioState.bgms) ? audioState.bgms : [];
+  #|     const seenBgm = new Set();
+  #|     for (const bgm of bgms) {
+  #|       if (!/^[A-Za-z0-9_-]+$/.test(String(bgm.name || ""))) {
+  #|         errors.push(`BGM "${bgm.name}": invalid name`);
+  #|       }
+  #|       if (seenBgm.has(bgm.name)) {
+  #|         errors.push(`BGM "${bgm.name}": duplicated name`);
+  #|       }
+  #|       seenBgm.add(bgm.name);
+  #|       const wave = String(bgm.wave || "");
+  #|       if (!waveAllow.has(wave)) {
+  #|         errors.push(`BGM "${bgm.name}": wave must be sine/square/triangle/sawtooth`);
+  #|       }
+  #|       const volume = Number(bgm.volume);
+  #|       if (!Number.isFinite(volume) || volume < 0.0 || volume > 0.3) {
+  #|         errors.push(`BGM "${bgm.name}": volume must be in [0.0, 0.3]`);
+  #|       }
+  #|       const stepSec = Number(bgm.step_sec);
+  #|       if (!Number.isFinite(stepSec) || stepSec < 0.05 || stepSec > 1.5) {
+  #|         errors.push(`BGM "${bgm.name}": step_sec must be in [0.05, 1.5]`);
+  #|       }
+  #|       if (!Array.isArray(bgm.notes)) {
+  #|         errors.push(`BGM "${bgm.name}": notes must be an array`);
+  #|       } else {
+  #|         for (let i = 0; i < bgm.notes.length; i += 1) {
+  #|           const midi = Number(bgm.notes[i]);
+  #|           if (!Number.isInteger(midi) || (midi !== -1 && (midi < 0 || midi > 127))) {
+  #|             errors.push(`BGM "${bgm.name}": notes[${i}] must be -1 or MIDI 0..127`);
+  #|             break;
+  #|           }
+  #|         }
+  #|       }
+  #|     }
+  #|
+  #|     errors.push(...transientErrorMessages());
+  #|     return errors;
+  #|   };
+  #|
+  #|   const renderSoundValidation = () => {
+  #|     const errors = validateAudioState();
+  #|     if (errors.length == 0) {
+  #|       soundValidation.textContent = "Validation: OK";
+  #|       soundValidation.style.color = "#7bd389";
+  #|       soundWriteBtn.disabled = false;
+  #|       soundApplyBtn.disabled = false;
+  #|       return true;
+  #|     }
+  #|     let text = `Validation errors (${errors.length}):`;
+  #|     const maxLines = Math.min(6, errors.length);
+  #|     for (let i = 0; i < maxLines; i += 1) {
+  #|       text += `\n- ${errors[i]}`;
+  #|     }
+  #|     if (errors.length > maxLines) {
+  #|       text += `\n... and ${errors.length - maxLines} more`;
+  #|     }
+  #|     soundValidation.textContent = text;
+  #|     soundValidation.style.color = "#ef6f6c";
+  #|     soundWriteBtn.disabled = true;
+  #|     soundApplyBtn.disabled = true;
+  #|     return false;
+  #|   };
   #|   const parseSoundEventsFromDsl = (text) => {
   #|     const lines = String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
   #|     const events = [];
@@ -469,11 +616,21 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     }
   #|     return notes;
   #|   };
+  #|   const firstInvalidNoteToken = (text) => {
+  #|     const raw = String(text || "").trim();
+  #|     if (raw.length === 0) return null;
+  #|     const tokens = raw.split(/[\s,]+/).filter(Boolean);
+  #|     for (const token of tokens) {
+  #|       if (parseNoteToken(token) === null) return token;
+  #|     }
+  #|     return null;
+  #|   };
   #|
   #|   const parseSoundBundleFromDsl = (text) => {
   #|     const lines = String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
   #|     const sounds = [];
   #|     const bgms = [];
+  #|     const errors = [];
   #|     let i = 0;
   #|     while (i < lines.length) {
   #|       const line = lines[i].trim();
@@ -489,34 +646,53 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|           f1: 360,
   #|         };
   #|         i += 1;
+  #|         let foundEnd = false;
   #|         while (i < lines.length) {
   #|           const row = lines[i].trim();
   #|           if (row === "" || row.startsWith("#")) { i += 1; continue; }
-  #|           if (row === "end") { i += 1; break; }
+  #|           if (row === "end") { i += 1; foundEnd = true; break; }
+  #|           if (/^(sound|bgm)\s+[A-Za-z0-9_-]+$/i.test(row)) {
+  #|             errors.push(`sound ${sound.name}: missing end before "${row}"`);
+  #|             break;
+  #|           }
   #|           const tokens = row.split(/\s+/).filter(Boolean);
   #|           if (tokens.length >= 2) {
   #|             const key = tokens[0];
   #|             const value = tokens[1];
   #|             if (key === "wave") {
-  #|               sound.type = value;
+  #|               if (waveAllow.has(value)) {
+  #|                 sound.type = value;
+  #|               } else {
+  #|                 errors.push(`sound ${sound.name}: invalid wave "${value}"`);
+  #|               }
   #|             } else if (key === "attack") {
   #|               const n = Number(value);
   #|               if (Number.isFinite(n)) sound.attack = n;
+  #|               else errors.push(`sound ${sound.name}: invalid attack "${value}"`);
   #|             } else if (key === "decay") {
   #|               const n = Number(value);
   #|               if (Number.isFinite(n)) sound.decay = n;
+  #|               else errors.push(`sound ${sound.name}: invalid decay "${value}"`);
   #|             } else if (key === "volume" || key === "peak") {
   #|               const n = Number(value);
   #|               if (Number.isFinite(n)) sound.volume = n;
+  #|               else errors.push(`sound ${sound.name}: invalid volume "${value}"`);
   #|             } else if (key === "f0") {
   #|               const n = Number(value);
   #|               if (Number.isFinite(n)) sound.f0 = Math.round(n);
+  #|               else errors.push(`sound ${sound.name}: invalid f0 "${value}"`);
   #|             } else if (key === "f1") {
   #|               const n = Number(value);
   #|               if (Number.isFinite(n)) sound.f1 = Math.round(n);
+  #|               else errors.push(`sound ${sound.name}: invalid f1 "${value}"`);
+  #|             } else {
+  #|               errors.push(`sound ${sound.name}: unknown field "${key}"`);
   #|             }
   #|           }
   #|           i += 1;
+  #|         }
+  #|         if (!foundEnd) {
+  #|           errors.push(`sound ${sound.name}: missing end`);
   #|         }
   #|         sounds.push(sound);
   #|         continue;
@@ -533,36 +709,60 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|           notes: [],
   #|         };
   #|         i += 1;
+  #|         let foundEnd = false;
   #|         while (i < lines.length) {
   #|           const row = lines[i].trim();
   #|           if (row === "" || row.startsWith("#")) { i += 1; continue; }
-  #|           if (row === "end") { i += 1; break; }
+  #|           if (row === "end") { i += 1; foundEnd = true; break; }
+  #|           if (/^(sound|bgm)\s+[A-Za-z0-9_-]+$/i.test(row)) {
+  #|             errors.push(`bgm ${bgm.name}: missing end before "${row}"`);
+  #|             break;
+  #|           }
   #|           const tokens = row.split(/\s+/).filter(Boolean);
   #|           if (tokens.length >= 2) {
   #|             const key = tokens[0];
   #|             if (key === "wave") {
-  #|               bgm.wave = tokens[1];
+  #|               if (waveAllow.has(tokens[1])) {
+  #|                 bgm.wave = tokens[1];
+  #|               } else {
+  #|                 errors.push(`bgm ${bgm.name}: invalid wave "${tokens[1]}"`);
+  #|               }
   #|             } else if (key === "volume") {
   #|               const n = Number(tokens[1]);
   #|               if (Number.isFinite(n)) bgm.volume = n;
+  #|               else errors.push(`bgm ${bgm.name}: invalid volume "${tokens[1]}"`);
   #|             } else if (key === "step_sec") {
   #|               const n = Number(tokens[1]);
   #|               if (Number.isFinite(n)) bgm.step_sec = n;
+  #|               else errors.push(`bgm ${bgm.name}: invalid step_sec "${tokens[1]}"`);
   #|             } else if (key === "loop") {
-  #|               bgm.loop_ = tokens[1] === "true";
+  #|               if (tokens[1] === "true" || tokens[1] === "false") {
+  #|                 bgm.loop_ = tokens[1] === "true";
+  #|               } else {
+  #|                 errors.push(`bgm ${bgm.name}: invalid loop "${tokens[1]}"`);
+  #|               }
   #|             } else if (key === "notes") {
   #|               const noteTokens = tokens.slice(1);
   #|               const parsedNotes = [];
   #|               let ok = true;
   #|               for (const token of noteTokens) {
   #|                 const midi = parseNoteToken(token);
-  #|                 if (midi === null) { ok = false; break; }
+  #|                 if (midi === null) {
+  #|                   errors.push(`bgm ${bgm.name}: invalid note "${token}"`);
+  #|                   ok = false;
+  #|                   break;
+  #|                 }
   #|                 parsedNotes.push(midi);
   #|               }
   #|               if (ok) bgm.notes = parsedNotes;
+  #|             } else {
+  #|               errors.push(`bgm ${bgm.name}: unknown field "${key}"`);
   #|             }
   #|           }
   #|           i += 1;
+  #|         }
+  #|         if (!foundEnd) {
+  #|           errors.push(`bgm ${bgm.name}: missing end`);
   #|         }
   #|         bgms.push(bgm);
   #|         continue;
@@ -570,7 +770,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|
   #|       i += 1;
   #|     }
-  #|     return { sounds, bgms };
+  #|     return { sounds, bgms, errors };
   #|   };
   #|
   #|   const applySoundBundleToState = (bundle) => {
@@ -585,20 +785,29 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|         f1: Number.isFinite(Number(s.f1)) ? Math.round(Number(s.f1)) : 360,
   #|       };
   #|     }
-  #|     let selectedBgm = null;
-  #|     for (const b of bundle.bgms || []) {
-  #|       if (b.name === "main") { selectedBgm = b; break; }
+  #|     // Populate bgms array for multi-BGM editor support
+  #|     audioState.bgms = (bundle.bgms || []).map((b) => ({
+  #|       name: b.name,
+  #|       wave: ["sine", "square", "triangle", "sawtooth"].includes(b.wave) ? b.wave : "square",
+  #|       volume: Number.isFinite(Number(b.volume)) ? Number(b.volume) : 0.05,
+  #|       step_sec: Number.isFinite(Number(b.step_sec)) ? Number(b.step_sec) : 0.125,
+  #|       loop_: !!b.loop_,
+  #|       notes: Array.isArray(b.notes) ? b.notes.slice() : [],
+  #|     }));
+  #|     // Auto-select BGM: preserve existing selection if still valid, else "main" or first
+  #|     const names = audioState.bgms.map((b) => b.name);
+  #|     if (!names.includes(audioState.selectedBgmName)) {
+  #|       audioState.selectedBgmName = names.includes("main") ? "main" : (names[0] || null);
   #|     }
-  #|     if (!selectedBgm && bundle.bgms && bundle.bgms.length > 0) {
-  #|       selectedBgm = bundle.bgms[0];
-  #|     }
+  #|     // Sync legacy playback fields from selected BGM
+  #|     const selectedBgm = audioState.bgms.find((b) => b.name === audioState.selectedBgmName) || null;
   #|     if (selectedBgm) {
   #|       audioState.bgmDefined = true;
-  #|       audioState.bgmWave = selectedBgm.wave || "square";
-  #|       audioState.bgmVolume = Number.isFinite(Number(selectedBgm.volume)) ? Number(selectedBgm.volume) : 0.05;
-  #|       audioState.bgmStepSec = Number.isFinite(Number(selectedBgm.step_sec)) ? Number(selectedBgm.step_sec) : 0.125;
-  #|       audioState.bgmLoop = !!selectedBgm.loop_;
-  #|       audioState.bgmNotes = Array.isArray(selectedBgm.notes) ? selectedBgm.notes.slice() : [];
+  #|       audioState.bgmWave = selectedBgm.wave;
+  #|       audioState.bgmVolume = selectedBgm.volume;
+  #|       audioState.bgmStepSec = selectedBgm.step_sec;
+  #|       audioState.bgmLoop = selectedBgm.loop_;
+  #|       audioState.bgmNotes = selectedBgm.notes.slice();
   #|     } else {
   #|       audioState.bgmDefined = false;
   #|       audioState.bgmWave = null;
@@ -607,6 +816,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       audioState.bgmLoop = true;
   #|       audioState.bgmNotes = [];
   #|     }
+  #|     audioState.dirty = false;
   #|   };
   #|
   #|   const encodeSoundBundleFromState = () => {
@@ -642,7 +852,22 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       lines.push("end");
   #|       lines.push("");
   #|     }
-  #|     if (audioState.bgmDefined) {
+  #|     // Encode all BGMs from the bgms array
+  #|     const bgmList = Array.isArray(audioState.bgms) ? audioState.bgms : [];
+  #|     for (const bgm of bgmList) {
+  #|       const wave = waveAllow.has(String(bgm.wave || "")) ? String(bgm.wave) : "square";
+  #|       lines.push(`bgm ${bgm.name}`);
+  #|       lines.push(`  wave ${wave}`);
+  #|       lines.push(`  volume ${fmt(clamp(Number(bgm.volume ?? 0.05), 0.0, 0.3))}`);
+  #|       lines.push(`  step_sec ${fmt(clamp(Number(bgm.step_sec ?? 0.125), 0.05, 1.5))}`);
+  #|       lines.push(`  loop ${bgm.loop_ ? "true" : "false"}`);
+  #|       const noteTokens = (Array.isArray(bgm.notes) ? bgm.notes : []).map(noteNameFromMidi);
+  #|       lines.push(`  notes${noteTokens.length > 0 ? " " + noteTokens.join(" ") : ""}`);
+  #|       lines.push("end");
+  #|       lines.push("");
+  #|     }
+  #|     // Fallback: if no bgms array but legacy bgmDefined, encode it
+  #|     if (bgmList.length === 0 && audioState.bgmDefined) {
   #|       const wave = waveAllow.has(String(audioState.bgmWave || "")) ? String(audioState.bgmWave) : "square";
   #|       lines.push("bgm main");
   #|       lines.push(`  wave ${wave}`);
@@ -659,33 +884,87 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|
   #|   const writeSoundToDsl = (andApply) => {
   #|     if (!textarea) return;
+  #|     if (!renderSoundValidation()) {
+  #|       if (feedback) {
+  #|         feedback.textContent = "Sound DSL write aborted: fix validation errors first.";
+  #|         feedback.style.color = "#ef6f6c";
+  #|       }
+  #|       return false;
+  #|     }
   #|     const sourceLines = textarea.value.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
   #|     const kept = [];
+  #|     let insertAt = null;
+  #|     const isSoundHeader = (trimmed) =>
+  #|       /^sound\s+[A-Za-z0-9_-]+$/i.test(trimmed) || /^bgm\s+[A-Za-z0-9_-]+$/i.test(trimmed);
+  #|     let sawSoundBlocks = false;
+  #|     let sawMeaningfulAfterSound = false;
   #|     let i = 0;
   #|     while (i < sourceLines.length) {
   #|       const row = sourceLines[i];
   #|       const trimmed = row.trim();
-  #|       if (/^sound\s+[A-Za-z0-9_-]+$/i.test(trimmed) || /^bgm\s+[A-Za-z0-9_-]+$/i.test(trimmed)) {
+  #|       if (isSoundHeader(trimmed)) {
+  #|         if (sawMeaningfulAfterSound) {
+  #|           if (feedback) {
+  #|             feedback.textContent = "Sound DSL write aborted: sound/bgm blocks must be contiguous.";
+  #|             feedback.style.color = "#ef6f6c";
+  #|           }
+  #|           return false;
+  #|         }
+  #|         sawSoundBlocks = true;
+  #|         if (insertAt === null) insertAt = kept.length;
   #|         i += 1;
+  #|         let foundEnd = false;
   #|         while (i < sourceLines.length) {
   #|           const t = sourceLines[i].trim();
   #|           i += 1;
-  #|           if (t === "end") break;
+  #|           if (t === "end") {
+  #|             foundEnd = true;
+  #|             break;
+  #|           }
+  #|           if (isSoundHeader(t)) {
+  #|             // Broken block (missing end): stop to avoid destructive rewrite.
+  #|             foundEnd = false;
+  #|             break;
+  #|           }
+  #|         }
+  #|         if (!foundEnd) {
+  #|           if (feedback) {
+  #|             feedback.textContent = "Sound DSL write aborted: unterminated sound/bgm block.";
+  #|             feedback.style.color = "#ef6f6c";
+  #|           }
+  #|           return false;
   #|         }
   #|         continue;
+  #|       }
+  #|       if (sawSoundBlocks && trimmed !== "" && !trimmed.startsWith("#")) {
+  #|         sawMeaningfulAfterSound = true;
   #|       }
   #|       kept.push(row);
   #|       i += 1;
   #|     }
   #|     while (kept.length > 0 && kept[kept.length - 1].trim() === "") kept.pop();
   #|     const soundLines = encodeSoundBundleFromState();
-  #|     const merged = kept.length > 0
-  #|       ? (soundLines.length > 0 ? kept.concat([""], soundLines) : kept)
-  #|       : soundLines;
+  #|     let rendered = soundLines.slice();
+  #|     while (rendered.length > 0 && rendered[rendered.length - 1].trim() === "") rendered.pop();
+  #|     if (insertAt === null) insertAt = kept.length;
+  #|     const before = kept.slice(0, insertAt);
+  #|     const after = kept.slice(insertAt);
+  #|     const merged = before.slice();
+  #|     if (rendered.length > 0) {
+  #|       if (merged.length > 0 && merged[merged.length - 1].trim() !== "") merged.push("");
+  #|       merged.push(...rendered);
+  #|       if (after.length > 0 && after[0].trim() !== "") merged.push("");
+  #|     }
+  #|     merged.push(...after);
   #|     textarea.value = merged.join("\n");
+  #|     if (feedback) {
+  #|       feedback.textContent = andApply ? "Sound written and applied." : "Sound written to DSL.";
+  #|       feedback.style.color = "#7bd389";
+  #|     }
   #|     if (andApply && globalThis.__moon8bit_apply_cb) {
   #|       globalThis.__moon8bit_apply_cb();
   #|     }
+  #|     return true;
   #|   };
   #|
   #|   if (!globalThis.__moon8bit_audio_start_bgm_impl) {
@@ -824,6 +1103,46 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     };
   #|   }
   #|
+  #|   const getSelectedBgm = () =>
+  #|     audioState.bgms.find((b) => b.name === audioState.selectedBgmName) || null;
+  #|
+  #|   const updateSoundDirtyIndicator = () => {
+  #|     const dirtyIndicator = document.getElementById("moon8bit-sound-dirty");
+  #|     if (!dirtyIndicator) return;
+  #|     dirtyIndicator.textContent = audioState.dirty ? "Modified" : "Saved";
+  #|     dirtyIndicator.style.color = audioState.dirty ? "#e8c547" : "#7bd389";
+  #|   };
+  #|
+  #|   const syncPlaybackFromSelectedBgm = () => {
+  #|     const bgm = getSelectedBgm();
+  #|     if (bgm) {
+  #|       audioState.bgmDefined = true;
+  #|       audioState.bgmWave = bgm.wave;
+  #|       audioState.bgmVolume = bgm.volume;
+  #|       audioState.bgmStepSec = bgm.step_sec;
+  #|       audioState.bgmLoop = bgm.loop_;
+  #|       audioState.bgmNotes = bgm.notes.slice();
+  #|     } else {
+  #|       audioState.bgmDefined = false;
+  #|       audioState.bgmWave = null;
+  #|       audioState.bgmVolume = 0.0;
+  #|       audioState.bgmStepSec = 0.125;
+  #|       audioState.bgmLoop = true;
+  #|       audioState.bgmNotes = [];
+  #|     }
+  #|   };
+  #|
+  #|   const markDirty = () => {
+  #|     audioState.dirty = true;
+  #|     updateSoundDirtyIndicator();
+  #|     renderSoundValidation();
+  #|   };
+  #|   const markSaved = () => {
+  #|     audioState.dirty = false;
+  #|     updateSoundDirtyIndicator();
+  #|     renderSoundValidation();
+  #|   };
+  #|
   #|   const ensureSlider = (id, label, min, max, step, getValue, setValue) => {
   #|     let row = document.getElementById(`${id}-row`);
   #|     if (!row) {
@@ -890,9 +1209,167 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     0.0,
   #|     0.3,
   #|     0.005,
-  #|     () => Number(audioState.bgmVolume ?? 0.0),
-  #|     (v) => { audioState.bgmVolume = v; },
+  #|     () => { const b = getSelectedBgm(); return b ? b.volume : Number(audioState.bgmVolume ?? 0.0); },
+  #|     (v) => {
+  #|       audioState.bgmVolume = v;
+  #|       const b = getSelectedBgm();
+  #|       if (b) b.volume = v;
+  #|       markDirty();
+  #|     },
   #|   );
+  #|
+  #|   // BGM selector row (multi-BGM support)
+  #|   let bgmSelectorRow = document.getElementById("moon8bit-bgm-selector-row");
+  #|   if (!bgmSelectorRow) {
+  #|     bgmSelectorRow = document.createElement("div");
+  #|     bgmSelectorRow.id = "moon8bit-bgm-selector-row";
+  #|     bgmSelectorRow.style.display = "flex";
+  #|     bgmSelectorRow.style.gap = "6px";
+  #|     bgmSelectorRow.style.alignItems = "center";
+  #|     bgmSelectorRow.style.flexWrap = "wrap";
+  #|     soundEditor.appendChild(bgmSelectorRow);
+  #|   }
+  #|   let bgmSelectorLabel = document.getElementById("moon8bit-bgm-selector-label");
+  #|   if (!bgmSelectorLabel) {
+  #|     bgmSelectorLabel = document.createElement("span");
+  #|     bgmSelectorLabel.id = "moon8bit-bgm-selector-label";
+  #|     bgmSelectorLabel.textContent = "BGM:";
+  #|     bgmSelectorLabel.style.fontFamily = "monospace";
+  #|     bgmSelectorLabel.style.fontSize = "12px";
+  #|     bgmSelectorRow.appendChild(bgmSelectorLabel);
+  #|   }
+  #|   let bgmSelector = document.getElementById("moon8bit-bgm-selector");
+  #|   if (!bgmSelector) {
+  #|     bgmSelector = document.createElement("select");
+  #|     bgmSelector.id = "moon8bit-bgm-selector";
+  #|     bgmSelector.style.fontFamily = "monospace";
+  #|     bgmSelector.style.fontSize = "12px";
+  #|     bgmSelectorRow.appendChild(bgmSelector);
+  #|   }
+  #|   const refreshBgmSelector = () => {
+  #|     bgmSelector.innerHTML = "";
+  #|     if (audioState.bgms.length === 0) {
+  #|       const opt = document.createElement("option");
+  #|       opt.value = "";
+  #|       opt.textContent = "(none)";
+  #|       bgmSelector.appendChild(opt);
+  #|     } else {
+  #|       for (const b of audioState.bgms) {
+  #|         const opt = document.createElement("option");
+  #|         opt.value = b.name;
+  #|         opt.textContent = b.name;
+  #|         bgmSelector.appendChild(opt);
+  #|       }
+  #|       bgmSelector.value = audioState.selectedBgmName || "";
+  #|     }
+  #|   };
+  #|   if (bgmSelector.dataset.bound !== "1") {
+  #|     bgmSelector.dataset.bound = "1";
+  #|     bgmSelector.addEventListener("change", () => {
+  #|       audioState.selectedBgmName = bgmSelector.value || null;
+  #|       syncPlaybackFromSelectedBgm();
+  #|       syncBgmControlsFromState();
+  #|     });
+  #|   }
+  #|   // Add BGM button
+  #|   let addBgmBtn = document.getElementById("moon8bit-bgm-add-btn");
+  #|   if (!addBgmBtn) {
+  #|     addBgmBtn = document.createElement("button");
+  #|     addBgmBtn.id = "moon8bit-bgm-add-btn";
+  #|     addBgmBtn.textContent = "+ BGM";
+  #|     addBgmBtn.style.padding = "2px 7px";
+  #|     addBgmBtn.style.background = "#274060";
+  #|     addBgmBtn.style.color = "#f6f7eb";
+  #|     addBgmBtn.style.border = "1px solid #486581";
+  #|     addBgmBtn.style.cursor = "pointer";
+  #|     addBgmBtn.style.fontFamily = "monospace";
+  #|     addBgmBtn.style.fontSize = "12px";
+  #|     bgmSelectorRow.appendChild(addBgmBtn);
+  #|   }
+  #|   if (addBgmBtn.dataset.bound !== "1") {
+  #|     addBgmBtn.dataset.bound = "1";
+  #|     addBgmBtn.addEventListener("click", () => {
+  #|       let name = prompt("New BGM name:", "bgm" + (audioState.bgms.length + 1));
+  #|       if (!name) return;
+  #|       name = name.trim().replace(/[^A-Za-z0-9_-]/g, "_");
+  #|       if (!name || audioState.bgms.some((b) => b.name === name)) {
+  #|         alert("Name empty or already in use.");
+  #|         return;
+  #|       }
+  #|       audioState.bgms.push({ name, wave: "square", volume: 0.05, step_sec: 0.125, loop_: true, notes: [] });
+  #|       audioState.selectedBgmName = name;
+  #|       syncPlaybackFromSelectedBgm();
+  #|       refreshBgmSelector();
+  #|       syncBgmControlsFromState();
+  #|       markDirty();
+  #|     });
+  #|   }
+  #|   // Duplicate BGM button
+  #|   let dupBgmBtn = document.getElementById("moon8bit-bgm-dup-btn");
+  #|   if (!dupBgmBtn) {
+  #|     dupBgmBtn = document.createElement("button");
+  #|     dupBgmBtn.id = "moon8bit-bgm-dup-btn";
+  #|     dupBgmBtn.textContent = "Dup";
+  #|     dupBgmBtn.style.padding = "2px 7px";
+  #|     dupBgmBtn.style.background = "#274060";
+  #|     dupBgmBtn.style.color = "#f6f7eb";
+  #|     dupBgmBtn.style.border = "1px solid #486581";
+  #|     dupBgmBtn.style.cursor = "pointer";
+  #|     dupBgmBtn.style.fontFamily = "monospace";
+  #|     dupBgmBtn.style.fontSize = "12px";
+  #|     bgmSelectorRow.appendChild(dupBgmBtn);
+  #|   }
+  #|   if (dupBgmBtn.dataset.bound !== "1") {
+  #|     dupBgmBtn.dataset.bound = "1";
+  #|     dupBgmBtn.addEventListener("click", () => {
+  #|       const src = getSelectedBgm();
+  #|       if (!src) return;
+  #|       const name = nextUniqueName(audioState.bgms.map((b) => b.name), `${src.name}_copy`);
+  #|       audioState.bgms.push({
+  #|         name,
+  #|         wave: src.wave,
+  #|         volume: src.volume,
+  #|         step_sec: src.step_sec,
+  #|         loop_: src.loop_,
+  #|         notes: Array.isArray(src.notes) ? src.notes.slice() : [],
+  #|       });
+  #|       audioState.selectedBgmName = name;
+  #|       syncPlaybackFromSelectedBgm();
+  #|       refreshBgmSelector();
+  #|       syncBgmControlsFromState();
+  #|       markDirty();
+  #|     });
+  #|   }
+  #|   // Delete BGM button
+  #|   let delBgmBtn = document.getElementById("moon8bit-bgm-del-btn");
+  #|   if (!delBgmBtn) {
+  #|     delBgmBtn = document.createElement("button");
+  #|     delBgmBtn.id = "moon8bit-bgm-del-btn";
+  #|     delBgmBtn.textContent = "Del";
+  #|     delBgmBtn.style.padding = "2px 7px";
+  #|     delBgmBtn.style.background = "#5c2b2b";
+  #|     delBgmBtn.style.color = "#f6f7eb";
+  #|     delBgmBtn.style.border = "1px solid #a04040";
+  #|     delBgmBtn.style.cursor = "pointer";
+  #|     delBgmBtn.style.fontFamily = "monospace";
+  #|     delBgmBtn.style.fontSize = "12px";
+  #|     bgmSelectorRow.appendChild(delBgmBtn);
+  #|   }
+  #|   if (delBgmBtn.dataset.bound !== "1") {
+  #|     delBgmBtn.dataset.bound = "1";
+  #|     delBgmBtn.addEventListener("click", () => {
+  #|       const name = audioState.selectedBgmName;
+  #|       if (!name) return;
+  #|       if (!confirm(`Delete BGM "${name}"?`)) return;
+  #|       audioState.bgms = audioState.bgms.filter((b) => b.name !== name);
+  #|       const names = audioState.bgms.map((b) => b.name);
+  #|       audioState.selectedBgmName = names[0] || null;
+  #|       syncPlaybackFromSelectedBgm();
+  #|       refreshBgmSelector();
+  #|       syncBgmControlsFromState();
+  #|       markDirty();
+  #|     });
+  #|   }
   #|
   #|   let bgmAdvanced = document.getElementById("moon8bit-sound-bgm-advanced");
   #|   if (!bgmAdvanced) {
@@ -960,6 +1437,9 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     bgmWaveSelect.dataset.bound = "1";
   #|     bgmWaveSelect.addEventListener("change", () => {
   #|       audioState.bgmWave = bgmWaveSelect.value || null;
+  #|       const b = getSelectedBgm();
+  #|       if (b) b.wave = bgmWaveSelect.value || "square";
+  #|       markDirty();
   #|     });
   #|   }
   #|
@@ -984,8 +1464,18 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     bgmStepInput.dataset.bound = "1";
   #|     bgmStepInput.addEventListener("input", () => {
   #|       const n = Number(bgmStepInput.value);
-  #|       if (!Number.isFinite(n)) return;
+  #|       if (!Number.isFinite(n)) {
+  #|         bgmStepInput.style.border = "1px solid #ef6f6c";
+  #|         setTransientError("bgm:step_sec", "BGM: step_sec must be a number");
+  #|         renderSoundValidation();
+  #|         return;
+  #|       }
+  #|       bgmStepInput.style.border = "";
+  #|       clearTransientError("bgm:step_sec");
   #|       audioState.bgmStepSec = clamp(n, 0.05, 1.5);
+  #|       const b = getSelectedBgm();
+  #|       if (b) b.step_sec = audioState.bgmStepSec;
+  #|       markDirty();
   #|     });
   #|   }
   #|
@@ -1005,6 +1495,9 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     bgmLoopInput.dataset.bound = "1";
   #|     bgmLoopInput.addEventListener("change", () => {
   #|       audioState.bgmLoop = !!bgmLoopInput.checked;
+  #|       const b = getSelectedBgm();
+  #|       if (b) b.loop_ = audioState.bgmLoop;
+  #|       markDirty();
   #|     });
   #|   }
   #|
@@ -1025,16 +1518,25 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   }
   #|   if (bgmNotesInput.dataset.bound !== "1") {
   #|     bgmNotesInput.dataset.bound = "1";
-  #|     const applyNotes = () => {
+  #|     bgmNotesInput.addEventListener("input", () => {
   #|       const notes = parseNotesText(bgmNotesInput.value);
   #|       if (notes === null) {
+  #|         const bad = firstInvalidNoteToken(bgmNotesInput.value);
   #|         bgmNotesInput.style.border = "1px solid #ef6f6c";
+  #|         setTransientError(
+  #|           "bgm:notes",
+  #|           `BGM: invalid note token${bad ? ` "${bad}"` : ""} (use C4 C#4 Db4 R)`,
+  #|         );
+  #|         renderSoundValidation();
   #|         return;
   #|       }
   #|       bgmNotesInput.style.border = "";
+  #|       clearTransientError("bgm:notes");
   #|       audioState.bgmNotes = notes;
-  #|     };
-  #|     bgmNotesInput.addEventListener("input", applyNotes);
+  #|       const b = getSelectedBgm();
+  #|       if (b) b.notes = notes.slice();
+  #|       markDirty();
+  #|     });
   #|   }
   #|
   #|   let bgmControls = document.getElementById("moon8bit-sound-bgm-controls");
@@ -1099,21 +1601,21 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   if (!sfxLegend) {
   #|     sfxLegend = document.createElement("div");
   #|     sfxLegend.id = "moon8bit-sound-sfx-legend";
-  #|     sfxLegend.textContent = "SFX params: F0/F1=frequency(Hz), ATK/DEC=seconds, VOL=volume(0..1)";
+  #|     sfxLegend.textContent = "SFX params: Wave=oscillator type, F0/F1=frequency(Hz), ATK/DEC=seconds, VOL=volume(0..1)";
   #|     sfxLegend.style.fontFamily = "monospace";
   #|     sfxLegend.style.fontSize = "11px";
   #|     sfxLegend.style.color = "#9fb3c8";
   #|     soundEditor.insertBefore(sfxLegend, sfxGrid);
   #|   }
   #|
-  #|   const renderSfxCard = (kind, title) => {
+  #|   const renderSfxCard = (kind, title, onDelete, onDuplicate) => {
   #|     const profile = getSfxProfile(kind);
   #|     if (!profile) return;
   #|     const slug = soundKeyToId(kind);
   #|     const card = document.createElement("div");
   #|     card.id = `moon8bit-sfx-${slug}-card`;
   #|     card.style.display = "grid";
-  #|     card.style.gridTemplateColumns = "84px 1fr 1fr 1fr 1fr 1fr 80px";
+  #|     card.style.gridTemplateColumns = "84px 100px 1fr 1fr 1fr 1fr 1fr 52px 52px 52px";
   #|     card.style.gap = "6px";
   #|     card.style.alignItems = "start";
   #|     card.style.padding = "6px";
@@ -1125,6 +1627,34 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     label.style.fontFamily = "monospace";
   #|     label.style.fontSize = "12px";
   #|     card.appendChild(label);
+  #|
+  #|     // Wave selector
+  #|     const waveWrap = document.createElement("div");
+  #|     waveWrap.style.display = "grid";
+  #|     waveWrap.style.gap = "2px";
+  #|     const waveLabel = document.createElement("div");
+  #|     waveLabel.textContent = "Wave";
+  #|     waveLabel.style.fontFamily = "monospace";
+  #|     waveLabel.style.fontSize = "10px";
+  #|     waveLabel.style.color = "#9fb3c8";
+  #|     waveWrap.appendChild(waveLabel);
+  #|     const waveSelect = document.createElement("select");
+  #|     ["sine", "square", "triangle", "sawtooth"].forEach((w) => {
+  #|       const opt = document.createElement("option");
+  #|       opt.value = w;
+  #|       opt.textContent = w;
+  #|       waveSelect.appendChild(opt);
+  #|     });
+  #|     waveSelect.value = String(profile.type || "square");
+  #|     waveSelect.style.width = "100%";
+  #|     waveSelect.style.boxSizing = "border-box";
+  #|     waveSelect.style.fontSize = "11px";
+  #|     waveSelect.addEventListener("change", () => {
+  #|       profile.type = waveSelect.value;
+  #|       markDirty();
+  #|     });
+  #|     waveWrap.appendChild(waveSelect);
+  #|     card.appendChild(waveWrap);
   #|
   #|     const fields = [
   #|       { key: "f0", label: "F0 Start Hz", min: 60, max: 1800, step: 1 },
@@ -1155,8 +1685,17 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       input.value = String(profile[field.key]);
   #|       input.addEventListener("input", () => {
   #|         const n = Number(input.value);
-  #|         if (!Number.isFinite(n)) return;
+  #|         const errorKey = `sfx:${kind}:${field.key}`;
+  #|         if (!Number.isFinite(n)) {
+  #|           input.style.border = "1px solid #ef6f6c";
+  #|           setTransientError(errorKey, `SFX "${kind}": ${field.key} must be a number`);
+  #|           renderSoundValidation();
+  #|           return;
+  #|         }
+  #|         input.style.border = "";
+  #|         clearTransientError(errorKey);
   #|         profile[field.key] = clamp(n, field.min, field.max);
+  #|         markDirty();
   #|       });
   #|       fieldWrap.appendChild(input);
   #|       card.appendChild(fieldWrap);
@@ -1173,40 +1712,98 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       try { globalThis.__moon8bit_audio_play_sfx_impl(kind); } catch (_) {}
   #|     });
   #|     card.appendChild(testBtn);
+  #|
+  #|     const delBtn = document.createElement("button");
+  #|     delBtn.textContent = "Del";
+  #|     delBtn.style.padding = "4px 6px";
+  #|     delBtn.style.background = "#5c2b2b";
+  #|     delBtn.style.color = "#f6f7eb";
+  #|     delBtn.style.border = "1px solid #a04040";
+  #|     delBtn.style.cursor = "pointer";
+  #|     delBtn.addEventListener("click", () => {
+  #|       if (onDelete) onDelete(kind);
+  #|     });
+  #|     card.appendChild(delBtn);
+  #|
+  #|     const dupBtn = document.createElement("button");
+  #|     dupBtn.textContent = "Dup";
+  #|     dupBtn.style.padding = "4px 6px";
+  #|     dupBtn.style.background = "#274060";
+  #|     dupBtn.style.color = "#f6f7eb";
+  #|     dupBtn.style.border = "1px solid #486581";
+  #|     dupBtn.style.cursor = "pointer";
+  #|     dupBtn.addEventListener("click", () => {
+  #|       if (onDuplicate) onDuplicate(kind);
+  #|     });
+  #|     card.appendChild(dupBtn);
+  #|
   #|     sfxGrid.appendChild(card);
   #|   };
   #|
   #|   const syncBgmControlsFromState = () => {
-  #|     const defined = Boolean(audioState.bgmDefined);
+  #|     const bgm = getSelectedBgm();
+  #|     const defined = bgm !== null;
+  #|     // Refresh BGM selector
+  #|     if (bgmSelector) {
+  #|       const prevValue = bgmSelector.value;
+  #|       bgmSelector.innerHTML = "";
+  #|       if (audioState.bgms.length === 0) {
+  #|         const opt = document.createElement("option");
+  #|         opt.value = "";
+  #|         opt.textContent = "(none)";
+  #|         bgmSelector.appendChild(opt);
+  #|       } else {
+  #|         for (const b of audioState.bgms) {
+  #|           const opt = document.createElement("option");
+  #|           opt.value = b.name;
+  #|           opt.textContent = b.name;
+  #|           bgmSelector.appendChild(opt);
+  #|         }
+  #|         bgmSelector.value = audioState.selectedBgmName || prevValue || "";
+  #|       }
+  #|     }
   #|     const bgmVolumeInput = document.getElementById("moon8bit-sound-bgm");
   #|     const bgmVolumeValue = document.getElementById("moon8bit-sound-bgm-value");
   #|     if (bgmVolumeInput) {
-  #|       bgmVolumeInput.value = String(Number(audioState.bgmVolume ?? 0.0));
+  #|       bgmVolumeInput.value = String(bgm ? bgm.volume : Number(audioState.bgmVolume ?? 0.0));
   #|       bgmVolumeInput.disabled = !defined;
   #|     }
   #|     if (bgmVolumeValue && bgmVolumeInput) {
   #|       bgmVolumeValue.textContent = Number(bgmVolumeInput.value).toFixed(2);
   #|     }
   #|     if (bgmWaveSelect) {
-  #|       bgmWaveSelect.value = String(audioState.bgmWave || "square");
+  #|       bgmWaveSelect.value = String(bgm ? bgm.wave : (audioState.bgmWave || "square"));
   #|       bgmWaveSelect.disabled = !defined;
   #|     }
   #|     if (bgmStepInput) {
-  #|       bgmStepInput.value = String(Number(audioState.bgmStepSec ?? 0.125));
+  #|       bgmStepInput.value = String(bgm ? bgm.step_sec : Number(audioState.bgmStepSec ?? 0.125));
   #|       bgmStepInput.disabled = !defined;
+  #|       bgmStepInput.style.border = "";
   #|     }
   #|     if (bgmLoopInput) {
-  #|       bgmLoopInput.checked = Boolean(audioState.bgmLoop ?? true);
+  #|       bgmLoopInput.checked = Boolean(bgm ? bgm.loop_ : (audioState.bgmLoop ?? true));
   #|       bgmLoopInput.disabled = !defined;
   #|     }
   #|     if (bgmNotesInput) {
-  #|       const notes = Array.isArray(audioState.bgmNotes) ? audioState.bgmNotes : [];
+  #|       const notes = Array.isArray(bgm ? bgm.notes : audioState.bgmNotes) ? (bgm ? bgm.notes : audioState.bgmNotes) : [];
   #|       bgmNotesInput.value = notes.map(noteNameFromMidi).join(" ");
   #|       bgmNotesInput.disabled = !defined;
   #|       bgmNotesInput.style.border = "";
   #|     }
   #|     if (bgmStartButton) bgmStartButton.disabled = !defined;
   #|     if (bgmStopButton) bgmStopButton.disabled = !defined;
+  #|     if (dupBgmBtn) dupBgmBtn.disabled = !defined;
+  #|     // Sync playback fields from selected BGM
+  #|     if (bgm) {
+  #|       audioState.bgmDefined = true;
+  #|       audioState.bgmWave = bgm.wave;
+  #|       audioState.bgmVolume = bgm.volume;
+  #|       audioState.bgmStepSec = bgm.step_sec;
+  #|       audioState.bgmLoop = bgm.loop_;
+  #|       audioState.bgmNotes = bgm.notes.slice();
+  #|     } else {
+  #|       audioState.bgmDefined = false;
+  #|     }
   #|   };
   #|
   #|   const refreshSoundEditorFromDsl = () => {
@@ -1215,6 +1812,33 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     eventControls.innerHTML = "";
   #|     sfxGrid.innerHTML = "";
   #|     globalThis.__moon8bit_sound_events = events;
+  #|
+  #|     const deleteSfx = (kind) => {
+  #|       if (!confirm(`Delete SFX "${kind}"?`)) return;
+  #|       delete audioState.sfx[kind];
+  #|       if (writeSoundToDsl(false)) {
+  #|         markSaved();
+  #|         refreshSoundEditorFromDsl();
+  #|       }
+  #|     };
+  #|
+  #|     const duplicateSfx = (kind) => {
+  #|       const src = audioState.sfx && audioState.sfx[kind] ? audioState.sfx[kind] : null;
+  #|       if (!src) return;
+  #|       const name = nextUniqueName(Object.keys(audioState.sfx || {}), `${kind}_copy`);
+  #|       audioState.sfx[name] = {
+  #|         type: src.type || "square",
+  #|         attack: Number(src.attack ?? 0.003),
+  #|         decay: Number(src.decay ?? 0.10),
+  #|         volume: Number(src.volume ?? 0.07),
+  #|         f0: Math.round(Number(src.f0 ?? 520)),
+  #|         f1: Math.round(Number(src.f1 ?? 360)),
+  #|       };
+  #|       if (writeSoundToDsl(false)) {
+  #|         markSaved();
+  #|         refreshSoundEditorFromDsl();
+  #|       }
+  #|     };
   #|
   #|     events.forEach((event) => {
   #|       const testBtn = document.createElement("button");
@@ -1229,16 +1853,43 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       });
   #|       eventControls.appendChild(testBtn);
   #|
-  #|       renderSfxCard(event.key, event.label);
+  #|       renderSfxCard(event.key, event.label, deleteSfx, duplicateSfx);
   #|     });
+  #|
+  #|     // Add SFX button
+  #|     const addSfxBtn = document.createElement("button");
+  #|     addSfxBtn.textContent = "+ SFX";
+  #|     addSfxBtn.style.padding = "6px 10px";
+  #|     addSfxBtn.style.background = "#1a3a1a";
+  #|     addSfxBtn.style.color = "#f6f7eb";
+  #|     addSfxBtn.style.border = "1px solid #4aa96c";
+  #|     addSfxBtn.style.cursor = "pointer";
+  #|     addSfxBtn.addEventListener("click", () => {
+  #|       let name = prompt("New SFX name:", "sfx" + (Object.keys(audioState.sfx || {}).length + 1));
+  #|       if (!name) return;
+  #|       name = name.trim().replace(/[^A-Za-z0-9_-]/g, "_");
+  #|       if (!name) { alert("Invalid name."); return; }
+  #|       if (audioState.sfx && audioState.sfx[name]) { alert("Name already in use."); return; }
+  #|       if (!audioState.sfx) audioState.sfx = {};
+  #|       audioState.sfx[name] = { type: "square", attack: 0.003, decay: 0.10, volume: 0.07, f0: 520, f1: 360 };
+  #|       if (writeSoundToDsl(false)) {
+  #|         markSaved();
+  #|         refreshSoundEditorFromDsl();
+  #|       }
+  #|     });
+  #|     eventControls.appendChild(addSfxBtn);
+  #|
   #|     if (events.length === 0) {
   #|       const note = document.createElement("div");
   #|       note.style.fontFamily = "monospace";
   #|       note.style.fontSize = "12px";
   #|       note.style.color = "#9fb3c8";
-  #|       note.textContent = "No sound metadata in DSL. Add lines like: sound <name> ... end";
-  #|       eventControls.appendChild(note);
+  #|       note.textContent = "No SFX defined. Click + SFX to add one.";
+  #|       sfxGrid.appendChild(note);
   #|     }
+  #|
+  #|     updateSoundDirtyIndicator();
+  #|     renderSoundValidation();
   #|   };
   #|
   #|   if (textarea && !globalThis.__moon8bit_sound_bound) {
@@ -1246,15 +1897,32 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     soundSyncBtn.addEventListener("click", () => {
   #|       const bundle = parseSoundBundleFromDsl(textarea.value);
   #|       applySoundBundleToState(bundle);
+  #|       if (feedback) {
+  #|         if (Array.isArray(bundle.errors) && bundle.errors.length > 0) {
+  #|           const maxLines = Math.min(4, bundle.errors.length);
+  #|           let msg = `Sound DSL sync warnings (${bundle.errors.length}):`;
+  #|           for (let i = 0; i < maxLines; i += 1) msg += `\n- ${bundle.errors[i]}`;
+  #|           if (bundle.errors.length > maxLines) msg += `\n... and ${bundle.errors.length - maxLines} more`;
+  #|           feedback.textContent = msg;
+  #|           feedback.style.color = "#e8c547";
+  #|         } else {
+  #|           feedback.textContent = "Sound DSL synced.";
+  #|           feedback.style.color = "#9fb3c8";
+  #|         }
+  #|       }
   #|       refreshSoundEditorFromDsl();
   #|     });
   #|     soundWriteBtn.addEventListener("click", () => {
-  #|       writeSoundToDsl(false);
-  #|       refreshSoundEditorFromDsl();
+  #|       if (writeSoundToDsl(false)) {
+  #|         markSaved();
+  #|         refreshSoundEditorFromDsl();
+  #|       }
   #|     });
   #|     soundApplyBtn.addEventListener("click", () => {
-  #|       writeSoundToDsl(true);
-  #|       refreshSoundEditorFromDsl();
+  #|       if (writeSoundToDsl(true)) {
+  #|         markSaved();
+  #|         refreshSoundEditorFromDsl();
+  #|       }
   #|     });
   #|     globalThis.__moon8bit_sound_bound = true;
   #|   }

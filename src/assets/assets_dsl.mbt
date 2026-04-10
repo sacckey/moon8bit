@@ -323,17 +323,19 @@ fn parse_wave_token(token : String, line : Int) -> Result[String, DslError] {
 
 ///|
 fn note_name_to_midi(name : String, line : Int) -> Result[Int, DslError] {
-  // White keys only: C D E F G A B
+  // Supports:
+  // - White keys: C D E F G A B
+  // - Accidentals: # / b (e.g. C#4, Db4)
+  // - Rest: R
   // MIDI: C4 = 60
   if name == "R" {
     return Ok(-1) // rest
   }
   if name.length() < 2 {
-    return err(line, "invalid note: \{name} (expected e.g. C4, D5, R)")
+    return err(line, "invalid note: \{name} (expected e.g. C4, C#4, Db4, R)")
   }
   let letter = name.unsafe_get(0)
-  let octave_str = name[1:].to_string()
-  let semitone = match letter {
+  let mut semitone = match letter {
     'C' => 0
     'D' => 2
     'E' => 4
@@ -344,9 +346,28 @@ fn note_name_to_midi(name : String, line : Int) -> Result[Int, DslError] {
     _ =>
       return err(
         line,
-        "invalid note name: \{letter.to_string()} (use C D E F G A B or R)",
+        "invalid note name: \{letter.to_string()} (use C D E F G A B with optional #/b, or R)",
       )
   }
+  let mut octave_start = 1
+  if name.length() >= 3 {
+    let accidental = name.unsafe_get(1)
+    if accidental == '#' {
+      semitone += 1
+      octave_start = 2
+    } else if accidental == 'b' {
+      semitone -= 1
+      octave_start = 2
+    }
+  }
+  if octave_start >= name.length() {
+    return err(
+      line,
+      "invalid note: \{name} (missing octave, expected e.g. C4, C#4, Db4)",
+    )
+  }
+  semitone = (semitone % 12 + 12) % 12
+  let octave_str = name[octave_start:].to_string()
   let octave = match parse_int_token(octave_str, line, "octave") {
     Ok(v) => v
     Err(e) => return Err(e)

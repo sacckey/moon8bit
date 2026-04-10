@@ -34,7 +34,7 @@
 - [x] Utility: `rand(seed, min, max)`, `clamp(value, min, max)`
 - [x] Browser editor: DSL apply/import/export loop
 - [x] Sprite editor GUI tab
-- [x] Sound editor GUI tab
+- [x] Sound editor GUI tab: SFX cards (wave/f0/f1/ATK/DEC/VOL + Test/Dup/Del), `+ SFX`, multi-BGM selector, `+ BGM`/`Dup`/`Del`, dirty indicator
 - [x] Per-game web pages under `site/g/<game_id>/`
 
 ## Sample Games
@@ -46,11 +46,12 @@
 
 ## Engineering Quality
 
-- [x] 42 tests passing (`moon test`)
+- [x] 52 tests passing (`moon test`)
 - [x] Deterministic runtime: same inputs → same frames
 - [x] Collision regression tests (pipe hit / ground hit / score increment)
 - [x] Timer/event ordering tests
 - [x] Parser error tests (line-numbered diagnostics)
+- [x] Sound DSL tests (sound/bgm block parse, note name to MIDI, error cases)
 - [ ] Test coverage for breakout / snake / shooting
 - [ ] E2E replay coverage per game
 
@@ -106,10 +107,9 @@ Expected:
 - [ ] Ensure commit history is clean/readable
 - [ ] Submit final application text + demo link
 
-## Remaining Priorities (2026-04-09)
+## Remaining Priorities (2026-04-11)
 
 1. Add tests for breakout / snake / shooting.
-2. Update application-draft.md to reflect WebGPU + 4 games.
-3. Record demo video/GIF.
-4. Final docs/README sync.
-5. Freeze and submit.
+2. Record demo video/GIF.
+3. Final docs sync (README updated 2026-04-11).
+4. Freeze and submit.
