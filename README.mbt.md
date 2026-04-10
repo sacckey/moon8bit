@@ -11,37 +11,57 @@ The core idea is simple:
 
 - Engineering Goal: make AI-assisted retro game iteration practical in MoonBit.
 - Target Users: solo developers/small teams building pixel-style prototypes and learners exploring MoonBit systems code.
-- Architecture Idea: `DSL parser -> runtime model -> renderer -> per-game web entry`, with CLI and tests wired to the same core package.
-- Feasibility Today: playable driftbird demos, reproducible commands, parser/error tests, runtime determinism tests.
+- Architecture: `DSL parser -> runtime model -> renderer -> per-game web entry`, with CLI and tests wired to the same core package.
+- Feasibility: four playable game demos, reproducible commands, parser/error tests, deterministic runtime tests, WebGPU rendering.
 
 ## Environment Requirements
 
 - OS: macOS/Linux (current local verification environment: macOS/Darwin)
 - MoonBit toolchain: `moon 0.1.20260209`
 - Python: `Python 3.9.6` (for `python3 -m http.server --directory site`)
-- Browser: a modern browser with Canvas 2D support
+- Browser: Chrome 113+ / Edge 113+ recommended (WebGPU); Canvas2D fallback works in any modern browser
 
-## Current MVP
+## Current Implementation
 
 Implemented in this repository:
-- Public engine API:
-  - `EngineConfig`
-  - `Game` trait with `init/update/draw`
-  - `Sprite`, `Tilemap`, `Palette`, `AssetBundle`
-  - `EngineInstance` runtime model
-  - `EngineCommand` event/timer pipeline
-- Asset DSL v1 parser:
-  - `palette`, `sprite`, `tilemap`, `end`
-  - line-numbered parse errors
-- Asset conversion helper:
-  - DSL -> JSON string
-- Sample games:
-  - driftbird side scroller (`driftbird`)
-  - collision detection and scrolling obstacles
-  - web demo audio cues (BGM + flap/reset/hit SFX)
-- CLI:
-  - `assets`
-  - `assets-file`
+
+- **Engine core**
+  - `Game` trait with `init/update/draw` phases
+  - Fixed-step deterministic runtime (`EngineInstance`)
+  - Imperative `UpdateContext` API: `ctx.sfx()`, `ctx.bgm_stop()`, `ctx.set_timeout()`, etc.
+  - `EngineCommand` event/timer pipeline with ordering guarantees
+  - Utility: `rand(seed, min, max)`, `clamp(value, min, max)`
+
+- **Asset DSL**
+  - `palette`, `sprite`, `tilemap`, `sound`, `bgm` blocks with `end`
+  - Line-numbered parse errors
+  - Sound: `wave`, `attack`, `decay`, `volume`, `f0`, `f1`
+  - BGM: `wave`, `volume`, `step_sec`, `loop`, `notes` (white keys C–B + R for rest; MIDI internally)
+  - DSL → JSON conversion helper
+
+- **Rendering**
+  - WebGPU path: full-screen triangle pipeline, nearest-neighbor sampler, palette RGBA cache, `device.lost` fallback
+  - Canvas2D fallback: automatic when WebGPU unavailable
+  - Renderer status displayed in page header (`renderer=webgpu` / `renderer=2d`)
+
+- **Audio**
+  - BGM: step sequencer from DSL `notes` array (MIDI → Hz at runtime)
+  - SFX: envelope synthesis (`attack/decay/volume`, frequency sweep `f0→f1`)
+
+- **Browser editor**
+  - DSL tab: apply / import / export `assets.dsl`
+  - Sprite tab: pixel editor synced with DSL sprites
+  - Sound tab: BGM/SFX editor with test playback and `Sync from DSL` / `Write to DSL` / `Write + Apply`
+
+- **Sample games**
+  - `driftbird` — side-scroller: input, scrolling, collision, audio
+  - `breakout` — ball physics: subframe collision, entry-axis bounce detection
+  - `snake` — grid movement: wrap, food spawn via `rand`
+  - `shooting` — shooter: parallax stars, sprite-based enemies
+
+- **CLI**
+  - `assets` — DSL text → JSON string
+  - `assets-file` — DSL file → JSON file
 
 ## Quick Start
 
@@ -65,10 +85,10 @@ Open:
 - `http://localhost:8000/g/driftbird/`
 
 Then in browser:
-1. Press `Space` to start and flap.
-2. Edit DSL and click `Apply DSL`.
-3. Confirm scene/HUD changes.
-4. Open `Sprite` and `Sound` tabs to verify GUI authoring path.
+1. Press `Space` to start and flap. Status bar shows `renderer=webgpu` or `renderer=2d`.
+2. Edit DSL and click `Apply DSL` — scene updates immediately.
+3. Open `Sprite` tab — edit pixels and click `Write + Apply`.
+4. Open `Sound` tab — adjust SFX/BGM, use `Test`, then `Write to DSL` or `Write + Apply`.
 
 ## GitHub Pages
 
@@ -81,12 +101,12 @@ Publish artifacts are generated under `site/`:
 Entry paths:
 - `/` top page
 - `/g/` game list
-- `/g/<game_id>/` per-game runtime/editor page
+- `/g/<game_id>/` per-game runtime/editor page (driftbird, breakout, snake, shooting)
 
 ## Controls and Editor
 
-Game controls:
-- `Space` / `ArrowUp`: start, restart, and flap
+Default game controls (driftbird):
+- `Space` / `ArrowUp`: start, restart, flap
 - `R`: reset
 
 Editor tabs:
@@ -95,17 +115,12 @@ Editor tabs:
 - `Sprite`: pixel editor synced with DSL sprites
 - `Sound`: BGM/SFX parameter tuning and test playback
 
-In-canvas HUD:
-- `S=score`
-- `F=frame`
-- `H=hit-code`
-
 ## CLI Usage
 
 Convert DSL text to JSON:
 
 ```bash
-moon run src/cmd/main -- assets "sprite hero 8 8\\n1.......\\n........\\n........\\n........\\n........\\n........\\n........\\n........\\nend"
+moon run src/cmd/main -- assets "sprite hero 8 8\n1.......\n........\n........\n........\n........\n........\n........\n........\nend"
 ```
 
 Convert DSL file to JSON file (`--target js`):
@@ -114,49 +129,7 @@ Convert DSL file to JSON file (`--target js`):
 moon run src/cmd/main --target js -- assets-file assets.dsl assets.json
 ```
 
-## Wrapper API Quickstart
-
-Thin wrapper layer:
-- `config`
-- `btn`
-- `step` / `run`
-- `cls` / `pset` / `rect` / `spr`
-
-Minimal runtime example:
-
-```mbt
-fn quick_run(bundle : AssetBundle) -> Unit {
-  let cfg = config(256, 144, fps=60, scale=4)
-  let game = new_driftbird_game(bundle)
-  let inputs = [
-    btn([]),
-    btn(["Space"], keys_pressed=["Space"]),
-    btn([]),
-  ]
-  let (runtime, frames) = run(game, cfg, inputs)
-  let state = game_state(runtime)
-  println("score=\{state.score()} frames=\{frames.length()}")
-}
-```
-
-Minimal drawing example:
-
-```mbt
-fn draw_preview(frame : Frame, sprite : Sprite) -> Unit {
-  cls(frame, 0)
-  rect(frame, 0, 142, 256, 2, 3)
-  pset(frame, 1, 1, 6)
-  spr(frame, sprite, 8, 20)
-}
-```
-
-## Current Defaults and Constraints
-
-- Default config: `256 x 144`, `60 fps`, `scale=4`.
-- Sprite dimensions: each axis must be one of `8`, `16`, `32` (DSL validation).
-- UI text rendering: 8x8 cell layout per character.
-
-## DSL v1
+## Asset DSL Reference
 
 ### Palette
 
@@ -172,18 +145,15 @@ end
 ```text
 sprite bird 8 8
 ........
-...33...
-..33334.
-.3336334
-.3353334
-..33333.
-...33...
-........
+..3334..
+.333334.
+333663..
 end
 ```
 
 - `.` means transparent (`-1`)
 - `0-9`, `a-f`, `A-F` are palette indices
+- Width/height must each be 8, 16, or 32
 
 ### Tilemap
 
@@ -194,34 +164,87 @@ tilemap ground 8 2
 end
 ```
 
+### Sound (SFX)
+
+```text
+sound flap
+wave square
+attack 0.003
+decay 0.10
+volume 0.07
+f0 520
+f1 360
+end
+```
+
+Triggered in game code via `ctx.sfx("flap")`.
+
+### BGM
+
+```text
+bgm main
+wave square
+volume 0.04
+step_sec 0.125
+loop true
+notes C4 E4 G4 E4 R
+end
+```
+
+- Notes: `C D E F G A B` + optional `#`/`b` + octave (e.g. `C4`, `C#4`, `Db4`)
+- `R` = rest (silence for one step)
+- Controlled via `ctx.bgm_start()` / `ctx.bgm_stop()`
+
 ## Engine Model
 
 - `init`: create/reset game state.
-- `update`: fixed-step state transition (deterministic).
-- `draw`: pure frame generation from current state.
+- `update(self, ctx) -> Self`: fixed-step state transition. Use `ctx` for events and timers.
+- `draw(self, ctx) -> Frame`: pure frame generation from current state.
+
+```mbt
+pub impl @engine.Game for MyGame with update(self, ctx) {
+  if @engine.key_pressed(ctx.input, "Space") {
+    ctx.sfx("flap")
+  }
+  self
+}
+```
 
 ## Collision Model
 
 - Engine provides reusable primitives: `Rect` + `Collider`.
 - Games build tagged colliders and choose collision responses in game logic.
-- Driftbird stores `last_hit_tag` (e.g. `ground`, `pipe_top`) for explainable game-over behavior.
+- Hit tags (e.g. `ground`, `pipe_top`) are stored in game state for explainable game-over behavior.
 
 ## Why AI-Friendly
 
 - Text DSL is easy to prompt, diff, review, and regenerate.
 - Line-numbered parser errors are easy to feed back into iterative AI loops.
 - Deterministic game loop makes AI-generated tests stable.
+- Compact module boundaries (`model/assets/engine/games/web`) are easy to inspect.
 
 ## Baseline and Differentiation
 
 - Baseline capabilities:
-  - playable rendering path (Canvas now, WebGPU path as next milestone)
-  - practical audio path (BGM + SFX in web demo)
-  - minimal GUI authoring path (sprite + sound)
+  - WebGPU rendering path (Canvas2D fallback)
+  - Practical audio path (BGM step sequencer + SFX synthesis)
+  - Minimal GUI authoring path (sprite pixel editor + sound parameter editor)
 - moon8bit-specific value:
-  - text-first asset workflow for AI iteration
-  - deterministic runtime and reproducible validation
-  - compact MoonBit codebase that remains easy to inspect
+  - Text-first asset workflow for AI iteration
+  - Deterministic runtime and reproducible validation
+  - Compact MoonBit codebase that remains easy to inspect
+
+## Validation
+
+49 tests covering:
+- DSL success/error cases (palette, sprite, tilemap, sound, bgm, note names)
+- Deterministic runtime replay
+- Collision behavior (pipe hit, ground hit, score increment, timer ordering)
+- Integration paths for driftbird game loops
+
+```bash
+moon test
+```
 
 ## Context Harness (Anti-Drift)
 
@@ -236,16 +259,3 @@ end
 - `docs/submission-checklist.md`
 - `docs/demo-script.md`
 - `docs/application-draft.md`
-
-## Validation
-
-This repository includes:
-- DSL success/error tests
-- deterministic runtime tests
-- integration tests for driftbird loops
-
-Run everything:
-
-```bash
-moon test
-```

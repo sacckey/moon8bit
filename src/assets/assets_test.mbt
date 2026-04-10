@@ -88,6 +88,20 @@ test "note name to midi: white keys" {
 }
 
 ///|
+test "note name to midi: sharps and flats" {
+  let dsl = [
+    "bgm test", "wave square", "volume 0.1", "step_sec 0.1", "loop false", "notes C#4 Db4 F#3 Gb3 Bb2 A#2",
+    "end",
+  ].join("\n")
+  let bundle = match @assets.parse_assets_dsl(dsl) {
+    Ok(v) => v
+    Err(_) => panic()
+  }
+  // C#4=61, Db4=61, F#3=54, Gb3=54, Bb2=46, A#2=46
+  assert_eq(bundle.bgms[0].notes, [61, 61, 54, 54, 46, 46])
+}
+
+///|
 test "sound block reports error for unknown field" {
   let dsl = ["sound boom", "wave square", "unknown 1.0", "end"].join("\n")
   let e = match @assets.parse_assets_dsl(dsl) {

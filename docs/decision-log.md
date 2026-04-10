@@ -141,6 +141,18 @@ Use one short entry per decision to prevent direction drift.
   - snake: grid-based movement, wrap logic, food spawn via `rand`.
   - shooting: parallax star background, sprite-based player/enemy.
 
+- Date: 2026-04-09
+- Decision: Implement sound DSL (`sound`/`bgm` blocks) with MoonBit parser and JS audio runtime integration.
+- Why: Audio parameters were previously hardcoded in JS globals with no DSL representation. Sound needed to be editable as text like sprites/tilemaps.
+- Impact:
+  - `SoundDef` and `BgmDef` types added to model layer.
+  - `AssetBundle` extended with `sounds` and `bgms` arrays.
+  - BGM plays as a step sequencer from MIDI note array (C–B with optional #/b, R=rest).
+  - SFX uses envelope synthesis (attack/decay/volume, frequency sweep f0→f1).
+  - Sound Editor GUI reads from and writes back to DSL via `Write to DSL` / `Write + Apply`.
+  - `peak` field renamed to `volume` for consistency.
+  - Parser tests added for sound/bgm blocks and note name validation.
+
 - Date: 2026-04-08
 - Decision: Implement WebGPU rendering path with Canvas2D fallback.
 - Why: WebGPU is listed as a baseline capability track in north-star. Provides GPU-accelerated frame upload with nearest-neighbor sampling for pixel-art quality.
