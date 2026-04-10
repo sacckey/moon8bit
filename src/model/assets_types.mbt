@@ -21,10 +21,33 @@ pub(all) struct Tilemap {
 } derive(Eq, Show)
 
 ///|
+pub(all) struct SoundDef {
+  name : String
+  wave : String
+  attack : Double
+  decay : Double
+  volume : Double
+  f0 : Int
+  f1 : Int
+} derive(Eq, Show)
+
+///|
+pub(all) struct BgmDef {
+  name : String
+  wave : String
+  volume : Double
+  step_sec : Double
+  loop_ : Bool
+  notes : Array[Int]
+} derive(Eq, Show)
+
+///|
 pub(all) struct AssetBundle {
   palette : Palette
   sprites : Array[Sprite]
   tilemaps : Array[Tilemap]
+  sounds : Array[SoundDef]
+  bgms : Array[BgmDef]
 } derive(Eq, Show)
 
 ///|
@@ -32,6 +55,26 @@ pub(all) struct DslError {
   line : Int
   message : String
 } derive(Eq, Show)
+
+///|
+pub fn find_sound(bundle : AssetBundle, name : String) -> SoundDef? {
+  for s in bundle.sounds {
+    if s.name == name {
+      return Some(s)
+    }
+  }
+  None
+}
+
+///|
+pub fn find_bgm(bundle : AssetBundle, name : String) -> BgmDef? {
+  for b in bundle.bgms {
+    if b.name == name {
+      return Some(b)
+    }
+  }
+  None
+}
 
 ///|
 pub fn palette_default() -> Palette {

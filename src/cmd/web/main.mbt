@@ -128,6 +128,7 @@ pub fn[G] run_web_game(
 
     state_ref.val = Some(init_game(bundle, config))
     palette_ref.val = bundle.palette
+    web_apply_sound_bundle(bundle.sounds, bundle.bgms)
     stop_bgm_if_playing()
     web_set_editor_feedback("Applied DSL successfully", false)
   }

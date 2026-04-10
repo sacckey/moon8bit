@@ -1,39 +1,32 @@
 # moon8bit (Draft Submission Description)
 
-moon8bit is a retro 2D game engine prototype built in MoonBit with a clear product direction: make game generation workflows practical for AI and humans through text-first assets, deterministic runtime behavior, and a compact API surface.
+moon8bit is a retro 2D game engine prototype built in MoonBit with a clear product direction: make game authoring workflows practical for AI and humans through text-first assets, deterministic runtime behavior, and a compact API surface.
 
-The core problem is simple. LLMs can generate gameplay code quickly, but assets and debugging loops often slow iteration. moon8bit focuses on reducing that loop cost in MoonBit: palettes, sprites, and tilemaps are authored in a compact DSL, parsed with line-numbered diagnostics, and converted into runtime data (or JSON for inspection). The contribution of moon8bit is a reproducible MoonBit workflow that integrates text-first assets, deterministic runtime behavior, and line-numbered diagnostics for fast AI-assisted iteration.
+The core problem is simple. LLMs can generate gameplay code quickly, but assets and debugging loops often slow iteration. moon8bit focuses on reducing that loop cost in MoonBit: palettes, sprites, and tilemaps are authored in a compact DSL, parsed with line-numbered diagnostics, and converted into runtime data. The contribution of moon8bit is a reproducible MoonBit workflow that integrates text-first assets, deterministic runtime behavior, and line-numbered diagnostics for fast AI-assisted iteration.
 
 Concrete scope for this submission:
 
 - Engineering goal: deliver a compact MoonBit retro 2D engine that keeps AI-assisted iteration practical and reproducible.
 - Target users: solo developers and small teams building pixel-style prototypes with AI assistance, plus learners who want an inspectable MoonBit game-engine codebase.
-- Architecture idea: a layered flow of `assets DSL -> parser/validation -> runtime state transition -> renderer -> per-game web runtime/editor`, with CLI and tests sharing the same core package.
-- Feasibility: the repository already includes playable driftbird web pages, CLI conversion commands, parser diagnostics, deterministic runtime tests, and reproducible local run steps.
+- Architecture: a layered flow of `assets DSL -> parser/validation -> runtime state transition -> renderer -> per-game web runtime/editor`, with CLI and tests sharing the same core package.
+- Feasibility: the repository includes four playable web game demos, CLI conversion commands, parser diagnostics, deterministic runtime tests, and reproducible local run steps.
 
-Baseline engine capability target by the final challenge deadline:
+Current implementation includes six integrated parts:
 
-- Rendering baseline: keep current Canvas path and add a minimal WebGPU backend path for the same frame primitives.
-- Audio baseline: support practical game audio with BGM playback and core SFX playback.
-- Authoring baseline: provide minimal GUI workflows for editing sprite and sound data, then saving/loading through the same project asset path.
-
-On top of this baseline, moon8bit's differentiation is explicit: AI-oriented text asset workflow, deterministic update model, and diagnostics that are easy to feed back into iterative AI coding loops.
-
-Current implementation includes five integrated parts:
-
-1. Engine core with explicit `init/update/draw` phases and fixed-step runtime.
+1. Engine core with explicit `init/update/draw` phases, fixed-step runtime, and an imperative `UpdateContext` API (`ctx.sfx()`, `ctx.set_timeout()`, `ctx.bgm_stop()` etc.).
 2. DSL v1 (`palette`, `sprite`, `tilemap`, `end`) with strict validation and clear parser errors.
 3. CLI flow for DSL conversion and validation (`assets`, `assets-file`).
-4. Web Canvas runtime/editor pages under `site/g/<game_id>/` with live DSL editing plus local `Import DSL` / `Export DSL`.
-5. Driftbird side-scroller samples covering input, scrolling, collision, rendering, and web audio events.
+4. Web rendering path with WebGPU (full-screen triangle pipeline, nearest-neighbor sampling, palette RGBA cache) and automatic Canvas2D fallback. Renderer status is shown live in the page header.
+5. Web editor pages under `site/g/<game_id>/` with live DSL editing, sprite editor, sound editor, and local import/export.
+6. Four sample games: driftbird (side-scroller), breakout (ball physics with entry-axis collision), snake (grid wrap, food spawn), shooting (parallax background, sprite-based enemies).
 
 This design maps directly to the SCC evaluation axes:
 
-- Functional Completeness: the repository ships playable web pages, CLI tooling, and a full parse -> runtime pipeline.
-- Engineering Quality: deterministic fixed-step execution, reusable collision primitives (`Rect` + `Collider`), command-based engine events/timers, and tests for parser errors, deterministic replay, collision behavior, and integration paths.
-- Explainability: small module boundaries (model/assets/engine/games/web), explicit decision logs, and reproducible commands in README.
-- User Experience: immediate edit/apply loop in browser, in-canvas HUD feedback, sprite/sound GUI tabs, and import/export to preserve local iteration results.
+- Functional Completeness: the repository ships playable web pages, CLI tooling, and a full parse → runtime → render pipeline. WebGPU and Canvas2D rendering are both functional.
+- Engineering Quality: deterministic fixed-step execution, reusable collision primitives, command-based engine events/timers, 42 passing tests covering parser errors, deterministic replay, collision behavior, timer ordering, and integration paths.
+- Explainability: small module boundaries (`model/assets/engine/games/web`), explicit decision logs, reproducible commands in README, and line-numbered parser diagnostics that feed naturally into AI coding loops.
+- User Experience: immediate edit/apply loop in browser, live renderer status display, sprite/sound GUI tabs, and import/export for local asset persistence.
 
 MoonBit is a strong fit for this direction because of portability and clean data modeling. The implementation stays intentionally compact so evaluators can inspect behavior quickly and reproduce results with minimal setup.
 
-The execution plan is two-track: first, reach practical engine baseline expectations (WebGPU path, audio path, GUI authoring minimum); second, strengthen moon8bit-specific value through concise APIs, richer DSL features, and stronger AI validation workflows. This keeps the roadmap ambitious but still feasible within the challenge timeline.
+moon8bit's differentiation is explicit: AI-oriented text asset workflow, deterministic update model, and diagnostics that are easy to feed back into iterative AI coding loops. The engine surface is kept minimal — small API, small conceptual cost — so that game authoring code stays short and readable whether written by a human or generated by an AI.

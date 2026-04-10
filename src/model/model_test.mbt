@@ -17,6 +17,8 @@ test "asset lookup helpers work on explicit bundle" {
     palette,
     sprites: [sprite],
     tilemaps: [tilemap],
+    sounds: [],
+    bgms: [],
   }
 
   let found_sprite = match @model.find_sprite(bundle, "hero") {

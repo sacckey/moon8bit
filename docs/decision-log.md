@@ -117,3 +117,35 @@ Use one short entry per decision to prevent direction drift.
 - Impact:
   - Build script generates per-game `web.js`, `assets.dsl`, and `game_spec.json`.
   - Runtime/editor entry points are now path-driven (`/g/<game_id>/`), with `/g/` as the game list.
+
+- Date: 2026-04-06
+- Decision: Replace tuple-return `Game::update` with imperative `UpdateContext` API (`ctx.sfx()`, `ctx.bgm_stop()`, `ctx.set_timeout()` etc.).
+- Why: Returning `(Self, Array[EngineCommand])` was verbose and forced game authors to manage command arrays manually. Imperative API matches how game logic naturally reads.
+- Impact:
+  - `Game::update` signature simplified to `(Self, UpdateContext) -> Self`.
+  - Engine execution model unchanged (commands still collected and dispatched after update).
+  - Game code shorter and more readable.
+
+- Date: 2026-04-07
+- Decision: Add `rand(seed, min, max)` and `clamp(value, min, max)` as engine-level utilities.
+- Why: Both were being reimplemented in every game. `rand` in particular required a correct LCG implementation to avoid sign-overflow bugs.
+- Impact:
+  - `rand` uses `(seed * 1664525 + 1013904223).land(0x7FFFFFFF)` to avoid `Int.min_value()` overflow.
+  - Games can call `@engine.rand(ctx.tick, min, max)` for deterministic pseudo-random placement.
+
+- Date: 2026-04-07
+- Decision: Add breakout, snake, and shooting as additional sample games.
+- Why: Single sample game (driftbird) does not demonstrate engine generality. Multiple games prove the `init/update/draw` contract works across different game patterns.
+- Impact:
+  - breakout: subframe collision with entry-axis detection (prev_x/prev_y) for accurate single-bounce behavior.
+  - snake: grid-based movement, wrap logic, food spawn via `rand`.
+  - shooting: parallax star background, sprite-based player/enemy.
+
+- Date: 2026-04-08
+- Decision: Implement WebGPU rendering path with Canvas2D fallback.
+- Why: WebGPU is listed as a baseline capability track in north-star. Provides GPU-accelerated frame upload with nearest-neighbor sampling for pixel-art quality.
+- Impact:
+  - `web_js_gpu.mbt` implements palette RGBA cache, pixel buffer build, and WebGPU pipeline (full-screen triangle, nearest sampler).
+  - `__moon8bit_render_fn` swap pattern allows async GPU init with immediate Canvas2D fallback.
+  - `device.lost` detection falls back to Canvas2D silently.
+  - Status bar displays `renderer=webgpu` or `renderer=2d` for observability.

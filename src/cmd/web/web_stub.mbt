@@ -124,6 +124,15 @@ fn web_start_loop(cb : () -> Unit, fps : Int) -> Unit {
 }
 
 ///|
+fn web_apply_sound_bundle(
+  sounds : Array[@lib.SoundDef],
+  bgms : Array[@lib.BgmDef],
+) -> Unit {
+  ignore(sounds)
+  ignore(bgms)
+}
+
+///|
 fn web_render_frame(
   pixels : Array[Int],
   width : Int,

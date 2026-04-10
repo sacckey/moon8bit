@@ -14,6 +14,10 @@ pub fn collider_intersects(Collider, Collider) -> Bool
 
 pub fn default_engine_config() -> EngineConfig
 
+pub fn find_bgm(AssetBundle, String) -> BgmDef?
+
+pub fn find_sound(AssetBundle, String) -> SoundDef?
+
 pub fn find_sprite(AssetBundle, String) -> Sprite?
 
 pub fn find_tilemap(AssetBundle, String) -> Tilemap?
@@ -49,6 +53,17 @@ pub(all) struct AssetBundle {
   palette : Palette
   sprites : Array[Sprite]
   tilemaps : Array[Tilemap]
+  sounds : Array[SoundDef]
+  bgms : Array[BgmDef]
+} derive(Eq, Show)
+
+pub(all) struct BgmDef {
+  name : String
+  wave : String
+  volume : Double
+  step_sec : Double
+  loop_ : Bool
+  notes : Array[Int]
 } derive(Eq, Show)
 
 pub(all) struct Collider {
@@ -103,6 +118,16 @@ pub(all) struct Rect {
   y : Int
   w : Int
   h : Int
+} derive(Eq, Show)
+
+pub(all) struct SoundDef {
+  name : String
+  wave : String
+  attack : Double
+  decay : Double
+  volume : Double
+  f0 : Int
+  f1 : Int
 } derive(Eq, Show)
 
 pub(all) struct Sprite {

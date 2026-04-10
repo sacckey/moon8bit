@@ -1,88 +1,30 @@
 # Handoff
 
-## 2026-04-06 Runtime/Docs Sync Note
+## 2026-04-09 Current State
 
-- Runtime architecture status:
-  - `EngineInstance` owns tick/input-history/event-queue/timers.
-  - `Game::update` emits `EngineCommand`; timer scheduling is command-driven.
-  - `UpdateContext` / `DrawContext` split is complete.
-- Web architecture status:
-  - `cmd/web` is shared game-neutral runtime UI.
-  - each game has its own web entry package (`src/games/<id>/web`).
-  - published paths are generated under `site/g/<game_id>/`.
-- Reproducible local commands:
-  - `moon check`
-  - `moon test`
-  - `./scripts/update_demo_bundle.sh`
-  - `python3 -m http.server 8000 --directory site`
-- Current primary URLs:
-  - `/` top
-  - `/g/` game list
-  - `/g/driftbird/` playable editor/runtime page
+- Build/Test status: pass (`moon check`, `moon test`, 42 tests)
+- MoonBit source: ~6,634 lines
+- Sample games: driftbird, breakout, snake, shooting
+- Renderer: WebGPU (with Canvas2D fallback), status shown in page header
+- Audio: BGM + SFX via Web Audio API
+- Editor: DSL apply/import/export, sprite editor, sound editor
 
-## 2026-04-02 Acceptance Note (SCC Stage 1)
+### Architecture status
 
-- Application status: accepted.
-- Acceptance summary: "no major issues", development can proceed.
-- Organizer expectations to track in implementation/docs:
-  - MoonBit remains central in system logic/architecture/runtime.
-  - Final delivery should be a complete runnable application.
-  - Final submission should include E2E runnable examples and clear build/run/test docs.
-  - Practical distribution path should be explicit (GitHub Pages / Releases / install channel).
-- Source: acceptance email received on 2026-04-02.
+- `EngineInstance` owns tick/event-queue/timers.
+- `Game::update(self, ctx) -> Self` — imperative API (`ctx.sfx`, `ctx.set_timeout` etc.).
+- `UpdateContext.commands` collects engine commands; dispatched by `engine_step` after update.
+- `cmd/web` is shared game-neutral runtime; each game has its own `src/games/<id>/web` entry.
+- Published paths generated under `site/g/<game_id>/`.
+- WebGPU: `web_js_gpu.mbt` (JS-target only), `web_init_gpu` called at startup, `__moon8bit_render_fn` swapped in on GPU ready.
 
-## 2026-04-01 Kickoff Note (SCC Stage 1)
+### Known limitations
 
-- Public kickoff status: active (repository is public and under active development)
-- Stage 1 form status: submitted
-- Submission timestamp: `2026-04-01 20:34 JST`
-- Submission text source: `docs/application-draft.md`
-- Submitted form summary:
-  - Project title: `moon8bit`
-  - Project description source: `docs/application-draft.md` (300+ words)
-  - Why MoonBit / About You: completed and submitted
-- Showcase alignment updates completed:
-  - concrete scope fields added (goal/target users/architecture/feasibility)
-  - README environment requirements clarified
-  - checklist expanded with showcase readiness checks
-  - baseline-vs-unique framing documented (`WebGPU/Sound/GUI` baseline + AI workflow differentiation)
+- No browser-to-local file overwrite; import/export workflow used instead.
+- WebGPU uses `mapAsync` per frame — stable but could be replaced with `writeTexture` for lower overhead.
+- breakout / snake / shooting have no automated tests yet.
 
-## Session End Summary
-
-- Date: 2026-03-28
-- Commit(s): pending manual commit
-
-## Done Today
-
-1. Finalized submission-facing docs:
-   - `docs/application-draft.md` (300+ words, SCC-axis mapping)
-   - `README.mbt.md` evaluator quickstart
-2. Improved explainability and validation:
-   - collision outcome surfaced via in-canvas HUD (`H=<hit-code>`)
-   - runtime test for `pipe_top` collision tag
-3. Added submission prep assets:
-   - `docs/submission-checklist.md`
-   - `docs/demo-script.md`
-
-## Current State
-
-- Build/Test status: pass (`moon check`, `moon test`, `./scripts/update_demo_bundle.sh`)
-- Demo status: playable per-game web pages with live apply + import/export + sprite/sound tabs
-- Known limitations:
-  - No direct browser-to-local file overwrite; import/export workflow is used
-  - WebGPU backend is not included in v1
-
-## Next 1-2 Tasks
-
-1. Record 30-45s demo GIF/video following `docs/demo-script.md`.
-2. Final pass on submission form text and links using `docs/submission-checklist.md`.
-
-## Risks / Open Questions
-
-- Ensure final demo media clearly shows DSL apply and HUD updates (`S/F/H`).
-- Keep remaining changes to docs/bugfix only until submission.
-
-## Quick Restart Commands
+### Reproducible local commands
 
 ```bash
 moon check
@@ -91,8 +33,43 @@ moon test
 python3 -m http.server 8000 --directory site
 ```
 
-## 2026-04-01 End-of-Day TODO Snapshot
+URLs: `/` top, `/g/` game list, `/g/driftbird/` playable editor page.
 
-- Next focus: logic-shrinking API layer on top of current wrappers.
-- Candidate helpers: input edge (`btnp`), deterministic timer/spawn helpers, lightweight collision helpers, minimal UI helpers.
-- Refactor policy: apply to `game_driftbird` incrementally with behavior parity tests (score/collision/reset).
+### Remaining work before 2026-04-21
+
+1. Add tests for breakout / snake / shooting.
+2. Freeze application-draft.md (300+ words, implementation-fact only).
+3. Record demo video/GIF.
+4. Final docs/README sync.
+5. Ensure commit history is clean/readable.
+6. Submit final application text + demo link.
+
+---
+
+## 2026-04-06 Runtime/Docs Sync Note
+
+- Runtime architecture status:
+  - `EngineInstance` owns tick/input-history/event-queue/timers.
+  - `Game::update` uses imperative `UpdateContext`; timer scheduling is command-driven.
+  - `UpdateContext` / `DrawContext` split is complete.
+- Web architecture status:
+  - `cmd/web` is shared game-neutral runtime UI.
+  - each game has its own web entry package (`src/games/<id>/web`).
+  - published paths are generated under `site/g/<game_id>/`.
+
+## 2026-04-02 Acceptance Note (SCC Stage 1)
+
+- Application status: accepted.
+- Acceptance summary: "no major issues", development can proceed.
+- Organizer expectations:
+  - MoonBit remains central in system logic/architecture/runtime.
+  - Final delivery should be a complete runnable application.
+  - Final submission should include E2E runnable examples and clear build/run/test docs.
+  - Practical distribution path should be explicit (GitHub Pages).
+- Source: acceptance email received on 2026-04-02.
+
+## 2026-04-01 Kickoff Note (SCC Stage 1)
+
+- Stage 1 form submitted: `2026-04-01 20:34 JST`
+- Submission text source: `docs/application-draft.md`
+- Project title: `moon8bit`
