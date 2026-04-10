@@ -14,7 +14,7 @@ sound shoot
 wave square
 attack 0.001
 decay 0.06
-peak 0.06
+volume 0.06
 f0 900
 f1 420
 end
@@ -23,7 +23,7 @@ sound hit
 wave triangle
 attack 0.002
 decay 0.09
-peak 0.07
+volume 0.07
 f0 520
 f1 260
 end
@@ -32,7 +32,7 @@ sound die
 wave sawtooth
 attack 0.003
 decay 0.18
-peak 0.09
+volume 0.09
 f0 280
 f1 80
 end

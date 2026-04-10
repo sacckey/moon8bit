@@ -14,7 +14,7 @@ sound eat
 wave square
 attack 0.002
 decay 0.08
-peak 0.07
+volume 0.07
 f0 660
 f1 980
 end
@@ -23,7 +23,7 @@ sound die
 wave sawtooth
 attack 0.003
 decay 0.18
-peak 0.09
+volume 0.09
 f0 260
 f1 90
 end

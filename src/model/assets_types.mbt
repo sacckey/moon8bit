@@ -26,7 +26,7 @@ pub(all) struct SoundDef {
   wave : String
   attack : Double
   decay : Double
-  peak : Double
+  volume : Double
   f0 : Int
   f1 : Int
 } derive(Eq, Show)

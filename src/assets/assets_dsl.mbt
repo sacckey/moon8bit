@@ -371,7 +371,7 @@ fn parse_sound_block(
   let mut wave = "square"
   let mut attack = 0.003
   let mut decay = 0.10
-  let mut peak = 0.07
+  let mut volume = 0.07
   let mut f0 = 520
   let mut f1 = 360
   let mut cursor = start_line_index + 1
@@ -384,7 +384,7 @@ fn parse_sound_block(
     }
     if raw == "end" {
       return Ok(
-        (SoundDef::{ name, wave, attack, decay, peak, f0, f1 }, cursor + 1),
+        (SoundDef::{ name, wave, attack, decay, volume, f0, f1 }, cursor + 1),
       )
     }
     let tokens = split_ws(raw)
@@ -407,8 +407,8 @@ fn parse_sound_block(
           Ok(v) => v
           Err(e) => return Err(e)
         }
-      "peak" =>
-        peak = match parse_double_token(tokens[1], line_no, "peak") {
+      "volume" | "peak" =>
+        volume = match parse_double_token(tokens[1], line_no, "volume") {
           Ok(v) => v
           Err(e) => return Err(e)
         }

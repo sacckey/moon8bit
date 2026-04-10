@@ -160,7 +160,7 @@ extern "js" fn web_apply_sound_bundle(
   #|       type: s.wave,
   #|       attack: s.attack,
   #|       decay: s.decay,
-  #|       peak: s.peak,
+  #|       volume: s.volume,
   #|       f0: s.f0,
   #|       f1: s.f1,
   #|     };
@@ -179,12 +179,14 @@ extern "js" fn web_apply_sound_bundle(
   #|   }
   #|   if (selectedBgm) {
   #|     const b = selectedBgm;
+  #|     state.bgmDefined = true;
   #|     state.bgmWave = b.wave;
   #|     state.bgmVolume = b.volume;
   #|     state.bgmStepSec = b.step_sec;
   #|     state.bgmLoop = b.loop_;
   #|     state.bgmNotes = b.notes; // Array of MIDI numbers (-1 = rest)
   #|   } else {
+  #|     state.bgmDefined = false;
   #|     state.bgmWave = null;
   #|     state.bgmVolume = 0.0;
   #|     state.bgmStepSec = 0.125;

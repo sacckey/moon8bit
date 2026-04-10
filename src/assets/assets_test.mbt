@@ -39,7 +39,7 @@ test "json conversion and parse errors are reported" {
 ///|
 test "parse sound block into bundle" {
   let dsl = [
-    "sound flap", "wave square", "attack 0.003", "decay 0.10", "peak 0.07", "f0 520",
+    "sound flap", "wave square", "attack 0.003", "decay 0.10", "volume 0.07", "f0 520",
     "f1 360", "end",
   ].join("\n")
   let bundle = match @assets.parse_assets_dsl(dsl) {
@@ -50,6 +50,7 @@ test "parse sound block into bundle" {
   let s = bundle.sounds[0]
   assert_eq(s.name, "flap")
   assert_eq(s.wave, "square")
+  assert_eq(s.volume, 0.07)
   assert_eq(s.f0, 520)
   assert_eq(s.f1, 360)
 }

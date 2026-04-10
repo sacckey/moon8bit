@@ -14,7 +14,7 @@ sound flap
 wave square
 attack 0.003
 decay 0.10
-peak 0.07
+volume 0.07
 f0 520
 f1 360
 end
@@ -23,7 +23,7 @@ sound hit
 wave triangle
 attack 0.002
 decay 0.16
-peak 0.09
+volume 0.09
 f0 300
 f1 110
 end
@@ -32,7 +32,7 @@ sound reset
 wave sine
 attack 0.003
 decay 0.12
-peak 0.08
+volume 0.08
 f0 240
 f1 420
 end
