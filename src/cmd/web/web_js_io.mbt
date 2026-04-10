@@ -151,13 +151,15 @@ extern "js" fn web_apply_sound_bundle(
   #| (sounds, bgms) => {
   #|   const state = globalThis.__moon8bit_audio_state;
   #|   if (!state) return;
+  #|   const waveAllow = new Set(["sine", "square", "triangle", "sawtooth"]);
+  #|   const normalizeWave = (w) => waveAllow.has(String(w || "")) ? String(w) : "square";
   #|
   #|   // Apply SFX profiles from sound blocks
   #|   state.sfx = {};
   #|   for (let i = 0; i < sounds.length; i++) {
   #|     const s = sounds[i];
   #|     state.sfx[s.name] = {
-  #|       type: s.wave,
+  #|       type: normalizeWave(s.wave),
   #|       attack: s.attack,
   #|       decay: s.decay,
   #|       volume: s.volume,
@@ -166,25 +168,35 @@ extern "js" fn web_apply_sound_bundle(
   #|     };
   #|   }
   #|
-  #|   // Apply BGM parameters from bgm block named "main", otherwise first.
-  #|   let selectedBgm = null;
+  #|   // Populate bgms array for multi-BGM editor support
+  #|   if (!state.bgms) state.bgms = [];
+  #|   state.bgms = [];
   #|   for (let i = 0; i < bgms.length; i++) {
-  #|     if (bgms[i].name === "main") {
-  #|       selectedBgm = bgms[i];
-  #|       break;
-  #|     }
+  #|     const b = bgms[i];
+  #|     state.bgms.push({
+  #|       name: b.name,
+  #|       wave: normalizeWave(b.wave),
+  #|       volume: b.volume,
+  #|       step_sec: b.step_sec,
+  #|       loop_: b.loop_,
+  #|       notes: b.notes ? b.notes.slice() : [],
+  #|     });
   #|   }
-  #|   if (!selectedBgm && bgms.length > 0) {
-  #|     selectedBgm = bgms[0];
+  #|   // Auto-select BGM: preserve existing selection if still valid
+  #|   const bgmNames = state.bgms.map((b) => b.name);
+  #|   if (!bgmNames.includes(state.selectedBgmName)) {
+  #|     state.selectedBgmName = bgmNames.includes("main") ? "main" : (bgmNames[0] || null);
   #|   }
+  #|
+  #|   // Apply BGM parameters from selected BGM for playback
+  #|   const selectedBgm = state.bgms.find((b) => b.name === state.selectedBgmName) || null;
   #|   if (selectedBgm) {
-  #|     const b = selectedBgm;
   #|     state.bgmDefined = true;
-  #|     state.bgmWave = b.wave;
-  #|     state.bgmVolume = b.volume;
-  #|     state.bgmStepSec = b.step_sec;
-  #|     state.bgmLoop = b.loop_;
-  #|     state.bgmNotes = b.notes; // Array of MIDI numbers (-1 = rest)
+  #|     state.bgmWave = selectedBgm.wave;
+  #|     state.bgmVolume = selectedBgm.volume;
+  #|     state.bgmStepSec = selectedBgm.step_sec;
+  #|     state.bgmLoop = selectedBgm.loop_;
+  #|     state.bgmNotes = selectedBgm.notes.slice();
   #|   } else {
   #|     state.bgmDefined = false;
   #|     state.bgmWave = null;
@@ -193,6 +205,7 @@ extern "js" fn web_apply_sound_bundle(
   #|     state.bgmLoop = true;
   #|     state.bgmNotes = [];
   #|   }
+  #|   state.dirty = false;
   #|
   #|   // Refresh sound editor UI if available
   #|   if (globalThis.__moon8bit_sound_refresh) {

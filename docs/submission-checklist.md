@@ -34,7 +34,7 @@
 - [x] Utility: `rand(seed, min, max)`, `clamp(value, min, max)`
 - [x] Browser editor: DSL apply/import/export loop
 - [x] Sprite editor GUI tab
-- [x] Sound editor GUI tab
+- [x] Sound editor GUI tab: SFX cards (wave/f0/f1/ATK/DEC/VOL + Test/Dup/Del), `+ SFX`, multi-BGM selector, `+ BGM`/`Dup`/`Del`, dirty indicator
 - [x] Per-game web pages under `site/g/<game_id>/`
 
 ## Sample Games
@@ -46,7 +46,7 @@
 
 ## Engineering Quality
 
-- [x] 49 tests passing (`moon test`)
+- [x] 52 tests passing (`moon test`)
 - [x] Deterministic runtime: same inputs → same frames
 - [x] Collision regression tests (pipe hit / ground hit / score increment)
 - [x] Timer/event ordering tests

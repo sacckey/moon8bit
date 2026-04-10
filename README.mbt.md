@@ -51,7 +51,14 @@ Implemented in this repository:
 - **Browser editor**
   - DSL tab: apply / import / export `assets.dsl`
   - Sprite tab: pixel editor synced with DSL sprites
-  - Sound tab: BGM/SFX editor with test playback and `Sync from DSL` / `Write to DSL` / `Write + Apply`
+  - Sound tab: full SFX/BGM editor with:
+    - SFX cards: wave selector, F0/F1/ATK/DEC/VOL number inputs, Test / Dup / Del
+    - `+ SFX` button to create new SFX entries from the UI
+    - BGM selector dropdown for multiple BGM blocks, `+ BGM` / `Dup` / `Del`
+    - BGM controls: wave, step_sec, loop, notes inputs
+    - Dirty state indicator (`Modified` / `Saved`)
+    - `Sync from DSL` / `Write to DSL` / `Write + Apply` round-trip
+    - Safe write-back: aborts with error feedback on malformed unterminated sound/bgm blocks
 
 - **Sample games**
   - `driftbird` — side-scroller: input, scrolling, collision, audio
@@ -113,7 +120,12 @@ Editor tabs:
 - `Game`: playable runtime
 - `DSL`: edit/apply/import/export `assets.dsl`
 - `Sprite`: pixel editor synced with DSL sprites
-- `Sound`: BGM/SFX parameter tuning and test playback
+- `Sound`: SFX/BGM editor
+  - Per-SFX cards: wave select, frequency, envelope, volume — Test / Dup / Del per card
+  - `+ SFX` button creates new SFX entries from the GUI (no DSL edit needed)
+  - BGM selector for multiple BGM blocks; `+ BGM` / `Dup` / `Del` to manage them
+  - `Sync from DSL` imports DSL state into editor; `Write to DSL` / `Write + Apply` write back
+  - `Modified` / `Saved` indicator shows unsaved editor changes
 
 ## CLI Usage
 
@@ -236,7 +248,7 @@ pub impl @engine.Game for MyGame with update(self, ctx) {
 
 ## Validation
 
-49 tests covering:
+52 tests covering:
 - DSL success/error cases (palette, sprite, tilemap, sound, bgm, note names)
 - Deterministic runtime replay
 - Collision behavior (pipe hit, ground hit, score increment, timer ordering)

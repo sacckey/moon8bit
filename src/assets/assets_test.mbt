@@ -75,6 +75,58 @@ test "parse bgm block with notes into bundle" {
 }
 
 ///|
+fn encode_sound_and_bgm_blocks(
+  sounds : Array[@model.SoundDef],
+  bgms : Array[@model.BgmDef],
+) -> String {
+  let lines : Array[String] = []
+  for s in sounds {
+    lines.push("sound \{s.name}")
+    lines.push("wave \{s.wave}")
+    lines.push("attack \{s.attack.to_string()}")
+    lines.push("decay \{s.decay.to_string()}")
+    lines.push("volume \{s.volume.to_string()}")
+    lines.push("f0 \{s.f0.to_string()}")
+    lines.push("f1 \{s.f1.to_string()}")
+    lines.push("end")
+    lines.push("")
+  }
+  let note_name_from_midi = fn(midi : Int) -> String {
+    if midi < 0 {
+      return "R"
+    }
+    let names = [
+      "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
+    ]
+    let semitone = (midi % 12 + 12) % 12
+    let octave = midi / 12 - 1
+    "\{names[semitone]}\{octave.to_string()}"
+  }
+  for b in bgms {
+    let loop_text = if b.loop_ { "true" } else { "false" }
+    lines.push("bgm \{b.name}")
+    lines.push("wave \{b.wave}")
+    lines.push("volume \{b.volume.to_string()}")
+    lines.push("step_sec \{b.step_sec.to_string()}")
+    lines.push("loop \{loop_text}")
+    let note_tokens = b.notes.map(note_name_from_midi)
+    let notes_suffix = if note_tokens.length() > 0 {
+      let joined = note_tokens.join(" ")
+      " \{joined}"
+    } else {
+      ""
+    }
+    lines.push("notes\{notes_suffix}")
+    lines.push("end")
+    lines.push("")
+  }
+  if lines.length() > 0 && lines[lines.length() - 1] == "" {
+    ignore(lines.pop())
+  }
+  lines.join("\n")
+}
+
+///|
 test "note name to midi: white keys" {
   let dsl = [
     "bgm test", "wave square", "volume 0.1", "step_sec 0.1", "loop false", "notes C4 D4 E4 F4 G4 A4 B4 C5",
@@ -145,6 +197,60 @@ test "bgm block reports error for invalid note name" {
     Err(e) => e
   }
   assert_true(e.message.find("invalid note name") is Some(_))
+}
+
+///|
+test "sound and bgm blocks survive parse round-trip: fields match" {
+  let dsl = [
+    "sound zap", "wave sawtooth", "attack 0.005", "decay 0.15", "volume 0.09", "f0 440",
+    "f1 220", "end", "", "bgm loop1", "wave triangle", "volume 0.04", "step_sec 0.2",
+    "loop false", "notes C3 E3 G3 R C4", "end",
+  ].join("\n")
+  let bundle1 = match @assets.parse_assets_dsl(dsl) {
+    Ok(v) => v
+    Err(_) => panic()
+  }
+  // Verify sound fields
+  let s = bundle1.sounds[0]
+  assert_eq(s.name, "zap")
+  assert_eq(s.wave, "sawtooth")
+  assert_eq(s.f0, 440)
+  assert_eq(s.f1, 220)
+  // Verify bgm fields
+  let b = bundle1.bgms[0]
+  assert_eq(b.name, "loop1")
+  assert_eq(b.wave, "triangle")
+  assert_eq(b.loop_, false)
+  assert_eq(b.notes, [48, 52, 55, -1, 60])
+  let redsl = encode_sound_and_bgm_blocks(bundle1.sounds, bundle1.bgms)
+  let bundle2 = match @assets.parse_assets_dsl(redsl) {
+    Ok(v) => v
+    Err(_) => panic()
+  }
+  assert_eq(bundle2.sounds, bundle1.sounds)
+  assert_eq(bundle2.bgms, bundle1.bgms)
+}
+
+///|
+test "multiple sound and bgm blocks in one DSL" {
+  let dsl = [
+    "sound flap", "wave square", "attack 0.003", "decay 0.10", "volume 0.07", "f0 520",
+    "f1 360", "end", "", "sound hit", "wave sawtooth", "attack 0.01", "decay 0.2",
+    "volume 0.12", "f0 200", "f1 80", "end", "", "bgm main", "wave square", "volume 0.05",
+    "step_sec 0.125", "loop true", "notes C4 E4 G4", "end", "", "bgm ambient", "wave sine",
+    "volume 0.03", "step_sec 0.25", "loop true", "notes A3 C4", "end",
+  ].join("\n")
+  let bundle = match @assets.parse_assets_dsl(dsl) {
+    Ok(v) => v
+    Err(_) => panic()
+  }
+  assert_eq(bundle.sounds.length(), 2)
+  assert_eq(bundle.bgms.length(), 2)
+  assert_eq(bundle.sounds[0].name, "flap")
+  assert_eq(bundle.sounds[1].name, "hit")
+  assert_eq(bundle.bgms[0].name, "main")
+  assert_eq(bundle.bgms[1].name, "ambient")
+  assert_eq(bundle.bgms[1].wave, "sine")
 }
 
 ///|

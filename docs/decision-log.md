@@ -153,6 +153,21 @@ Use one short entry per decision to prevent direction drift.
   - `peak` field renamed to `volume` for consistency.
   - Parser tests added for sound/bgm blocks and note name validation.
 
+- Date: 2026-04-07
+- Decision: Implement Sound GUI improvements: SFX wave selector, multi-BGM selector, Add/Duplicate/Delete for SFX and BGM, dirty state indicator, and safer DSL write-back.
+- Why: Sound editor was incomplete — wave field existed in DSL but was not editable in the GUI; only one BGM was implicitly supported; no feedback on unsaved state.
+- Impact:
+  - SFX cards now include wave selector matching DSL output (wave/f0/f1/attack/decay/volume).
+  - BGM selector dropdown enables editing any of multiple BGM blocks by name.
+  - `+ SFX` / `+ BGM` / `Dup` / `Del` buttons allow full sound management from the GUI without editing DSL directly.
+  - `Modified` / `Saved` indicator reflects dirty state.
+  - Dirty indicator now updates immediately on edits.
+  - DSL write-back aborts with explicit feedback if unterminated sound/bgm blocks are detected.
+  - Wave validation unified: only `sine/square/triangle/sawtooth` accepted in both MoonBit parser and JS parse path.
+  - Note name spec unified: `C#4` / `Db4` supported in both MoonBit parser and JS runtime.
+  - `encodeSoundBundleFromState` now encodes all BGMs in `audioState.bgms` array (not hardcoded "bgm main").
+  - 52 tests passing (added round-trip and multi-block parse tests).
+
 - Date: 2026-04-08
 - Decision: Implement WebGPU rendering path with Canvas2D fallback.
 - Why: WebGPU is listed as a baseline capability track in north-star. Provides GPU-accelerated frame upload with nearest-neighbor sampling for pixel-art quality.
