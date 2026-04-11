@@ -145,6 +145,7 @@ pub fn[G] run_web_game(
   let on_import = fn(dsl_text : String) -> Unit {
     web_set_editor_text(dsl_text)
     web_sprite_editor_refresh()
+    web_tilemap_editor_refresh()
     apply_dsl_text(dsl_text)
   }
 
@@ -156,6 +157,7 @@ pub fn[G] run_web_game(
   web_bind_export(on_export)
   web_bind_import(on_import)
   web_init_sprite_editor()
+  web_init_tilemap_editor()
   web_bootstrap_game(
     fn(title, status_text, export_filename, dsl_text) {
       title_ref.val = title
@@ -164,6 +166,7 @@ pub fn[G] run_web_game(
       refresh_status(true)
       web_set_editor_text(dsl_text)
       web_sprite_editor_refresh()
+      web_tilemap_editor_refresh()
       apply_dsl_text(dsl_text)
       tick()
       web_start_loop(tick, config.fps)
