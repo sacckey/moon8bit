@@ -6,6 +6,10 @@ fn test_bundle() -> @model.AssetBundle {
   for _ in 0..<64 {
     pixels.push(3)
   }
+  let tile_pixels : Array[Int] = []
+  for _ in 0..<(256 * 64) {
+    tile_pixels.push(-1)
+  }
 
   @model.AssetBundle::{
     palette: @model.Palette::{
@@ -16,6 +20,13 @@ fn test_bundle() -> @model.AssetBundle {
       ],
     },
     sprites: [@model.Sprite::{ name: "bird", width: 8, height: 8, pixels }],
+    tiles: @model.Tiles::{
+      name: "main",
+      tile_count: 256,
+      tile_names: [],
+      tile_solid: [],
+      pixels: tile_pixels,
+    },
     tilemaps: [],
     sounds: [],
     bgms: [],

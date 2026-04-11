@@ -43,6 +43,8 @@ pub fn config(Int, Int, fps? : Int, scale? : Int, palette? : @model.Palette) -> 
 
 pub fn default_engine_config() -> @model.EngineConfig
 
+pub fn draw_tilemap(@model.Frame, @model.Tilemap, @model.Tiles, Int, Int, Int, Int, Int, Int) -> Unit
+
 pub fn emit(@engine.EngineEvent) -> @engine.EngineCommand
 
 pub fn[T] engine_events(@engine.EngineInstance[T]) -> Array[@engine.EngineEvent]
@@ -119,6 +121,16 @@ pub fn[T] take_events(@engine.EngineInstance[T]) -> (@engine.EngineInstance[T], 
 
 pub fn tile_at(@model.Tilemap, Int, Int) -> Int?
 
+pub fn tile_id_at_px(@model.Tilemap, Int, Int) -> Int?
+
+pub fn tile_pixel(@model.Tiles, Int, Int, Int) -> Int?
+
+pub fn tile_solid(@model.Tiles, Int) -> Bool
+
+pub fn tile_solid_any_in_rect(@model.Tilemap, @model.Tiles, Int, Int, Int, Int) -> Bool
+
+pub fn tile_solid_at_px(@model.Tilemap, @model.Tiles, Int, Int) -> Bool
+
 pub fn tilemap_to_json(@model.Tilemap) -> Json
 
 pub fn ui_center_x(Int, Int) -> Int
@@ -171,6 +183,8 @@ pub using @model {type SoundDef}
 pub using @model {type Sprite}
 
 pub using @model {type Tilemap}
+
+pub using @model {type Tiles}
 
 pub using @engine {type UpdateContext}
 

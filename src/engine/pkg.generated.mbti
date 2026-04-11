@@ -26,6 +26,8 @@ pub fn cls(@model.Frame, Int) -> Unit
 
 pub fn config(Int, Int, fps? : Int, scale? : Int, palette? : @model.Palette) -> @model.EngineConfig
 
+pub fn draw_tilemap(@model.Frame, @model.Tilemap, @model.Tiles, Int, Int, Int, Int, Int, Int) -> Unit
+
 pub fn emit(EngineEvent) -> EngineCommand
 
 pub fn[T] engine_events(EngineInstance[T]) -> Array[EngineEvent]
@@ -79,6 +81,12 @@ pub fn spr(@model.Frame, @model.Sprite, Int, Int) -> Unit
 pub fn[T : Game] step(EngineInstance[T], @model.InputState) -> (EngineInstance[T], @model.Frame)
 
 pub fn[T] take_events(EngineInstance[T]) -> (EngineInstance[T], Array[EngineEvent])
+
+pub fn tile_id_at_px(@model.Tilemap, Int, Int) -> Int?
+
+pub fn tile_solid_any_in_rect(@model.Tilemap, @model.Tiles, Int, Int, Int, Int) -> Bool
+
+pub fn tile_solid_at_px(@model.Tilemap, @model.Tiles, Int, Int) -> Bool
 
 pub fn ui_center_x(Int, Int) -> Int
 

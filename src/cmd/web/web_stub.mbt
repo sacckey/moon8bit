@@ -103,6 +103,26 @@ fn web_sprite_editor_refresh() -> Unit {
 }
 
 ///|
+fn web_init_tile_editor() -> Unit {
+  web_init_tilemap_editor()
+}
+
+///|
+fn web_tile_editor_refresh() -> Unit {
+  web_tilemap_editor_refresh()
+}
+
+///|
+fn web_init_tilemap_editor() -> Unit {
+
+}
+
+///|
+fn web_tilemap_editor_refresh() -> Unit {
+
+}
+
+///|
 fn web_audio_start_bgm() -> Unit {
 
 }

@@ -249,3 +249,128 @@ pub fn rect(
 pub fn spr(frame : Frame, sprite : @model.Sprite, x : Int, y : Int) -> Unit {
   frame.blit(sprite, x, y)
 }
+
+///|
+/// Return the tile ID at pixel position (`px`,`py`) in map space.
+/// Returns `None` when out of map bounds.
+pub fn tile_id_at_px(tilemap : @model.Tilemap, px : Int, py : Int) -> Int? {
+  if px < 0 || py < 0 {
+    return None
+  }
+  let tx = px / 8
+  let ty = py / 8
+  @model.tile_at(tilemap, tx, ty)
+}
+
+///|
+/// Return true when pixel position (`px`,`py`) falls on a solid tile.
+pub fn tile_solid_at_px(
+  tilemap : @model.Tilemap,
+  tiles : @model.Tiles,
+  px : Int,
+  py : Int,
+) -> Bool {
+  match tile_id_at_px(tilemap, px, py) {
+    Some(tile_id) => @model.tile_solid(tiles, tile_id)
+    None => false
+  }
+}
+
+///|
+fn floor_div_tile(px : Int) -> Int {
+  if px >= 0 {
+    px / 8
+  } else {
+    (px - 7) / 8
+  }
+}
+
+///|
+/// Return true when any pixel inside the rectangle intersects a solid tile.
+/// - Rect is expressed in map-space pixels.
+/// - Out-of-map area is treated as non-solid.
+/// - Empty or negative-size rect returns false.
+pub fn tile_solid_any_in_rect(
+  tilemap : @model.Tilemap,
+  tiles : @model.Tiles,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+) -> Bool {
+  if w <= 0 || h <= 0 {
+    return false
+  }
+  let left_tx = floor_div_tile(x)
+  let top_ty = floor_div_tile(y)
+  let right_tx = floor_div_tile(x + w - 1)
+  let bottom_ty = floor_div_tile(y + h - 1)
+  for ty in top_ty..<=bottom_ty {
+    for tx in left_tx..<=right_tx {
+      match @model.tile_at(tilemap, tx, ty) {
+        Some(tile_id) if @model.tile_solid(tiles, tile_id) => return true
+        _ => ()
+      }
+    }
+  }
+  false
+}
+
+///|
+/// Draw a region of a tilemap onto the frame using inline tile pixel data.
+///
+/// - `dst_x/dst_y`: top-left corner in the frame where drawing starts
+/// - `dst_w/dst_h`: number of pixels to fill (clips at frame edges)
+/// - `cam_x/cam_y`: pixel offset into the tilemap (no wrap)
+///
+/// Tile size is fixed at 8×8.  Tile ID -1 = transparent (skip).
+/// Transparent pixels within a tile (value -1) are also skipped.
+pub fn draw_tilemap(
+  frame : Frame,
+  tilemap : @model.Tilemap,
+  tiles : @model.Tiles,
+  dst_x : Int,
+  dst_y : Int,
+  dst_w : Int,
+  dst_h : Int,
+  cam_x : Int,
+  cam_y : Int,
+) -> Unit {
+  if dst_w <= 0 ||
+    dst_h <= 0 ||
+    tilemap.width <= 0 ||
+    tilemap.height <= 0 ||
+    tiles.tile_count <= 0 {
+    return
+  }
+  let tile_size = 8
+  let map_px_w = tilemap.width * tile_size
+  let map_px_h = tilemap.height * tile_size
+  for dy in 0..<dst_h {
+    let src_py = cam_y + dy
+    if src_py < 0 || src_py >= map_px_h {
+      continue
+    }
+    let ty = src_py / tile_size
+    let tile_row = src_py % tile_size
+    for dx in 0..<dst_w {
+      let src_px = cam_x + dx
+      if src_px < 0 || src_px >= map_px_w {
+        continue
+      }
+      let tx = src_px / tile_size
+      let tile_col = src_px % tile_size
+      let tile_id = match @model.tile_at(tilemap, tx, ty) {
+        Some(id) => id
+        None => -1
+      }
+      if tile_id >= 0 {
+        match @model.tile_pixel(tiles, tile_id, tile_col, tile_row) {
+          Some(color) if color >= 0 =>
+            frame.set_pixel(dst_x + dx, dst_y + dy, color)
+          _ => ()
+        }
+      }
+    }
+  }
+}

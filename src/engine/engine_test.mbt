@@ -261,6 +261,119 @@ test "wrapper ui text helpers render ascii glyphs in 8x8 cells and scaling" {
 }
 
 ///|
+test "draw_tilemap uses transparent+clip behavior without wrapping" {
+  let pixels : Array[Int] = []
+  for _ in 0..<64 {
+    pixels.push(2)
+  }
+  let ts = @model.Tiles::{
+    name: "main",
+    tile_count: 1,
+    tile_names: ["solid"],
+    tile_solid: [true],
+    pixels,
+  }
+  let tm = @model.Tilemap::{ name: "m", width: 1, height: 1, tiles: [0] }
+
+  let frame = @model.Frame::new(8, 8, fill=-1)
+  @engine.draw_tilemap(frame, tm, ts, 0, 0, 8, 8, 0, 0)
+  assert_eq(frame.get_pixel(0, 0), Some(2))
+  assert_eq(frame.get_pixel(7, 7), Some(2))
+  assert_true(@engine.tile_solid_at_px(tm, ts, 0, 0))
+  assert_true(!@engine.tile_solid_at_px(tm, ts, 10, 0))
+
+  let shifted = @model.Frame::new(8, 8, fill=-1)
+  @engine.draw_tilemap(shifted, tm, ts, 0, 0, 8, 8, 8, 0)
+  assert_eq(shifted.get_pixel(0, 0), Some(-1))
+  assert_eq(shifted.get_pixel(7, 7), Some(-1))
+
+  let wider = @model.Frame::new(16, 8, fill=9)
+  @engine.draw_tilemap(wider, tm, ts, 0, 0, 16, 8, 0, 0)
+  assert_eq(wider.get_pixel(3, 3), Some(2))
+  assert_eq(wider.get_pixel(12, 3), Some(9))
+
+  let negative_cam = @model.Frame::new(8, 8, fill=9)
+  @engine.draw_tilemap(negative_cam, tm, ts, 0, 0, 8, 8, -4, 0)
+  assert_eq(negative_cam.get_pixel(0, 0), Some(9))
+  assert_eq(negative_cam.get_pixel(4, 0), Some(2))
+  assert_eq(negative_cam.get_pixel(7, 7), Some(2))
+}
+
+///|
+test "draw_tilemap expanded clip boundaries (negative dst and partial viewport)" {
+  let pixels : Array[Int] = []
+  for _ in 0..<64 {
+    pixels.push(1)
+  }
+  for _ in 0..<64 {
+    pixels.push(2)
+  }
+  for _ in 0..<64 {
+    pixels.push(3)
+  }
+  for _ in 0..<64 {
+    pixels.push(4)
+  }
+  let ts = @model.Tiles::{
+    name: "main",
+    tile_count: 4,
+    tile_names: ["t0", "t1", "t2", "t3"],
+    tile_solid: [false, false, false, false],
+    pixels,
+  }
+  let tm = @model.Tilemap::{
+    name: "m2",
+    width: 2,
+    height: 2,
+    tiles: [0, 1, 2, 3],
+  }
+
+  let cross = @model.Frame::new(8, 8, fill=9)
+  @engine.draw_tilemap(cross, tm, ts, 0, 0, 8, 8, 4, 4)
+  assert_eq(cross.get_pixel(0, 0), Some(1))
+  assert_eq(cross.get_pixel(7, 0), Some(2))
+  assert_eq(cross.get_pixel(0, 7), Some(3))
+  assert_eq(cross.get_pixel(7, 7), Some(4))
+
+  let neg_dst = @model.Frame::new(8, 8, fill=9)
+  @engine.draw_tilemap(neg_dst, tm, ts, -4, -4, 8, 8, 0, 0)
+  assert_eq(neg_dst.get_pixel(0, 0), Some(1))
+  assert_eq(neg_dst.get_pixel(3, 3), Some(1))
+  assert_eq(neg_dst.get_pixel(4, 4), Some(9))
+
+  let partial = @model.Frame::new(8, 8, fill=9)
+  @engine.draw_tilemap(partial, tm, ts, 6, 6, 8, 8, 0, 0)
+  assert_eq(partial.get_pixel(6, 6), Some(1))
+  assert_eq(partial.get_pixel(7, 7), Some(1))
+  assert_eq(partial.get_pixel(0, 0), Some(9))
+}
+
+///|
+test "tile_solid_any_in_rect checks overlapped tiles in map-space pixels" {
+  let solid_px : Array[Int] = []
+  for _ in 0..<64 {
+    solid_px.push(1)
+  }
+  let empty_px : Array[Int] = []
+  for _ in 0..<64 {
+    empty_px.push(2)
+  }
+  let ts = @model.Tiles::{
+    name: "main",
+    tile_count: 2,
+    tile_names: ["solid", "empty"],
+    tile_solid: [true, false],
+    pixels: solid_px + empty_px,
+  }
+  let tm = @model.Tilemap::{ name: "m", width: 2, height: 1, tiles: [0, 1] }
+  assert_true(@engine.tile_solid_any_in_rect(tm, ts, 0, 0, 1, 1))
+  assert_true(!@engine.tile_solid_any_in_rect(tm, ts, 8, 0, 8, 8))
+  assert_true(@engine.tile_solid_any_in_rect(tm, ts, 7, 0, 2, 8))
+  assert_true(!@engine.tile_solid_any_in_rect(tm, ts, -8, 0, 4, 4))
+  assert_true(!@engine.tile_solid_any_in_rect(tm, ts, 0, 0, 0, 4))
+}
+
+///|
 test "engine timeout command emits event once and can be consumed" {
   let cfg = @engine.config(4, 4)
   let initial = @engine.engine_init(TimeoutCommandGame::{ ticks: 0 }, cfg)

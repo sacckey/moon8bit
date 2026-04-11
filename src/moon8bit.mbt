@@ -5,6 +5,9 @@ pub type Palette = @model.Palette
 pub type Sprite = @model.Sprite
 
 ///|
+pub type Tiles = @model.Tiles
+
+///|
 pub type Tilemap = @model.Tilemap
 
 ///|
@@ -73,6 +76,11 @@ pub fn tile_at(tilemap : Tilemap, x : Int, y : Int) -> Int? {
 }
 
 ///|
+pub fn tile_id_at_px(tilemap : Tilemap, px : Int, py : Int) -> Int? {
+  @engine.tile_id_at_px(tilemap, px, py)
+}
+
+///|
 pub fn find_sprite(bundle : AssetBundle, name : String) -> Sprite? {
   @model.find_sprite(bundle, name)
 }
@@ -80,6 +88,38 @@ pub fn find_sprite(bundle : AssetBundle, name : String) -> Sprite? {
 ///|
 pub fn find_tilemap(bundle : AssetBundle, name : String) -> Tilemap? {
   @model.find_tilemap(bundle, name)
+}
+
+///|
+pub fn tile_pixel(tiles : Tiles, tile_id : Int, x : Int, y : Int) -> Int? {
+  @model.tile_pixel(tiles, tile_id, x, y)
+}
+
+///|
+pub fn tile_solid(tiles : Tiles, tile_id : Int) -> Bool {
+  @model.tile_solid(tiles, tile_id)
+}
+
+///|
+pub fn tile_solid_at_px(
+  tilemap : Tilemap,
+  tiles : Tiles,
+  px : Int,
+  py : Int,
+) -> Bool {
+  @engine.tile_solid_at_px(tilemap, tiles, px, py)
+}
+
+///|
+pub fn tile_solid_any_in_rect(
+  tilemap : Tilemap,
+  tiles : Tiles,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+) -> Bool {
+  @engine.tile_solid_any_in_rect(tilemap, tiles, x, y, w, h)
 }
 
 ///|
@@ -474,6 +514,23 @@ pub fn rect(
 ///|
 pub fn spr(frame : Frame, sprite : Sprite, x : Int, y : Int) -> Unit {
   @engine.spr(frame, sprite, x, y)
+}
+
+///|
+pub fn draw_tilemap(
+  frame : Frame,
+  tilemap : Tilemap,
+  tiles : Tiles,
+  dst_x : Int,
+  dst_y : Int,
+  dst_w : Int,
+  dst_h : Int,
+  cam_x : Int,
+  cam_y : Int,
+) -> Unit {
+  @engine.draw_tilemap(
+    frame, tilemap, tiles, dst_x, dst_y, dst_w, dst_h, cam_x, cam_y,
+  )
 }
 
 ///|

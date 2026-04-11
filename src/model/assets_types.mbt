@@ -13,6 +13,22 @@ pub(all) struct Sprite {
 } derive(Eq, Show)
 
 ///|
+/// Tile definitions hold inline 8×8 pixel tiles stored row-major per tile.
+/// `pixels` length = tile_count × 64.  Pixel values follow the same
+/// convention as Sprite: -1 = transparent, 0–N = palette index.
+pub(all) struct Tiles {
+  name : String
+  tile_count : Int
+  tile_names : Array[String]
+  tile_solid : Array[Bool]
+  pixels : Array[Int]
+} derive(Eq, Show)
+
+///|
+/// A tilemap stores a 2-D grid of tile IDs.
+/// Internally, tile ID -1 = empty (transparent).
+/// In DSL source, transparent cell is written as `.`.
+/// All other IDs must be in [0, tile_count).
 pub(all) struct Tilemap {
   name : String
   width : Int
@@ -45,6 +61,7 @@ pub(all) struct BgmDef {
 pub(all) struct AssetBundle {
   palette : Palette
   sprites : Array[Sprite]
+  tiles : Tiles
   tilemaps : Array[Tilemap]
   sounds : Array[SoundDef]
   bgms : Array[BgmDef]
@@ -104,6 +121,34 @@ pub fn tile_at(tilemap : Tilemap, x : Int, y : Int) -> Int? {
   } else {
     let idx = y * tilemap.width + x
     Some(tilemap.tiles[idx])
+  }
+}
+
+///|
+/// Get the pixel value at (x, y) within tile `tile_id`.
+/// Returns None for out-of-range tile_id or coordinates.
+pub fn tile_pixel(tiles : Tiles, tile_id : Int, x : Int, y : Int) -> Int? {
+  if tile_id < 0 || tile_id >= tiles.tile_count {
+    return None
+  }
+  if x < 0 || x >= 8 || y < 0 || y >= 8 {
+    return None
+  }
+  let idx = tile_id * 64 + y * 8 + x
+  Some(tiles.pixels[idx])
+}
+
+///|
+/// Whether tile `tile_id` is marked as solid.
+/// Returns false for out-of-range IDs.
+pub fn tile_solid(tiles : Tiles, tile_id : Int) -> Bool {
+  if tile_id < 0 || tile_id >= tiles.tile_count {
+    return false
+  }
+  if tile_id < tiles.tile_solid.length() {
+    tiles.tile_solid[tile_id]
+  } else {
+    false
   }
 }
 

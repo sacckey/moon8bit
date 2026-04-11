@@ -20,6 +20,9 @@ let ground_rows = 2
 let ground_y : Int = game_h - ground_rows
 
 ///|
+let bg_color : Int = 1
+
+///|
 pub struct DriftbirdGame {
   bundle : @model.AssetBundle
   mut bird_x : Int
@@ -131,7 +134,15 @@ fn detect_hit(game : DriftbirdGame, config : @model.EngineConfig) -> String? {
   if game.bird_y < Double::from_int(play_y) {
     return Some("ceiling")
   }
-  if by + 3 > ground_y {
+  let ground_hit = match @model.find_tilemap(game.bundle, "stage") {
+    Some(tm) => {
+      let foot_y = by + 3
+      @engine.tile_solid_at_px(tm, game.bundle.tiles, game.bird_x, foot_y) ||
+      @engine.tile_solid_at_px(tm, game.bundle.tiles, game.bird_x + 4, foot_y)
+    }
+    None => by + 3 > ground_y
+  }
+  if ground_hit {
     return Some("ground")
   }
   @engine.aabb_hit_tag(game.bird_x, by, 5, 3, pipe_colliders(game, config))
@@ -200,27 +211,6 @@ fn step_physics(
 }
 
 ///|
-fn draw_tilemap_rows(
-  frame : @model.Frame,
-  tilemap : @model.Tilemap,
-  scroll_x : Int,
-  start_y : Int,
-  w : Int,
-  rows : Int,
-) -> Unit {
-  for row in 0..<rows {
-    let ty = row % tilemap.height
-    for x in 0..<w {
-      let tx = (x + scroll_x) % tilemap.width
-      match @model.tile_at(tilemap, tx, ty) {
-        Some(c) => frame.set_pixel(x, start_y + row, c)
-        None => ()
-      }
-    }
-  }
-}
-
-///|
 pub impl @engine.Game for DriftbirdGame with init(self, config) {
   reset(self, config)
 }
@@ -282,25 +272,11 @@ pub impl @engine.Game for DriftbirdGame with update(self, ctx) {
 pub impl @engine.Game for DriftbirdGame with draw(self, _ctx) {
   let w = game_w
   let h = game_h
-  let sky_rows = ground_y - play_y
-  let frame = @model.Frame::new(w, h, fill=0)
-
-  match @model.find_tilemap(self.bundle, "bg") {
+  let frame = @model.Frame::new(w, h, fill=bg_color)
+  match @model.find_tilemap(self.bundle, "stage") {
     Some(tm) =>
-      draw_tilemap_rows(frame, tm, self.terrain_offset / 2, play_y, w, sky_rows)
-    None => ()
-  }
-  match @model.find_tilemap(self.bundle, "ground") {
-    Some(tm) =>
-      draw_tilemap_rows(
-        frame,
-        tm,
-        self.terrain_offset,
-        ground_y,
-        w,
-        ground_rows,
-      )
-    None => frame.draw_rect(0, ground_y, w, ground_rows, 3)
+      @engine.draw_tilemap(frame, tm, self.bundle.tiles, 0, 0, w, h, 0, 0)
+    _ => frame.draw_rect(0, ground_y, w, ground_rows, 3)
   }
 
   // pipes

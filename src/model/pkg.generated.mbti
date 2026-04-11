@@ -46,12 +46,17 @@ pub fn sprite_pixel(Sprite, Int, Int) -> Int?
 
 pub fn tile_at(Tilemap, Int, Int) -> Int?
 
+pub fn tile_pixel(Tiles, Int, Int, Int) -> Int?
+
+pub fn tile_solid(Tiles, Int) -> Bool
+
 // Errors
 
 // Types and methods
 pub(all) struct AssetBundle {
   palette : Palette
   sprites : Array[Sprite]
+  tiles : Tiles
   tilemaps : Array[Tilemap]
   sounds : Array[SoundDef]
   bgms : Array[BgmDef]
@@ -142,6 +147,14 @@ pub(all) struct Tilemap {
   width : Int
   height : Int
   tiles : Array[Int]
+} derive(Eq, Show)
+
+pub(all) struct Tiles {
+  name : String
+  tile_count : Int
+  tile_names : Array[String]
+  tile_solid : Array[Bool]
+  pixels : Array[Int]
 } derive(Eq, Show)
 
 // Type aliases

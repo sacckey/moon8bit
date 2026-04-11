@@ -39,7 +39,12 @@ test "root facade exposes metadata and defaults" {
 
 ///|
 test "assets cli output covers success and parse errors" {
-  let ok = assets_cli_output(["tilemap m 1 1", "3", "end"].join("\n"))
+  let ok = assets_cli_output(
+    [
+      "tile 0 solid", "33333333", "33333333", "33333333", "33333333", "33333333",
+      "33333333", "33333333", "33333333", "end", "tilemap m 1 1", "0", "end",
+    ].join("\n"),
+  )
   assert_true(ok.find("\"tilemaps\"") is Some(_))
 
   let ng = assets_cli_output(["sprite s 8 8", "g.......", "end"].join("\n"))
@@ -78,4 +83,26 @@ test "root facade exposes collision helpers" {
     None => panic()
   }
   assert_eq(hit.tag, "pipe_bottom")
+}
+
+///|
+test "root facade exposes tile_solid_any_in_rect helper" {
+  let solid_px : Array[Int] = []
+  for _ in 0..<64 {
+    solid_px.push(1)
+  }
+  let empty_px : Array[Int] = []
+  for _ in 0..<64 {
+    empty_px.push(2)
+  }
+  let ts = Tiles::{
+    name: "main",
+    tile_count: 2,
+    tile_names: ["solid", "empty"],
+    tile_solid: [true, false],
+    pixels: solid_px + empty_px,
+  }
+  let tm = Tilemap::{ name: "m", width: 2, height: 1, tiles: [0, 1] }
+  assert_true(tile_solid_any_in_rect(tm, ts, 0, 0, 8, 8))
+  assert_true(!tile_solid_any_in_rect(tm, ts, 8, 0, 8, 8))
 }
