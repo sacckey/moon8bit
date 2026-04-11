@@ -457,6 +457,37 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     row.appendChild(brushSelect);
   #|   }
   #|
+  #|   let mapWInput = document.getElementById("moon8bit-tilemap-width");
+  #|   if (!mapWInput) {
+  #|     mapWInput = document.createElement("input");
+  #|     mapWInput.id = "moon8bit-tilemap-width";
+  #|     mapWInput.type = "number";
+  #|     mapWInput.min = "1";
+  #|     mapWInput.max = "256";
+  #|     mapWInput.value = "16";
+  #|     mapWInput.style.width = "64px";
+  #|     mapWInput.style.background = "#0f1720";
+  #|     mapWInput.style.color = "#d9e2ec";
+  #|     mapWInput.style.border = "1px solid #486581";
+  #|     mapWInput.title = "tilemap width";
+  #|     row.appendChild(mapWInput);
+  #|   }
+  #|   let mapHInput = document.getElementById("moon8bit-tilemap-height");
+  #|   if (!mapHInput) {
+  #|     mapHInput = document.createElement("input");
+  #|     mapHInput.id = "moon8bit-tilemap-height";
+  #|     mapHInput.type = "number";
+  #|     mapHInput.min = "1";
+  #|     mapHInput.max = "256";
+  #|     mapHInput.value = "16";
+  #|     mapHInput.style.width = "64px";
+  #|     mapHInput.style.background = "#0f1720";
+  #|     mapHInput.style.color = "#d9e2ec";
+  #|     mapHInput.style.border = "1px solid #486581";
+  #|     mapHInput.title = "tilemap height";
+  #|     row.appendChild(mapHInput);
+  #|   }
+  #|
   #|   let solidWrap = document.getElementById("moon8bit-tilemap-solid-wrap");
   #|   if (!solidWrap) {
   #|     solidWrap = document.createElement("label");
@@ -498,6 +529,9 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   const syncBtn = ensureBtn("moon8bit-tilemap-sync-btn", "Sync from DSL", "#486581", "#627d98");
   #|   const writeBtn = ensureBtn("moon8bit-tilemap-write-btn", "Write to DSL", "#274060", "#486581");
   #|   const applyBtn = ensureBtn("moon8bit-tilemap-apply-btn", "Write + Apply", "#2e8b57", "#4aa96c");
+  #|   const addMapBtn = ensureBtn("moon8bit-tilemap-add-btn", "+ Map", "#274060", "#486581");
+  #|   const delMapBtn = ensureBtn("moon8bit-tilemap-del-btn", "Del Map", "#7a2e2e", "#964040");
+  #|   const resizeMapBtn = ensureBtn("moon8bit-tilemap-resize-btn", "Resize", "#486581", "#627d98");
   #|
   #|   let canvas = document.getElementById("moon8bit-tilemap-canvas");
   #|   if (!canvas) {
@@ -519,18 +553,51 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     panel.appendChild(info);
   #|   }
   #|
+  #|   let dirty = document.getElementById("moon8bit-tilemap-dirty");
+  #|   if (!dirty) {
+  #|     dirty = document.createElement("div");
+  #|     dirty.id = "moon8bit-tilemap-dirty";
+  #|     dirty.style.fontFamily = "monospace";
+  #|     dirty.style.fontSize = "12px";
+  #|     dirty.style.color = "#7bd389";
+  #|     dirty.textContent = "Saved";
+  #|     panel.appendChild(dirty);
+  #|   }
+  #|
+  #|   let feedback = document.getElementById("moon8bit-tilemap-feedback");
+  #|   if (!feedback) {
+  #|     feedback = document.createElement("div");
+  #|     feedback.id = "moon8bit-tilemap-feedback";
+  #|     feedback.style.fontFamily = "monospace";
+  #|     feedback.style.fontSize = "12px";
+  #|     feedback.style.color = "#9fb3c8";
+  #|     panel.appendChild(feedback);
+  #|   }
+  #|
   #|   if (!globalThis.__moon8bit_tilemap_state) {
   #|     globalThis.__moon8bit_tilemap_state = {
   #|       lines: [],
   #|       palette: fallbackPalette.slice(),
   #|       tileset: null,
   #|       tilemaps: [],
+  #|       tilemapRange: null,
   #|       selectedMap: 0,
   #|       selectedToken: -1,
+  #|       dirty: false,
   #|       cell: 16,
   #|     };
   #|   }
   #|   const state = globalThis.__moon8bit_tilemap_state;
+  #|
+  #|   const setDirty = (v) => {
+  #|     state.dirty = !!v;
+  #|     dirty.textContent = state.dirty ? "Modified" : "Saved";
+  #|     dirty.style.color = state.dirty ? "#efb366" : "#7bd389";
+  #|   };
+  #|   const setFeedback = (msg, isErr = false) => {
+  #|     feedback.textContent = msg || "";
+  #|     feedback.style.color = isErr ? "#ef6f6c" : "#9fb3c8";
+  #|   };
   #|
   #|   const decodeSym = (ch) => {
   #|     if (ch === ".") return -1;
@@ -550,6 +617,8 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     const palette = fallbackPalette.slice();
   #|     let tileset = null;
   #|     const tilemaps = [];
+  #|     let tilemapFirstHeader = -1;
+  #|     let tilemapLastEnd = -1;
   #|
   #|     const nextNonIgnorable = (start) => {
   #|       let i = start;
@@ -660,10 +729,15 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|           j += 1;
   #|         }
   #|         tilemaps.push({ name, width, height, tiles, headerLine: i, rowLineIndices, endLine });
+  #|         if (tilemapFirstHeader < 0 || i < tilemapFirstHeader) tilemapFirstHeader = i;
+  #|         if (endLine > tilemapLastEnd) tilemapLastEnd = endLine;
   #|       }
   #|     }
   #|
-  #|     return { lines, palette, tileset, tilemaps };
+  #|     const tilemapRange = (tilemapFirstHeader >= 0 && tilemapLastEnd >= tilemapFirstHeader)
+  #|       ? { first: tilemapFirstHeader, last: tilemapLastEnd }
+  #|       : null;
+  #|     return { lines, palette, tileset, tilemaps, tilemapRange };
   #|   };
   #|
   #|   const activeMap = () => {
@@ -704,6 +778,28 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     }
   #|   };
   #|
+  #|   const renderMapSelect = (preferCurrent = false) => {
+  #|     const before = mapSelect.value;
+  #|     mapSelect.innerHTML = "";
+  #|     state.tilemaps.forEach((tm, i) => {
+  #|       const opt = document.createElement("option");
+  #|       opt.value = String(i);
+  #|       opt.textContent = `${tm.name} (${tm.width}x${tm.height})`;
+  #|       mapSelect.appendChild(opt);
+  #|     });
+  #|     if (state.tilemaps.length <= 0) {
+  #|       state.selectedMap = 0;
+  #|       return;
+  #|     }
+  #|     let idx = state.selectedMap;
+  #|     if (!preferCurrent && before !== "" && Number(before) >= 0 && Number(before) < state.tilemaps.length) {
+  #|       idx = Number(before);
+  #|     }
+  #|     idx = Math.max(0, Math.min(idx, state.tilemaps.length - 1));
+  #|     state.selectedMap = idx;
+  #|     mapSelect.value = String(idx);
+  #|   };
+  #|
   #|   const refreshSolidUi = () => {
   #|     const ts = state.tileset;
   #|     const id = Number(brushSelect.value);
@@ -741,6 +837,8 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       return;
   #|     }
   #|     info.textContent = `Editing tilemap ${map.name} (${map.width}x${map.height})`;
+  #|     mapWInput.value = String(map.width);
+  #|     mapHInput.value = String(map.height);
   #|     state.cell = Math.max(8, Math.floor(320 / Math.max(map.width, map.height)));
   #|     canvas.width = map.width * state.cell;
   #|     canvas.height = map.height * state.cell;
@@ -769,13 +867,57 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     }
   #|   };
   #|
+  #|   const encodeTilemapBlocks = () => {
+  #|     const blocks = [];
+  #|     for (const tm of state.tilemaps || []) {
+  #|       blocks.push(`tilemap ${tm.name} ${tm.width} ${tm.height}`);
+  #|       for (let y = 0; y < tm.height; y += 1) {
+  #|         const row = [];
+  #|         for (let x = 0; x < tm.width; x += 1) {
+  #|           const v = tm.tiles[y * tm.width + x];
+  #|           row.push(v < 0 ? "." : String(v));
+  #|         }
+  #|         blocks.push(row.join(" "));
+  #|       }
+  #|       blocks.push("end");
+  #|       blocks.push("");
+  #|     }
+  #|     if (blocks.length > 0 && blocks[blocks.length - 1] === "") blocks.pop();
+  #|     return blocks;
+  #|   };
+  #|
+  #|   const replaceTilemapBlocksInLines = (lines) => {
+  #|     const maps = state.tilemaps || [];
+  #|     const rendered = encodeTilemapBlocks();
+  #|     let first = -1;
+  #|     let last = -1;
+  #|     if (state.tilemapRange && Number.isInteger(state.tilemapRange.first) && Number.isInteger(state.tilemapRange.last)) {
+  #|       first = state.tilemapRange.first;
+  #|       last = state.tilemapRange.last;
+  #|     } else {
+  #|       for (const tm of maps) {
+  #|         if (Number.isInteger(tm.headerLine)) {
+  #|           if (first < 0 || tm.headerLine < first) first = tm.headerLine;
+  #|         }
+  #|         if (Number.isInteger(tm.endLine) && tm.endLine > last) last = tm.endLine;
+  #|       }
+  #|     }
+  #|     if (first < 0 || last < first) {
+  #|       if (rendered.length === 0) return lines;
+  #|       const out = lines.slice();
+  #|       if (out.length > 0 && out[out.length - 1].trim() !== "") out.push("");
+  #|       return out.concat(rendered);
+  #|     }
+  #|     const before = lines.slice(0, first);
+  #|     const after = lines.slice(last + 1);
+  #|     const out = before.concat(rendered);
+  #|     if (out.length > 0 && after.length > 0 && out[out.length - 1].trim() !== "") out.push("");
+  #|     return out.concat(after);
+  #|   };
+  #|
   #|   const writeTilemapToDsl = (andApply) => {
   #|     const map = activeMap();
   #|     if (!map) return;
-  #|     if (!Array.isArray(map.rowLineIndices) || map.rowLineIndices.length < map.height) {
-  #|       info.textContent = `Tilemap ${map.name} write failed: row index mismatch.`;
-  #|       return;
-  #|     }
   #|     const lines = state.lines.slice();
   #|     const ts = state.tileset;
   #|     if (
@@ -792,16 +934,11 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|         lines[lineIdx] = solid ? `tile ${nm} solid` : `tile ${nm}`;
   #|       }
   #|     }
-  #|     for (let y = 0; y < map.height; y += 1) {
-  #|       const row = [];
-  #|       for (let x = 0; x < map.width; x += 1) {
-  #|         const v = map.tiles[y * map.width + x];
-  #|         row.push(v < 0 ? "." : String(v));
-  #|       }
-  #|       lines[map.rowLineIndices[y]] = row.join(" ");
-  #|     }
-  #|     const text = lines.join("\n");
+  #|     const merged = replaceTilemapBlocksInLines(lines);
+  #|     const text = merged.join("\n");
   #|     textarea.value = text;
+  #|     setDirty(false);
+  #|     setFeedback(andApply ? "Tilemap written and applied." : "Tilemap written to DSL.");
   #|     refreshFromText();
   #|     if (andApply && globalThis.__moon8bit_apply_cb) {
   #|       globalThis.__moon8bit_apply_cb();
@@ -814,28 +951,16 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     state.palette = parsed.palette;
   #|     state.tileset = parsed.tileset;
   #|     state.tilemaps = parsed.tilemaps;
+  #|     state.tilemapRange = parsed.tilemapRange;
   #|     if (state.selectedMap >= state.tilemaps.length) state.selectedMap = 0;
   #|
-  #|     const before = mapSelect.value;
-  #|     mapSelect.innerHTML = "";
-  #|     state.tilemaps.forEach((tm, i) => {
-  #|       const opt = document.createElement("option");
-  #|       opt.value = String(i);
-  #|       opt.textContent = `${tm.name} (${tm.width}x${tm.height})`;
-  #|       mapSelect.appendChild(opt);
-  #|     });
-  #|     if (state.tilemaps.length > 0) {
-  #|       let idx = state.selectedMap;
-  #|       if (before !== "" && Number(before) >= 0 && Number(before) < state.tilemaps.length) {
-  #|         idx = Number(before);
-  #|       }
-  #|       state.selectedMap = idx;
-  #|       mapSelect.value = String(idx);
-  #|     }
+  #|     renderMapSelect(true);
   #|
   #|     renderBrushSelect();
   #|     refreshSolidUi();
   #|     renderCanvas();
+  #|     setDirty(false);
+  #|     setFeedback("Tilemap synced from DSL.");
   #|   };
   #|
   #|   const paintAt = (evt) => {
@@ -847,6 +972,80 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     if (x < 0 || y < 0 || x >= map.width || y >= map.height) return;
   #|     const erase = ((evt.buttons & 2) !== 0) || !!evt.shiftKey;
   #|     map.tiles[y * map.width + x] = erase ? -1 : state.selectedToken;
+  #|     setDirty(true);
+  #|     renderCanvas();
+  #|   };
+  #|
+  #|   const nextMapName = () => {
+  #|     const used = new Set((state.tilemaps || []).map((m) => String(m.name)));
+  #|     if (!used.has("stage")) return "stage";
+  #|     let i = 2;
+  #|     while (used.has(`stage_${i}`)) i += 1;
+  #|     return `stage_${i}`;
+  #|   };
+  #|   const readSizeInputs = () => {
+  #|     const w = Math.max(1, Math.min(256, Number(mapWInput.value) | 0));
+  #|     const h = Math.max(1, Math.min(256, Number(mapHInput.value) | 0));
+  #|     mapWInput.value = String(w);
+  #|     mapHInput.value = String(h);
+  #|     return { w, h };
+  #|   };
+  #|   const addMap = () => {
+  #|     const { w, h } = readSizeInputs();
+  #|     const tiles = Array(w * h).fill(-1);
+  #|     const name = nextMapName();
+  #|     const tm = {
+  #|       name,
+  #|       width: w,
+  #|       height: h,
+  #|       tiles,
+  #|       headerLine: -1,
+  #|       rowLineIndices: [],
+  #|       endLine: -1,
+  #|     };
+  #|     if (!Array.isArray(state.tilemaps)) state.tilemaps = [];
+  #|     state.tilemaps.push(tm);
+  #|     state.selectedMap = state.tilemaps.length - 1;
+  #|     setDirty(true);
+  #|     setFeedback(`Added tilemap ${name}.`);
+  #|     renderMapSelect(true);
+  #|     renderBrushSelect();
+  #|     refreshSolidUi();
+  #|     renderCanvas();
+  #|   };
+  #|   const deleteMap = () => {
+  #|     const maps = state.tilemaps || [];
+  #|     if (maps.length === 0) return;
+  #|     const idx = Math.max(0, Math.min(state.selectedMap, maps.length - 1));
+  #|     const removed = maps[idx].name;
+  #|     maps.splice(idx, 1);
+  #|     state.selectedMap = Math.max(0, Math.min(idx, maps.length - 1));
+  #|     setDirty(true);
+  #|     setFeedback(`Deleted tilemap ${removed}.`);
+  #|     renderMapSelect();
+  #|     renderBrushSelect();
+  #|     refreshSolidUi();
+  #|     renderCanvas();
+  #|   };
+  #|   const resizeMap = () => {
+  #|     const tm = activeMap();
+  #|     if (!tm) return;
+  #|     const { w, h } = readSizeInputs();
+  #|     if (w === tm.width && h === tm.height) return;
+  #|     const nextTiles = Array(w * h).fill(-1);
+  #|     const copyW = Math.min(w, tm.width);
+  #|     const copyH = Math.min(h, tm.height);
+  #|     for (let y = 0; y < copyH; y += 1) {
+  #|       for (let x = 0; x < copyW; x += 1) {
+  #|         nextTiles[y * w + x] = tm.tiles[y * tm.width + x];
+  #|       }
+  #|     }
+  #|     tm.width = w;
+  #|     tm.height = h;
+  #|     tm.tiles = nextTiles;
+  #|     setDirty(true);
+  #|     setFeedback(`Resized ${tm.name} to ${w}x${h}.`);
+  #|     renderMapSelect();
   #|     renderCanvas();
   #|   };
   #|
@@ -865,6 +1064,8 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       if (!ts || !Number.isInteger(id) || id < 0 || id >= ts.tile_count) return;
   #|       if (!Array.isArray(ts.tile_solid)) ts.tile_solid = [];
   #|       ts.tile_solid[id] = !!solidInput.checked;
+  #|       setDirty(true);
+  #|       setFeedback(`Tile ${id} solid=${ts.tile_solid[id] ? "on" : "off"}.`);
   #|       renderBrushSelect();
   #|       brushSelect.value = String(id);
   #|       state.selectedToken = id;
@@ -873,6 +1074,9 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     syncBtn.addEventListener("click", refreshFromText);
   #|     writeBtn.addEventListener("click", () => writeTilemapToDsl(false));
   #|     applyBtn.addEventListener("click", () => writeTilemapToDsl(true));
+  #|     addMapBtn.addEventListener("click", addMap);
+  #|     delMapBtn.addEventListener("click", deleteMap);
+  #|     resizeMapBtn.addEventListener("click", resizeMap);
   #|     textarea.addEventListener("input", refreshFromText);
   #|
   #|     let drawing = false;
