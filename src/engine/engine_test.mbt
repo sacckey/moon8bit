@@ -300,6 +300,55 @@ test "draw_tilemap uses transparent+clip behavior without wrapping" {
 }
 
 ///|
+test "draw_tilemap expanded clip boundaries (negative dst and partial viewport)" {
+  let pixels : Array[Int] = []
+  for _ in 0..<64 {
+    pixels.push(1)
+  }
+  for _ in 0..<64 {
+    pixels.push(2)
+  }
+  for _ in 0..<64 {
+    pixels.push(3)
+  }
+  for _ in 0..<64 {
+    pixels.push(4)
+  }
+  let ts = @model.Tiles::{
+    name: "main",
+    tile_count: 4,
+    tile_names: ["t0", "t1", "t2", "t3"],
+    tile_solid: [false, false, false, false],
+    pixels,
+  }
+  let tm = @model.Tilemap::{
+    name: "m2",
+    width: 2,
+    height: 2,
+    tiles: [0, 1, 2, 3],
+  }
+
+  let cross = @model.Frame::new(8, 8, fill=9)
+  @engine.draw_tilemap(cross, tm, ts, 0, 0, 8, 8, 4, 4)
+  assert_eq(cross.get_pixel(0, 0), Some(1))
+  assert_eq(cross.get_pixel(7, 0), Some(2))
+  assert_eq(cross.get_pixel(0, 7), Some(3))
+  assert_eq(cross.get_pixel(7, 7), Some(4))
+
+  let neg_dst = @model.Frame::new(8, 8, fill=9)
+  @engine.draw_tilemap(neg_dst, tm, ts, -4, -4, 8, 8, 0, 0)
+  assert_eq(neg_dst.get_pixel(0, 0), Some(1))
+  assert_eq(neg_dst.get_pixel(3, 3), Some(1))
+  assert_eq(neg_dst.get_pixel(4, 4), Some(9))
+
+  let partial = @model.Frame::new(8, 8, fill=9)
+  @engine.draw_tilemap(partial, tm, ts, 6, 6, 8, 8, 0, 0)
+  assert_eq(partial.get_pixel(6, 6), Some(1))
+  assert_eq(partial.get_pixel(7, 7), Some(1))
+  assert_eq(partial.get_pixel(0, 0), Some(9))
+}
+
+///|
 test "tile_solid_any_in_rect checks overlapped tiles in map-space pixels" {
   let solid_px : Array[Int] = []
   for _ in 0..<64 {
