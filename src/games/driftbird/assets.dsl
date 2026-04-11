@@ -56,9 +56,8 @@ sprite bird 8 8
 ........
 end
 
-# tileset (single): IDs are assigned in declaration order.
-tileset 1
-tile ground_surface solid
+# tile IDs are explicit (0..255)
+tile 0 ground_surface solid
 55555555
 55555555
 55555555

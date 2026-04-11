@@ -223,28 +223,44 @@ fn parse_sprite_block(
 }
 
 ///|
-fn parse_tileset_block(
+fn parse_tile_block(
   lines : Array[String],
   header : Array[String],
   start_line_index : Int,
-) -> Result[(Tileset, Int), DslError] {
+) -> Result[((Int, String, Bool, Array[Int]), Int), DslError] {
   let header_line = start_line_index + 1
-  if header.length() != 2 {
-    return err(header_line, "tileset header must be: tileset <tile_count>")
+  if header.length() < 2 {
+    return err(header_line, "tile header must be: tile <id> [name] [solid]")
   }
-  let name = "main"
-  let tile_count = match parse_int_token(header[1], header_line, "tile_count") {
+  let tile_id = match parse_int_token(header[1], header_line, "tile id") {
     Ok(v) => v
     Err(e) => return Err(e)
   }
-  if tile_count <= 0 {
-    return err(header_line, "tileset tile_count must be positive")
+  if tile_id < 0 || tile_id >= 256 {
+    return err(header_line, "tile id must be in 0..255")
   }
-  let tile_names : Array[String] = []
-  let tile_solid : Array[Bool] = []
+  let mut tile_name = "tile_\{tile_id.to_string()}"
+  let mut has_name = false
+  let mut tile_solid = false
+  if header.length() > 2 {
+    for token in header[2:] {
+      if token == "solid" {
+        tile_solid = true
+      } else if !has_name {
+        tile_name = token
+        has_name = true
+      } else {
+        return err(
+          header_line,
+          "unknown tile attribute: \{token} (supported: <name> and solid)",
+        )
+      }
+    }
+  }
+
   let pixels : Array[Int] = []
-  let mut tile_count_read = 0
   let mut cursor = start_line_index + 1
+  let mut row_count = 0
   while cursor < lines.length() {
     let raw = normalize_line(lines[cursor])
     let line_no = cursor + 1
@@ -253,91 +269,38 @@ fn parse_tileset_block(
       continue
     }
     if raw == "end" {
-      if tile_count_read != tile_count {
+      if row_count != 8 {
         return err(
           line_no,
-          "tileset \{name}: expected \{tile_count} tile blocks, got \{tile_count_read}",
+          "tile \{tile_id.to_string()} expects 8 rows, got \{row_count}",
         )
       }
-      return Ok(
-        (
-          Tileset::{ name, tile_count, tile_names, tile_solid, pixels },
-          cursor + 1,
-        ),
+      return Ok(((tile_id, tile_name, tile_solid, pixels), cursor + 1))
+    }
+    if row_count >= 8 {
+      return err(line_no, "tile \{tile_id.to_string()} has too many rows")
+    }
+    if raw.length() != 8 {
+      return err(
+        line_no,
+        "tile row must be exactly 8 characters wide, got \{raw.length()}",
       )
     }
-    if tile_count_read >= tile_count {
-      return err(line_no, "tileset \{name}: too many tile blocks")
-    }
-
-    let tile_header = split_ws(raw)
-    if tile_header.length() < 2 || tile_header[0] != "tile" {
-      return err(line_no, "tileset row must be: tile <name> [solid]")
-    }
-    tile_names.push(tile_header[1])
-    let mut solid = false
-    if tile_header.length() > 2 {
-      for token in tile_header[2:] {
-        if token == "solid" {
-          solid = true
-        } else {
+    for _, ch in raw {
+      let value = match decode_pixel_symbol(ch) {
+        Some(v) => v
+        None =>
           return err(
             line_no,
-            "unknown tile attribute: \{token} (supported: solid)",
+            "unsupported tile symbol: \{ch.to_string()} (use .,0-9,a-f)",
           )
-        }
       }
+      pixels.push(value)
     }
-    tile_solid.push(solid)
+    row_count += 1
     cursor += 1
-
-    let mut row_count = 0
-    while row_count < 8 {
-      if cursor >= lines.length() {
-        return err(header_line, "tileset block is missing `end`")
-      }
-      let row_raw = normalize_line(lines[cursor])
-      let row_line_no = cursor + 1
-      if is_ignorable_line(row_raw) {
-        cursor += 1
-        continue
-      }
-      if row_raw == "end" {
-        return err(
-          row_line_no,
-          "tileset tile '\{tile_header[1]}' expects 8 rows, got \{row_count}",
-        )
-      }
-      let row_tokens = split_ws(row_raw)
-      if row_tokens.length() >= 1 && row_tokens[0] == "tile" {
-        return err(
-          row_line_no,
-          "tileset tile '\{tile_header[1]}' expects 8 rows, got \{row_count}",
-        )
-      }
-      if row_raw.length() != 8 {
-        return err(
-          row_line_no,
-          "tileset row must be exactly 8 characters wide, got \{row_raw.length()}",
-        )
-      }
-      for _, ch in row_raw {
-        let value = match decode_pixel_symbol(ch) {
-          Some(v) => v
-          None =>
-            return err(
-              row_line_no,
-              "unsupported tileset symbol: \{ch.to_string()} (use .,0-9,a-f)",
-            )
-        }
-        pixels.push(value)
-      }
-      row_count += 1
-      cursor += 1
-    }
-    tile_count_read += 1
   }
-  err(header_line, "tileset block is missing `end`")
+  err(header_line, "tile block is missing `end`")
 }
 
 ///|
@@ -655,11 +618,21 @@ pub fn parse_assets_dsl(input : String) -> Result[AssetBundle, DslError] {
 
   let mut palette : Palette? = None
   let sprites : Array[Sprite] = []
-  let tilesets : Array[Tileset] = []
   let tilemaps : Array[Tilemap] = []
   let tilemap_header_lines : Array[Int] = []
   let sounds : Array[SoundDef] = []
   let bgms : Array[BgmDef] = []
+  let tile_count = 256
+  let tile_names : Array[String] = []
+  let tile_solid : Array[Bool] = []
+  let tile_pixels : Array[Int] = []
+  for i in 0..<tile_count {
+    tile_names.push("tile_\{i.to_string()}")
+    tile_solid.push(false)
+  }
+  for _ in 0..<(tile_count * 64) {
+    tile_pixels.push(-1)
+  }
 
   let mut cursor = 0
   while cursor < lines.length() {
@@ -695,15 +668,18 @@ pub fn parse_assets_dsl(input : String) -> Result[AssetBundle, DslError] {
         sprites.push(parsed.0)
         cursor = parsed.1
       }
-      "tileset" => {
-        if tilesets.length() > 0 {
-          return err(cursor + 1, "tileset can only be defined once")
-        }
-        let parsed = match parse_tileset_block(lines, tokens, cursor) {
+      "tile" => {
+        let parsed = match parse_tile_block(lines, tokens, cursor) {
           Ok(v) => v
           Err(e) => return Err(e)
         }
-        tilesets.push(parsed.0)
+        let tile_id = parsed.0.0
+        tile_names[tile_id] = parsed.0.1
+        tile_solid[tile_id] = parsed.0.2
+        let base = tile_id * 64
+        for i in 0..<64 {
+          tile_pixels[base + i] = parsed.0.3[i]
+        }
         cursor = parsed.1
       }
       "tilemap" => {
@@ -736,28 +712,19 @@ pub fn parse_assets_dsl(input : String) -> Result[AssetBundle, DslError] {
     }
   }
 
-  // Post-parse: validate tile IDs against the single tileset (if tilemaps exist).
-  if tilemaps.length() > 0 && tilesets.length() == 0 {
-    return err(
-      tilemap_header_lines[0],
-      "tilemap requires a preceding tileset block",
-    )
-  }
-  if tilesets.length() > 0 {
-    let ts = tilesets[0]
-    for i in 0..<tilemaps.length() {
-      let tm = tilemaps[i]
-      let header_line = tilemap_header_lines[i]
-      for j in 0..<tm.tiles.length() {
-        let tile_id = tm.tiles[j]
-        if tile_id != -1 && (tile_id < 0 || tile_id >= ts.tile_count) {
-          let row = j / tm.width
-          let col = j % tm.width
-          return err(
-            header_line,
-            "tilemap '\{tm.name}': tile ID \{tile_id} at (\{col}, \{row}) out of range (tileset has \{ts.tile_count} tiles)",
-          )
-        }
+  // Post-parse: validate tile IDs against fixed 0..255 tile IDs.
+  for i in 0..<tilemaps.length() {
+    let tm = tilemaps[i]
+    let header_line = tilemap_header_lines[i]
+    for j in 0..<tm.tiles.length() {
+      let tile_id = tm.tiles[j]
+      if tile_id != -1 && (tile_id < 0 || tile_id >= tile_count) {
+        let row = j / tm.width
+        let col = j % tm.width
+        return err(
+          header_line,
+          "tilemap '\{tm.name}': tile ID \{tile_id} at (\{col}, \{row}) out of range (valid: 0..255)",
+        )
       }
     }
   }
@@ -768,7 +735,15 @@ pub fn parse_assets_dsl(input : String) -> Result[AssetBundle, DslError] {
       None => palette_default()
     },
     sprites,
-    tilesets,
+    tilesets: [
+      Tileset::{
+        name: "main",
+        tile_count,
+        tile_names,
+        tile_solid,
+        pixels: tile_pixels,
+      },
+    ],
     tilemaps,
     sounds,
     bgms,

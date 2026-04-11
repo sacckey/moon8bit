@@ -3,8 +3,8 @@ test "parse assets dsl builds bundle with expected entries" {
   let dsl = [
     "palette simple", "color 0 #000000", "color 1 #ffffff", "end", "", "sprite hero 8 8",
     "1.......", "........", "........", "........", "........", "........", "........",
-    "........", "end", "", "tileset 2", "tile black", "00000000", "00000000", "00000000",
-    "00000000", "00000000", "00000000", "00000000", "00000000", "tile white", "11111111",
+    "........", "end", "", "tile 0 black", "00000000", "00000000", "00000000", "00000000",
+    "00000000", "00000000", "00000000", "00000000", "end", "tile 1 white", "11111111",
     "11111111", "11111111", "11111111", "11111111", "11111111", "11111111", "11111111",
     "end", "", "tilemap bg 2 1", "0 1", "end",
   ].join("\n")
@@ -31,8 +31,8 @@ test "json conversion and parse errors are reported" {
   assert_true(parse_err.message.find("unsupported sprite symbol") is Some(_))
 
   let ok_dsl = [
-    "tileset 1", "tile t0", "33333333", "33333333", "33333333", "33333333", "33333333",
-    "33333333", "33333333", "33333333", "end", "tilemap m 1 1", "0", "end",
+    "tile 0 t0", "33333333", "33333333", "33333333", "33333333", "33333333", "33333333",
+    "33333333", "33333333", "end", "tilemap m 1 1", "0", "end",
   ].join("\n")
   let json_text = match @assets.parse_assets_dsl_to_json_string(ok_dsl) {
     Ok(v) => v
@@ -260,10 +260,10 @@ test "multiple sound and bgm blocks in one DSL" {
 }
 
 ///|
-test "parse tileset block: pixel data and tile count" {
+test "parse tile block: pixel data and tile id mapping" {
   let row = "01234567"
   let rows8 = [row, row, row, row, row, row, row, row]
-  let dsl = (["tileset 2", "tile a"] + rows8 + ["tile b"] + rows8 + ["end"]).join(
+  let dsl = (["tile 0 a"] + rows8 + ["end", "tile 1 b"] + rows8 + ["end"]).join(
     "\n",
   )
   let bundle = match @assets.parse_assets_dsl(dsl) {
@@ -276,10 +276,12 @@ test "parse tileset block: pixel data and tile count" {
   assert_eq(bundle.tilesets.length(), 1)
   let ts = bundle.tilesets[0]
   assert_eq(ts.name, "main")
-  assert_eq(ts.tile_count, 2)
-  assert_eq(ts.tile_names, ["a", "b"])
-  assert_eq(ts.tile_solid, [false, false])
-  assert_eq(ts.pixels.length(), 128) // 2 * 8 * 8
+  assert_eq(ts.tile_count, 256)
+  assert_eq(ts.tile_names[0], "a")
+  assert_eq(ts.tile_names[1], "b")
+  assert_eq(ts.tile_solid[0], false)
+  assert_eq(ts.tile_solid[1], false)
+  assert_eq(ts.pixels.length(), 16384) // 256 * 8 * 8
   // tile 0 row 0: 01234567
   assert_eq(ts.pixels[0], 0)
   assert_eq(ts.pixels[7], 7)
@@ -291,9 +293,9 @@ test "parse tileset block: pixel data and tile count" {
 test "parse tileset block: solid attribute per tile" {
   let row = "00000000"
   let rows8 = [row, row, row, row, row, row, row, row]
-  let dsl = (["tileset 2", "tile floor solid"] +
+  let dsl = (["tile 0 floor solid"] +
   rows8 +
-  ["tile deco"] +
+  ["end", "tile 1 deco"] +
   rows8 +
   ["end"]).join("\n")
   let bundle = match @assets.parse_assets_dsl(dsl) {
@@ -301,8 +303,10 @@ test "parse tileset block: solid attribute per tile" {
     Err(_) => panic()
   }
   let ts = bundle.tilesets[0]
-  assert_eq(ts.tile_names, ["floor", "deco"])
-  assert_eq(ts.tile_solid, [true, false])
+  assert_eq(ts.tile_names[0], "floor")
+  assert_eq(ts.tile_names[1], "deco")
+  assert_eq(ts.tile_solid[0], true)
+  assert_eq(ts.tile_solid[1], false)
 }
 
 ///|
@@ -311,7 +315,7 @@ test "parse tilemap block: tile IDs" {
   let tile_rows = [
     tile_row, tile_row, tile_row, tile_row, tile_row, tile_row, tile_row, tile_row,
   ]
-  let dsl = (["tileset 1", "tile solid"] +
+  let dsl = (["tile 0 solid"] +
   tile_rows +
   ["end", "tilemap m 3 2", "0 0 0", "0 . 0", "end"]).join("\n")
   let bundle = match @assets.parse_assets_dsl(dsl) {
@@ -336,7 +340,7 @@ test "tilemap transparent cell must use dot token" {
   let tile_rows = [
     tile_row, tile_row, tile_row, tile_row, tile_row, tile_row, tile_row, tile_row,
   ]
-  let dsl = (["tileset 1", "tile solid"] +
+  let dsl = (["tile 0 solid"] +
   tile_rows +
   ["end", "tilemap m 2 1", "0 -1", "end"]).join("\n")
   let e = match @assets.parse_assets_dsl(dsl) {
@@ -347,13 +351,13 @@ test "tilemap transparent cell must use dot token" {
 }
 
 ///|
-test "tilemap validation: tileset block required" {
-  let dsl = ["tilemap m 2 1", "0 0", "end"].join("\n")
+test "tileset directive is removed (no legacy compatibility)" {
+  let dsl = ["tileset 1", "end"].join("\n")
   let e = match @assets.parse_assets_dsl(dsl) {
     Ok(_) => panic()
     Err(e) => e
   }
-  assert_true(e.message.find("requires a preceding tileset block") is Some(_))
+  assert_true(e.message.find("unknown directive: tileset") is Some(_))
 }
 
 ///|
@@ -362,9 +366,9 @@ test "tilemap validation: tile ID out of range is an error" {
   let tile_rows = [
     tile_row, tile_row, tile_row, tile_row, tile_row, tile_row, tile_row, tile_row,
   ]
-  let dsl = (["tileset 1", "tile solid"] +
+  let dsl = (["tile 0 solid"] +
   tile_rows +
-  ["end", "tilemap m 2 1", "0 5", "end"]).join("\n")
+  ["end", "tilemap m 2 1", "0 999", "end"]).join("\n")
   let e = match @assets.parse_assets_dsl(dsl) {
     Ok(_) => panic()
     Err(e) => e
@@ -379,7 +383,7 @@ test "tileset_tile_pixel returns correct color index" {
   let tile1 = "77777777"
   let rows0 = [tile0, tile0, tile0, tile0, tile0, tile0, tile0, tile0]
   let rows1 = [tile1, tile1, tile1, tile1, tile1, tile1, tile1, tile1]
-  let dsl = (["tileset 2", "tile low"] + rows0 + ["tile high"] + rows1 + ["end"]).join(
+  let dsl = (["tile 0 low"] + rows0 + ["end", "tile 1 high"] + rows1 + ["end"]).join(
     "\n",
   )
   let bundle = match @assets.parse_assets_dsl(dsl) {
@@ -391,7 +395,7 @@ test "tileset_tile_pixel returns correct color index" {
   assert_eq(@model.tileset_tile_pixel(ts, 0, 7, 7), Some(0))
   assert_eq(@model.tileset_tile_pixel(ts, 1, 0, 0), Some(7))
   assert_eq(@model.tileset_tile_pixel(ts, 1, 7, 7), Some(7))
-  assert_eq(@model.tileset_tile_pixel(ts, 2, 0, 0), None) // out of range
+  assert_eq(@model.tileset_tile_pixel(ts, 999, 0, 0), None) // out of range
 }
 
 ///|

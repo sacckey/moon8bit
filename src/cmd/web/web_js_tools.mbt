@@ -728,7 +728,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       lines: [],
   #|       palette: fallbackPalette.slice(),
   #|       tileset: null,
-  #|       tilesetRange: null,
+  #|       tileRange: null,
   #|       tilemaps: [],
   #|       tilemapRange: null,
   #|       errors: [],
@@ -774,9 +774,16 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   const parseDsl = (text) => {
   #|     const lines = String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
   #|     const palette = fallbackPalette.slice();
-  #|     let tileset = null;
-  #|     let tilesetRange = null;
+  #|     const tileset = {
+  #|       tile_count: 256,
+  #|       tile_names: Array.from({ length: 256 }, (_, i) => `tile_${i}`),
+  #|       tile_solid: Array(256).fill(false),
+  #|       tile_defined: Array(256).fill(false),
+  #|       pixels: Array(256 * 64).fill(-1),
+  #|     };
   #|     const tilemaps = [];
+  #|     let tileFirstHeader = -1;
+  #|     let tileLastEnd = -1;
   #|     let tilemapFirstHeader = -1;
   #|     let tilemapLastEnd = -1;
   #|     const errors = [];
@@ -799,20 +806,37 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|         continue;
   #|       }
   #|
-  #|       const tsm = t.match(/^tileset\s+(\d+)$/i);
-  #|       if (tsm) {
-  #|         const headerLine = i + 1;
-  #|         const tileCount = Number(tsm[1]) | 0;
-  #|         if (tileCount <= 0) {
-  #|           pushErr(headerLine, "tileset tile_count must be positive");
+  #|       if (/^tileset\s+/i.test(t)) {
+  #|         pushErr(i + 1, "tileset directive was removed; use top-level `tile <id> ... end` blocks");
+  #|         continue;
+  #|       }
+  #|
+  #|       const tileHeader = t.match(/^tile\s+(-?\d+)(?:\s+(.*))?$/i);
+  #|       if (tileHeader) {
+  #|         const headerIndex = i;
+  #|         const id = parseIntStrict(tileHeader[1]);
+  #|         if (!Number.isFinite(id) || id < 0 || id > 255) {
+  #|           pushErr(i + 1, "tile id must be in 0..255");
   #|         }
-  #|         const tile_names = [];
-  #|         const tile_solid = [];
-  #|         const tile_header_lines = [];
-  #|         const pixels = [];
-  #|         let tile_count_read = 0;
+  #|         let tileName = Number.isFinite(id) ? `tile_${id}` : "tile_0";
+  #|         let hasName = false;
+  #|         let solid = false;
+  #|         const attrs = (tileHeader[2] || "").split(/\s+/).filter(Boolean);
+  #|         for (const attr of attrs) {
+  #|           if (attr === "solid") {
+  #|             solid = true;
+  #|           } else if (!hasName) {
+  #|             tileName = attr;
+  #|             hasName = true;
+  #|           } else {
+  #|             pushErr(i + 1, `unknown tile attribute: ${attr} (supported: <name> and solid)`);
+  #|           }
+  #|         }
+  #|
   #|         let j = i + 1;
+  #|         let row = 0;
   #|         let endLine = -1;
+  #|         const pixels = Array(64).fill(-1);
   #|         while (j < lines.length) {
   #|           const raw = lines[j].trim();
   #|           if (isIgnorable(raw)) {
@@ -823,89 +847,41 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|             endLine = j;
   #|             break;
   #|           }
-  #|           if (tile_count_read >= tileCount) {
-  #|             pushErr(j + 1, `tileset main: too many tile blocks`);
+  #|           if (row >= 8) {
+  #|             pushErr(j + 1, `tile ${id} has too many rows`);
   #|             j += 1;
   #|             continue;
   #|           }
-  #|           const hm = raw.match(/^tile\s+([^\s]+)(?:\s+(.*))?$/i);
-  #|           if (!hm) {
-  #|             pushErr(j + 1, "tileset row must be: tile <name> [solid]");
-  #|             j += 1;
-  #|             continue;
+  #|           if (raw.length !== 8) {
+  #|             pushErr(j + 1, `tile row must be exactly 8 characters wide, got ${raw.length}`);
   #|           }
-  #|           tile_header_lines.push(j);
-  #|           const name = hm[1];
-  #|           const attrs = (hm[2] || "").split(/\s+/).filter(Boolean);
-  #|           let solid = false;
-  #|           for (const attr of attrs) {
-  #|             if (attr === "solid") solid = true;
-  #|             else pushErr(j + 1, `unknown tile attribute: ${attr} (supported: solid)`);
+  #|           for (let x = 0; x < 8; x += 1) {
+  #|             const ch = x < raw.length ? raw[x] : ".";
+  #|             if (!/[0-9a-fA-F.]/.test(ch)) {
+  #|               pushErr(j + 1, `unsupported tile symbol: ${ch} (use .,0-9,a-f)`);
+  #|             }
+  #|             pixels[row * 8 + x] = decodeSym(ch);
   #|           }
-  #|           tile_names.push(name);
-  #|           tile_solid.push(solid);
+  #|           row += 1;
   #|           j += 1;
-  #|           let row = 0;
-  #|           while (row < 8 && j < lines.length) {
-  #|             const rr = lines[j].trim();
-  #|             if (isIgnorable(rr)) {
-  #|               j += 1;
-  #|               continue;
-  #|             }
-  #|             if (rr === "end") {
-  #|               pushErr(j + 1, `tileset tile '${name}' expects 8 rows, got ${row}`);
-  #|               endLine = j;
-  #|               break;
-  #|             }
-  #|             if (/^tile\s+/i.test(rr)) {
-  #|               pushErr(j + 1, `tileset tile '${name}' expects 8 rows, got ${row}`);
-  #|               break;
-  #|             }
-  #|             if (rr.length !== 8) {
-  #|               pushErr(j + 1, `tileset row must be exactly 8 characters wide, got ${rr.length}`);
-  #|             }
-  #|             for (let x = 0; x < 8; x += 1) {
-  #|               const ch = x < rr.length ? rr[x] : ".";
-  #|               if (!/[0-9a-fA-F.]/.test(ch)) {
-  #|                 pushErr(j + 1, `unsupported tileset symbol: ${ch} (use .,0-9,a-f)`);
-  #|               }
-  #|               pixels.push(decodeSym(ch));
-  #|             }
-  #|             row += 1;
-  #|             j += 1;
-  #|           }
-  #|           while (row < 8) {
-  #|             for (let x = 0; x < 8; x += 1) pixels.push(-1);
-  #|             row += 1;
-  #|           }
-  #|           tile_count_read += 1;
-  #|           if (endLine >= 0) break;
   #|         }
   #|         if (endLine < 0) {
-  #|           pushErr(headerLine, "tileset block is missing `end`");
+  #|           pushErr(i + 1, "tile block is missing `end`");
   #|         } else {
   #|           i = endLine;
   #|         }
-  #|         if (tile_count_read !== tileCount) {
-  #|           pushErr((endLine >= 0 ? endLine + 1 : headerLine), `tileset main: expected ${tileCount} tile blocks, got ${tile_count_read}`);
+  #|         if (row !== 8) {
+  #|           pushErr((endLine >= 0 ? endLine + 1 : i + 1), `tile ${id} expects 8 rows, got ${row}`);
   #|         }
-  #|         while (tile_names.length < tileCount) {
-  #|           tile_names.push(`tile_${tile_names.length}`);
-  #|           tile_solid.push(false);
-  #|           tile_header_lines.push(-1);
-  #|           for (let k = 0; k < 64; k += 1) pixels.push(-1);
-  #|         }
-  #|         const expectedPixels = Math.max(0, tileCount) * 64;
-  #|         while (pixels.length < expectedPixels) pixels.push(-1);
-  #|         if (expectedPixels > 0) {
-  #|           tileset = {
-  #|             tile_count: tileCount,
-  #|             tile_names,
-  #|             tile_solid,
-  #|             tile_header_lines,
-  #|             pixels: pixels.slice(0, expectedPixels),
-  #|           };
-  #|           tilesetRange = endLine >= 0 ? { first: headerLine - 1, last: endLine } : { first: headerLine - 1, last: headerLine - 1 };
+  #|         if (Number.isFinite(id) && id >= 0 && id <= 255) {
+  #|           tileset.tile_names[id] = tileName;
+  #|           tileset.tile_solid[id] = !!solid;
+  #|           tileset.tile_defined[id] = true;
+  #|           const base = id * 64;
+  #|           for (let k = 0; k < 64; k += 1) tileset.pixels[base + k] = pixels[k];
+  #|           if (tileFirstHeader < 0 || headerIndex < tileFirstHeader) tileFirstHeader = headerIndex;
+  #|           const realEnd = endLine >= 0 ? endLine : headerIndex;
+  #|           if (realEnd > tileLastEnd) tileLastEnd = realEnd;
   #|         }
   #|         continue;
   #|       }
@@ -977,27 +953,24 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       }
   #|     }
   #|
-  #|     if (tilemaps.length > 0 && !tileset) {
-  #|       const firstHeader = tilemaps[0].headerLine + 1;
-  #|       pushErr(firstHeader, "tilemap requires a preceding tileset block");
-  #|     }
-  #|     if (tileset) {
-  #|       for (const tm of tilemaps) {
-  #|         for (let y = 0; y < tm.height; y += 1) {
-  #|           for (let x = 0; x < tm.width; x += 1) {
-  #|             const tile_id = tm.tiles[y * tm.width + x];
-  #|             if (tile_id >= tileset.tile_count) {
-  #|               pushErr(tm.headerLine + 1, `tilemap '${tm.name}': tile ID ${tile_id} at (${x}, ${y}) out of range (tileset has ${tileset.tile_count} tiles)`);
-  #|             }
+  #|     for (const tm of tilemaps) {
+  #|       for (let y = 0; y < tm.height; y += 1) {
+  #|         for (let x = 0; x < tm.width; x += 1) {
+  #|           const tile_id = tm.tiles[y * tm.width + x];
+  #|           if (tile_id < -1 || tile_id > 255) {
+  #|             pushErr(tm.headerLine + 1, `tilemap '${tm.name}': tile ID ${tile_id} at (${x}, ${y}) out of range (valid: 0..255 or .)`);
   #|           }
   #|         }
   #|       }
   #|     }
   #|
+  #|     const tileRange = (tileFirstHeader >= 0 && tileLastEnd >= tileFirstHeader)
+  #|       ? { first: tileFirstHeader, last: tileLastEnd }
+  #|       : null;
   #|     const tilemapRange = (tilemapFirstHeader >= 0 && tilemapLastEnd >= tilemapFirstHeader)
   #|       ? { first: tilemapFirstHeader, last: tilemapLastEnd }
   #|       : null;
-  #|     return { lines, palette, tileset, tilesetRange, tilemaps, tilemapRange, errors };
+  #|     return { lines, palette, tileset, tileRange, tilemaps, tilemapRange, errors };
   #|   };
   #|
   #|   const activeMap = () => {
@@ -1259,15 +1232,18 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     }
   #|   };
   #|
-  #|   const encodeTilesetBlock = () => {
+  #|   const encodeTileBlocks = () => {
   #|     const ts = state.tileset;
   #|     if (!ts || ts.tile_count <= 0) return [];
   #|     const out = [];
-  #|     out.push(`tileset ${ts.tile_count}`);
   #|     for (let i = 0; i < ts.tile_count; i += 1) {
+  #|       const defined = !!(ts.tile_defined && ts.tile_defined[i]);
+  #|       if (!defined) continue;
   #|       const nm = ts.tile_names && ts.tile_names[i] ? ts.tile_names[i] : `tile_${i}`;
+  #|       const defaultName = `tile_${i}`;
   #|       const solid = ts.tile_solid && ts.tile_solid[i] ? " solid" : "";
-  #|       out.push(`tile ${nm}${solid}`);
+  #|       const namePart = nm !== defaultName ? ` ${nm}` : "";
+  #|       out.push(`tile ${i}${namePart}${solid}`);
   #|       const base = i * 64;
   #|       for (let y = 0; y < 8; y += 1) {
   #|         let row = "";
@@ -1276,17 +1252,18 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|         }
   #|         out.push(row);
   #|       }
+  #|       out.push("end");
+  #|       out.push("");
   #|     }
-  #|     out.push("end");
+  #|     if (out.length > 0 && out[out.length - 1] === "") out.pop();
   #|     return out;
   #|   };
   #|
-  #|   const replaceTilesetBlockInLines = (lines) => {
-  #|     const rendered = encodeTilesetBlock();
-  #|     if (rendered.length <= 0) return lines.slice();
-  #|     if (state.tilesetRange && Number.isInteger(state.tilesetRange.first) && Number.isInteger(state.tilesetRange.last)) {
-  #|       const first = state.tilesetRange.first;
-  #|       const last = state.tilesetRange.last;
+  #|   const replaceTileBlocksInLines = (lines) => {
+  #|     const rendered = encodeTileBlocks();
+  #|     if (state.tileRange && Number.isInteger(state.tileRange.first) && Number.isInteger(state.tileRange.last)) {
+  #|       const first = state.tileRange.first;
+  #|       const last = state.tileRange.last;
   #|       if (first >= 0 && last >= first) {
   #|         const before = lines.slice(0, first);
   #|         const after = lines.slice(last + 1);
@@ -1294,6 +1271,30 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|         if (out.length > 0 && after.length > 0 && out[out.length - 1].trim() !== "") out.push("");
   #|         return out.concat(after);
   #|       }
+  #|     }
+  #|     let first = -1;
+  #|     let last = -1;
+  #|     for (let i = 0; i < lines.length; i += 1) {
+  #|       const raw = lines[i].trim();
+  #|       if (/^tile\s+-?\d+/i.test(raw)) {
+  #|         if (first < 0) first = i;
+  #|         let end = i;
+  #|         for (let j = i + 1; j < lines.length; j += 1) {
+  #|           const rr = lines[j].trim();
+  #|           if (rr === "end") {
+  #|             end = j;
+  #|             break;
+  #|           }
+  #|         }
+  #|         if (end > last) last = end;
+  #|       }
+  #|     }
+  #|     if (first >= 0 && last >= first) {
+  #|       const before = lines.slice(0, first);
+  #|       const after = lines.slice(last + 1);
+  #|       const out = before.concat(rendered);
+  #|       if (out.length > 0 && after.length > 0 && out[out.length - 1].trim() !== "") out.push("");
+  #|       return out.concat(after);
   #|     }
   #|     let insertAt = lines.length;
   #|     for (let i = 0; i < lines.length; i += 1) {
@@ -1368,9 +1369,9 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     }
   #|     const lines = state.lines.slice();
   #|     // Replace tilemap first: its stored line range is based on the original text.
-  #|     // Replacing tileset first can shift line numbers and leave trailing `end`.
+  #|     // Replacing tile blocks first can shift line numbers and leave trailing `end`.
   #|     const withTilemaps = replaceTilemapBlocksInLines(lines);
-  #|     const merged = replaceTilesetBlockInLines(withTilemaps);
+  #|     const merged = replaceTileBlocksInLines(withTilemaps);
   #|     const text = merged.join("\n");
   #|     textarea.value = text;
   #|     setDirty(false);
@@ -1386,7 +1387,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     state.lines = parsed.lines;
   #|     state.palette = parsed.palette;
   #|     state.tileset = parsed.tileset;
-  #|     state.tilesetRange = parsed.tilesetRange;
+  #|     state.tileRange = parsed.tileRange;
   #|     state.tilemaps = parsed.tilemaps;
   #|     state.tilemapRange = parsed.tilemapRange;
   #|     state.errors = parsed.errors || [];
@@ -1432,6 +1433,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     const erase = ((evt.buttons & 2) !== 0) || !!evt.shiftKey;
   #|     const base = id * 64;
   #|     ts.pixels[base + y * 8 + x] = erase ? -1 : state.selectedTileColor;
+  #|     ts.tile_defined[id] = true;
   #|     setDirty(true);
   #|     renderTileCanvas();
   #|     renderCanvas();
@@ -1512,26 +1514,27 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     renderCanvas();
   #|   };
   #|   const addTile = () => {
-  #|     if (!state.tileset) {
-  #|       state.tileset = {
-  #|         tile_count: 0,
-  #|         tile_names: [],
-  #|         tile_solid: [],
-  #|         tile_header_lines: [],
-  #|         pixels: [],
-  #|       };
-  #|       state.tilesetRange = null;
-  #|     }
   #|     const ts = state.tileset;
-  #|     const id = ts.tile_count | 0;
-  #|     ts.tile_count = id + 1;
-  #|     ts.tile_names.push(`tile_${id}`);
-  #|     ts.tile_solid.push(false);
-  #|     ts.tile_header_lines.push(-1);
-  #|     for (let i = 0; i < 64; i += 1) ts.pixels.push(-1);
+  #|     if (!ts) return;
+  #|     let id = -1;
+  #|     for (let i = 0; i < ts.tile_count; i += 1) {
+  #|       if (!ts.tile_defined[i]) {
+  #|         id = i;
+  #|         break;
+  #|       }
+  #|     }
+  #|     if (id < 0) {
+  #|       setFeedback("All 256 tile IDs are already defined.", true);
+  #|       return;
+  #|     }
+  #|     ts.tile_defined[id] = true;
+  #|     ts.tile_names[id] = `tile_${id}`;
+  #|     ts.tile_solid[id] = false;
+  #|     const base = id * 64;
+  #|     for (let i = 0; i < 64; i += 1) ts.pixels[base + i] = -1;
   #|     state.selectedToken = id;
   #|     setDirty(true);
-  #|     setFeedback(`Added tile ${id}.`);
+  #|     setFeedback(`Reserved tile ${id}.`);
   #|     renderTilePalette();
   #|     renderTileSelect();
   #|     renderBrushSelect();
@@ -1542,29 +1545,13 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     const ts = state.tileset;
   #|     const id = activeTileId();
   #|     if (!ts || id < 0) return;
-  #|     if (ts.tile_count <= 1) {
-  #|       setFeedback("Cannot delete the last tile.", true);
-  #|       return;
-  #|     }
-  #|     ts.tile_names.splice(id, 1);
-  #|     ts.tile_solid.splice(id, 1);
-  #|     ts.tile_header_lines.splice(id, 1);
-  #|     ts.pixels.splice(id * 64, 64);
-  #|     ts.tile_count -= 1;
-  #|     for (const tm of state.tilemaps || []) {
-  #|       for (let i = 0; i < tm.tiles.length; i += 1) {
-  #|         const v = tm.tiles[i];
-  #|         if (v === id) tm.tiles[i] = -1;
-  #|         else if (v > id) tm.tiles[i] = v - 1;
-  #|       }
-  #|     }
-  #|     if (state.selectedToken === id) {
-  #|       state.selectedToken = Math.max(0, Math.min(id, ts.tile_count - 1));
-  #|     } else if (state.selectedToken > id) {
-  #|       state.selectedToken -= 1;
-  #|     }
+  #|     ts.tile_names[id] = `tile_${id}`;
+  #|     ts.tile_solid[id] = false;
+  #|     ts.tile_defined[id] = false;
+  #|     const base = id * 64;
+  #|     for (let i = 0; i < 64; i += 1) ts.pixels[base + i] = -1;
   #|     setDirty(true);
-  #|     setFeedback(`Deleted tile ${id}.`);
+  #|     setFeedback(`Cleared tile ${id}.`);
   #|     renderTilePalette();
   #|     renderTileSelect();
   #|     renderBrushSelect();
@@ -1594,6 +1581,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       if (!ts || id < 0) return;
   #|       const next = String(tileNameInput.value || "").trim();
   #|       ts.tile_names[id] = next === "" ? `tile_${id}` : next;
+  #|       ts.tile_defined[id] = true;
   #|       setDirty(true);
   #|       setFeedback(`Tile ${id} name updated.`);
   #|       renderTileSelect();
@@ -1608,6 +1596,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       if (!ts || id < 0) return;
   #|       if (!Array.isArray(ts.tile_solid)) ts.tile_solid = [];
   #|       ts.tile_solid[id] = !!solidInput.checked;
+  #|       ts.tile_defined[id] = true;
   #|       setDirty(true);
   #|       setFeedback(`Tile ${id} solid=${ts.tile_solid[id] ? "on" : "off"}.`);
   #|       renderTileSelect();

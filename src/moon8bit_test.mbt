@@ -41,9 +41,8 @@ test "root facade exposes metadata and defaults" {
 test "assets cli output covers success and parse errors" {
   let ok = assets_cli_output(
     [
-      "tileset 1", "tile solid", "33333333", "33333333", "33333333", "33333333",
-      "33333333", "33333333", "33333333", "33333333", "end", "tilemap m 1 1", "0",
-      "end",
+      "tile 0 solid", "33333333", "33333333", "33333333", "33333333", "33333333",
+      "33333333", "33333333", "33333333", "end", "tilemap m 1 1", "0", "end",
     ].join("\n"),
   )
   assert_true(ok.find("\"tilemaps\"") is Some(_))
