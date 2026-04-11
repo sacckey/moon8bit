@@ -273,7 +273,7 @@ pub impl @engine.Game for DriftbirdGame with draw(self, _ctx) {
 
   match (tileset, @model.find_tilemap(self.bundle, "stage")) {
     (Some(ts), Some(tm)) =>
-      @engine.draw_tilemap(frame, tm, ts, 0, 0, w, h, self.terrain_offset, 0)
+      @engine.draw_tilemap(frame, tm, ts, 0, 0, w, h, 0, 0)
     _ => frame.draw_rect(0, ground_y, w, ground_rows, 3)
   }
 

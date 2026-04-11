@@ -255,7 +255,7 @@ pub fn spr(frame : Frame, sprite : @model.Sprite, x : Int, y : Int) -> Unit {
 ///
 /// - `dst_x/dst_y`: top-left corner in the frame where drawing starts
 /// - `dst_w/dst_h`: number of pixels to fill (clips at frame edges)
-/// - `cam_x/cam_y`: pixel offset into the tilemap (wraps with tilemap dimensions)
+/// - `cam_x/cam_y`: pixel offset into the tilemap (no wrap)
 ///
 /// Tile size is fixed at 8×8.  Tile ID -1 = transparent (skip).
 /// Transparent pixels within a tile (value -1) are also skipped.
@@ -281,11 +281,17 @@ pub fn draw_tilemap(
   let map_px_w = tilemap.width * tile_size
   let map_px_h = tilemap.height * tile_size
   for dy in 0..<dst_h {
-    let src_py = ((cam_y + dy) % map_px_h + map_px_h) % map_px_h
+    let src_py = cam_y + dy
+    if src_py < 0 || src_py >= map_px_h {
+      continue
+    }
     let ty = src_py / tile_size
     let tile_row = src_py % tile_size
     for dx in 0..<dst_w {
-      let src_px = ((cam_x + dx) % map_px_w + map_px_w) % map_px_w
+      let src_px = cam_x + dx
+      if src_px < 0 || src_px >= map_px_w {
+        continue
+      }
       let tx = src_px / tile_size
       let tile_col = src_px % tile_size
       let tile_id = match @model.tile_at(tilemap, tx, ty) {

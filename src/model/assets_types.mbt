@@ -25,7 +25,9 @@ pub(all) struct Tileset {
 
 ///|
 /// A tilemap stores a 2-D grid of tile IDs.
-/// tile ID -1 = empty (transparent).  All other IDs must be in [0, tile_count).
+/// Internally, tile ID -1 = empty (transparent).
+/// In DSL source, transparent cell is written as `.`.
+/// All other IDs must be in [0, tile_count).
 pub(all) struct Tilemap {
   name : String
   tileset : String

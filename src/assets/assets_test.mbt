@@ -294,7 +294,7 @@ test "parse tilemap block: tile IDs" {
   ]
   let dsl = (["tileset 1", "tile solid"] +
   tile_rows +
-  ["end", "tilemap m 3 2", "0 0 0", "0 -1 0", "end"]).join("\n")
+  ["end", "tilemap m 3 2", "0 0 0", "0 . 0", "end"]).join("\n")
   let bundle = match @assets.parse_assets_dsl(dsl) {
     Ok(v) => v
     Err(e) => {
@@ -309,6 +309,22 @@ test "parse tilemap block: tile IDs" {
   assert_eq(tm.width, 3)
   assert_eq(tm.height, 2)
   assert_eq(tm.tiles, [0, 0, 0, 0, -1, 0])
+}
+
+///|
+test "tilemap transparent cell must use dot token" {
+  let tile_row = "00000000"
+  let tile_rows = [
+    tile_row, tile_row, tile_row, tile_row, tile_row, tile_row, tile_row, tile_row,
+  ]
+  let dsl = (["tileset 1", "tile solid"] +
+  tile_rows +
+  ["end", "tilemap m 2 1", "0 -1", "end"]).join("\n")
+  let e = match @assets.parse_assets_dsl(dsl) {
+    Ok(_) => panic()
+    Err(e) => e
+  }
+  assert_true(e.message.find("transparent cell must be `.`") is Some(_))
 }
 
 ///|

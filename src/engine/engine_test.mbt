@@ -261,6 +261,42 @@ test "wrapper ui text helpers render ascii glyphs in 8x8 cells and scaling" {
 }
 
 ///|
+test "draw_tilemap uses transparent+clip behavior without wrapping" {
+  let pixels : Array[Int] = []
+  for _ in 0..<64 {
+    pixels.push(2)
+  }
+  let ts = @model.Tileset::{
+    name: "main",
+    tile_count: 1,
+    tile_names: ["solid"],
+    pixels,
+  }
+  let tm = @model.Tilemap::{
+    name: "m",
+    tileset: "main",
+    width: 1,
+    height: 1,
+    tiles: [0],
+  }
+
+  let frame = @model.Frame::new(8, 8, fill=-1)
+  @engine.draw_tilemap(frame, tm, ts, 0, 0, 8, 8, 0, 0)
+  assert_eq(frame.get_pixel(0, 0), Some(2))
+  assert_eq(frame.get_pixel(7, 7), Some(2))
+
+  let shifted = @model.Frame::new(8, 8, fill=-1)
+  @engine.draw_tilemap(shifted, tm, ts, 0, 0, 8, 8, 8, 0)
+  assert_eq(shifted.get_pixel(0, 0), Some(-1))
+  assert_eq(shifted.get_pixel(7, 7), Some(-1))
+
+  let wider = @model.Frame::new(16, 8, fill=9)
+  @engine.draw_tilemap(wider, tm, ts, 0, 0, 16, 8, 0, 0)
+  assert_eq(wider.get_pixel(3, 3), Some(2))
+  assert_eq(wider.get_pixel(12, 3), Some(9))
+}
+
+///|
 test "engine timeout command emits event once and can be consumed" {
   let cfg = @engine.config(4, 4)
   let initial = @engine.engine_init(TimeoutCommandGame::{ ticks: 0 }, cfg)

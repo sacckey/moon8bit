@@ -376,9 +376,19 @@ fn parse_tilemap_block(
       )
     }
     for token in row_tokens {
-      let value = match parse_int_token(token, line_no, "tile id") {
-        Ok(v) => v
-        Err(e) => return Err(e)
+      let value = if token == "." {
+        -1
+      } else {
+        let parsed = match parse_int_token(token, line_no, "tile id") {
+          Ok(v) => v
+          Err(e) => return Err(e)
+        }
+        if parsed == -1 {
+          return err(
+            line_no, "tilemap transparent cell must be `.` (do not use -1)",
+          )
+        }
+        parsed
       }
       tiles.push(value)
     }
