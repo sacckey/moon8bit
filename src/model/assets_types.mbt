@@ -20,6 +20,7 @@ pub(all) struct Tileset {
   name : String
   tile_count : Int
   tile_names : Array[String]
+  tile_solid : Array[Bool]
   pixels : Array[Int]
 } derive(Eq, Show)
 
@@ -141,6 +142,20 @@ pub fn tileset_tile_pixel(
   }
   let idx = tile_id * 64 + y * 8 + x
   Some(tileset.pixels[idx])
+}
+
+///|
+/// Whether tile `tile_id` is marked as solid in the tileset definition.
+/// Returns false for out-of-range IDs.
+pub fn tileset_tile_solid(tileset : Tileset, tile_id : Int) -> Bool {
+  if tile_id < 0 || tile_id >= tileset.tile_count {
+    return false
+  }
+  if tile_id < tileset.tile_solid.length() {
+    tileset.tile_solid[tile_id]
+  } else {
+    false
+  }
 }
 
 ///|

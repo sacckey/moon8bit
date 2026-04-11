@@ -39,6 +39,7 @@ pub fn tileset_to_json(tileset : Tileset) -> Json {
     "tile_names": Json::array(
       tileset.tile_names.map(name => Json::string(name)),
     ),
+    "tile_solid": Json::array(tileset.tile_solid.map(v => Json::boolean(v))),
     "pixels": int_array_json(tileset.pixels),
   }
   Json::object(obj)

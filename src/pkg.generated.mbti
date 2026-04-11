@@ -123,9 +123,15 @@ pub fn[T] take_events(@engine.EngineInstance[T]) -> (@engine.EngineInstance[T], 
 
 pub fn tile_at(@model.Tilemap, Int, Int) -> Int?
 
+pub fn tile_id_at_px(@model.Tilemap, Int, Int) -> Int?
+
+pub fn tile_solid_at_px(@model.Tilemap, @model.Tileset, Int, Int) -> Bool
+
 pub fn tilemap_to_json(@model.Tilemap) -> Json
 
 pub fn tileset_tile_pixel(@model.Tileset, Int, Int, Int) -> Int?
+
+pub fn tileset_tile_solid(@model.Tileset, Int) -> Bool
 
 pub fn ui_center_x(Int, Int) -> Int
 

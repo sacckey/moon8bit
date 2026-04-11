@@ -50,6 +50,8 @@ pub fn tile_at(Tilemap, Int, Int) -> Int?
 
 pub fn tileset_tile_pixel(Tileset, Int, Int, Int) -> Int?
 
+pub fn tileset_tile_solid(Tileset, Int) -> Bool
+
 // Errors
 
 // Types and methods
@@ -154,6 +156,7 @@ pub(all) struct Tileset {
   name : String
   tile_count : Int
   tile_names : Array[String]
+  tile_solid : Array[Bool]
   pixels : Array[Int]
 } derive(Eq, Show)
 

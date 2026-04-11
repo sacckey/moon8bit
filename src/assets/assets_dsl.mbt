@@ -241,6 +241,7 @@ fn parse_tileset_block(
     return err(header_line, "tileset tile_count must be positive")
   }
   let tile_names : Array[String] = []
+  let tile_solid : Array[Bool] = []
   let pixels : Array[Int] = []
   let mut tile_count_read = 0
   let mut cursor = start_line_index + 1
@@ -258,17 +259,36 @@ fn parse_tileset_block(
           "tileset \{name}: expected \{tile_count} tile blocks, got \{tile_count_read}",
         )
       }
-      return Ok((Tileset::{ name, tile_count, tile_names, pixels }, cursor + 1))
+      return Ok(
+        (
+          Tileset::{ name, tile_count, tile_names, tile_solid, pixels },
+          cursor + 1,
+        ),
+      )
     }
     if tile_count_read >= tile_count {
       return err(line_no, "tileset \{name}: too many tile blocks")
     }
 
     let tile_header = split_ws(raw)
-    if tile_header.length() != 2 || tile_header[0] != "tile" {
-      return err(line_no, "tileset row must be: tile <name>")
+    if tile_header.length() < 2 || tile_header[0] != "tile" {
+      return err(line_no, "tileset row must be: tile <name> [solid]")
     }
     tile_names.push(tile_header[1])
+    let mut solid = false
+    if tile_header.length() > 2 {
+      for token in tile_header[2:] {
+        if token == "solid" {
+          solid = true
+        } else {
+          return err(
+            line_no,
+            "unknown tile attribute: \{token} (supported: solid)",
+          )
+        }
+      }
+    }
+    tile_solid.push(solid)
     cursor += 1
 
     let mut row_count = 0

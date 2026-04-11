@@ -134,7 +134,17 @@ fn detect_hit(game : DriftbirdGame, config : @model.EngineConfig) -> String? {
   if game.bird_y < Double::from_int(play_y) {
     return Some("ceiling")
   }
-  if by + 3 > ground_y {
+  let ground_hit = match
+    (game.bundle.tilesets.length(), @model.find_tilemap(game.bundle, "stage")) {
+    (n, Some(tm)) if n > 0 => {
+      let ts = game.bundle.tilesets[0]
+      let foot_y = by + 3
+      @engine.tile_solid_at_px(tm, ts, game.bird_x, foot_y) ||
+      @engine.tile_solid_at_px(tm, ts, game.bird_x + 4, foot_y)
+    }
+    _ => by + 3 > ground_y
+  }
+  if ground_hit {
     return Some("ground")
   }
   @engine.aabb_hit_tag(game.bird_x, by, 5, 3, pipe_colliders(game, config))

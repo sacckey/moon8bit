@@ -82,6 +82,10 @@ pub fn[T : Game] step(EngineInstance[T], @model.InputState) -> (EngineInstance[T
 
 pub fn[T] take_events(EngineInstance[T]) -> (EngineInstance[T], Array[EngineEvent])
 
+pub fn tile_id_at_px(@model.Tilemap, Int, Int) -> Int?
+
+pub fn tile_solid_at_px(@model.Tilemap, @model.Tileset, Int, Int) -> Bool
+
 pub fn ui_center_x(Int, Int) -> Int
 
 pub fn ui_center_y(Int, Int) -> Int

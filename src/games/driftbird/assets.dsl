@@ -58,7 +58,7 @@ end
 
 # tileset (single): IDs are assigned in declaration order.
 tileset 1
-tile ground_surface
+tile ground_surface solid
 55555555
 55555555
 55555555
@@ -69,7 +69,7 @@ tile ground_surface
 33333333
 end
 
-# tile IDs: .=transparent, 0=ground_surface, 1=ground_under
+# tile IDs: .=transparent, 0=ground_surface
 tilemap stage 16 16
 . . . . . . . . . . . . . . . .
 . . . . . . . . . . . . . . . .

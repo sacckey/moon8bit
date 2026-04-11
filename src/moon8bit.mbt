@@ -76,6 +76,11 @@ pub fn tile_at(tilemap : Tilemap, x : Int, y : Int) -> Int? {
 }
 
 ///|
+pub fn tile_id_at_px(tilemap : Tilemap, px : Int, py : Int) -> Int? {
+  @engine.tile_id_at_px(tilemap, px, py)
+}
+
+///|
 pub fn find_sprite(bundle : AssetBundle, name : String) -> Sprite? {
   @model.find_sprite(bundle, name)
 }
@@ -98,6 +103,21 @@ pub fn tileset_tile_pixel(
   y : Int,
 ) -> Int? {
   @model.tileset_tile_pixel(tileset, tile_id, x, y)
+}
+
+///|
+pub fn tileset_tile_solid(tileset : Tileset, tile_id : Int) -> Bool {
+  @model.tileset_tile_solid(tileset, tile_id)
+}
+
+///|
+pub fn tile_solid_at_px(
+  tilemap : Tilemap,
+  tileset : Tileset,
+  px : Int,
+  py : Int,
+) -> Bool {
+  @engine.tile_solid_at_px(tilemap, tileset, px, py)
 }
 
 ///|

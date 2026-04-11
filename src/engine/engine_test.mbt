@@ -270,6 +270,7 @@ test "draw_tilemap uses transparent+clip behavior without wrapping" {
     name: "main",
     tile_count: 1,
     tile_names: ["solid"],
+    tile_solid: [true],
     pixels,
   }
   let tm = @model.Tilemap::{
@@ -284,6 +285,8 @@ test "draw_tilemap uses transparent+clip behavior without wrapping" {
   @engine.draw_tilemap(frame, tm, ts, 0, 0, 8, 8, 0, 0)
   assert_eq(frame.get_pixel(0, 0), Some(2))
   assert_eq(frame.get_pixel(7, 7), Some(2))
+  assert_true(@engine.tile_solid_at_px(tm, ts, 0, 0))
+  assert_true(!@engine.tile_solid_at_px(tm, ts, 10, 0))
 
   let shifted = @model.Frame::new(8, 8, fill=-1)
   @engine.draw_tilemap(shifted, tm, ts, 0, 0, 8, 8, 8, 0)

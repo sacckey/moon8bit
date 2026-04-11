@@ -251,6 +251,32 @@ pub fn spr(frame : Frame, sprite : @model.Sprite, x : Int, y : Int) -> Unit {
 }
 
 ///|
+/// Return the tile ID at pixel position (`px`,`py`) in map space.
+/// Returns `None` when out of map bounds.
+pub fn tile_id_at_px(tilemap : @model.Tilemap, px : Int, py : Int) -> Int? {
+  if px < 0 || py < 0 {
+    return None
+  }
+  let tx = px / 8
+  let ty = py / 8
+  @model.tile_at(tilemap, tx, ty)
+}
+
+///|
+/// Return true when pixel position (`px`,`py`) falls on a solid tile.
+pub fn tile_solid_at_px(
+  tilemap : @model.Tilemap,
+  tileset : @model.Tileset,
+  px : Int,
+  py : Int,
+) -> Bool {
+  match tile_id_at_px(tilemap, px, py) {
+    Some(tile_id) => @model.tileset_tile_solid(tileset, tile_id)
+    None => false
+  }
+}
+
+///|
 /// Draw a region of a tilemap onto the frame using inline tileset pixel data.
 ///
 /// - `dst_x/dst_y`: top-left corner in the frame where drawing starts

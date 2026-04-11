@@ -278,12 +278,31 @@ test "parse tileset block: pixel data and tile count" {
   assert_eq(ts.name, "main")
   assert_eq(ts.tile_count, 2)
   assert_eq(ts.tile_names, ["a", "b"])
+  assert_eq(ts.tile_solid, [false, false])
   assert_eq(ts.pixels.length(), 128) // 2 * 8 * 8
   // tile 0 row 0: 01234567
   assert_eq(ts.pixels[0], 0)
   assert_eq(ts.pixels[7], 7)
   // tile 1 starts at offset 64
   assert_eq(ts.pixels[64], 0)
+}
+
+///|
+test "parse tileset block: solid attribute per tile" {
+  let row = "00000000"
+  let rows8 = [row, row, row, row, row, row, row, row]
+  let dsl = (["tileset 2", "tile floor solid"] +
+  rows8 +
+  ["tile deco"] +
+  rows8 +
+  ["end"]).join("\n")
+  let bundle = match @assets.parse_assets_dsl(dsl) {
+    Ok(v) => v
+    Err(_) => panic()
+  }
+  let ts = bundle.tilesets[0]
+  assert_eq(ts.tile_names, ["floor", "deco"])
+  assert_eq(ts.tile_solid, [true, false])
 }
 
 ///|
