@@ -626,7 +626,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     solidInput.type = "checkbox";
   #|     solidWrap.appendChild(solidInput);
   #|     const txt = document.createElement("span");
-  #|     txt.textContent = "selected tile is solid";
+  #|     txt.textContent = "solid";
   #|     solidWrap.appendChild(txt);
   #|   }
   #|
