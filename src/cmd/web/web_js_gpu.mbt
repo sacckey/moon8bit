@@ -56,13 +56,14 @@ extern "js" fn web_init_gpu(width : Int, height : Int) -> Unit =
   #| (width, height) => {
   #|   const canvas = document.getElementById("moon8bit-canvas");
   #|   if (!canvas) return;
-  #|   const scale = Math.max(1, Number(globalThis.__moon8bit_scale || 1) | 0);
-  #|
   #|   const applyCanvasSize = (w, h) => {
   #|     if (canvas.width !== w) canvas.width = w;
   #|     if (canvas.height !== h) canvas.height = h;
-  #|     canvas.style.width = `${w * scale}px`;
-  #|     canvas.style.height = `${h * scale}px`;
+  #|     globalThis.__moon8bit_logical_width = w;
+  #|     globalThis.__moon8bit_logical_height = h;
+  #|     if (globalThis.__moon8bit_resize_canvas) {
+  #|       globalThis.__moon8bit_resize_canvas();
+  #|     }
   #|   };
   #|
   #|   const init2dFallback = () => {

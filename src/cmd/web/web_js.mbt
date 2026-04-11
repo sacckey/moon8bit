@@ -1,38 +1,59 @@
 ///|
 extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #| (width, height, scale) => {
+  #|   document.body.style.margin = "0";
+  #|   document.body.style.display = "block";
+  #|   document.body.style.placeContent = "initial";
+  #|   document.body.style.overflow = "hidden";
+  #|   document.body.style.background = "#0a1628";
+  #|   document.body.style.fontSize = "15px";
+  #|   document.body.style.fontFamily = "ui-monospace, SFMono-Regular, Menlo, monospace";
+  #|
   #|   let root = document.getElementById("moon8bit-root");
   #|   if (!root) {
   #|     root = document.createElement("div");
   #|     root.id = "moon8bit-root";
-  #|     root.style.display = "grid";
-  #|     root.style.gap = "8px";
-  #|     root.style.justifyItems = "center";
   #|     document.body.appendChild(root);
   #|   }
-  #|
-  #|   const viewWidth = width * scale;
+  #|   root.style.display = "flex";
+  #|   root.style.flexDirection = "column";
+  #|   root.style.width = "100%";
+  #|   root.style.boxSizing = "border-box";
+  #|   root.style.padding = "8px";
+  #|   root.style.gap = "8px";
+  #|   root.style.background = "#0a1628";
+  #|   const updateRootHeight = () => {
+  #|     const top = root.getBoundingClientRect().top + window.scrollY;
+  #|     root.style.height = `${window.innerHeight - top}px`;
+  #|   };
+  #|   updateRootHeight();
+  #|   if (!globalThis.__moon8bit_root_resize_bound) {
+  #|     window.addEventListener("resize", updateRootHeight);
+  #|     globalThis.__moon8bit_root_resize_bound = true;
+  #|   }
   #|
   #|   let tabButtons = document.getElementById("moon8bit-tab-buttons");
   #|   if (!tabButtons) {
   #|     tabButtons = document.createElement("div");
   #|     tabButtons.id = "moon8bit-tab-buttons";
-  #|     tabButtons.style.display = "flex";
-  #|     tabButtons.style.flexWrap = "wrap";
-  #|     tabButtons.style.gap = "6px";
-  #|     tabButtons.style.width = `${viewWidth}px`;
   #|     root.appendChild(tabButtons);
   #|   }
-  #|   tabButtons.style.width = `${viewWidth}px`;
+  #|   tabButtons.style.display = "flex";
+  #|   tabButtons.style.flexWrap = "wrap";
+  #|   tabButtons.style.gap = "6px";
+  #|   tabButtons.style.flexShrink = "0";
   #|
   #|   let tabPanels = document.getElementById("moon8bit-tab-panels");
   #|   if (!tabPanels) {
   #|     tabPanels = document.createElement("div");
   #|     tabPanels.id = "moon8bit-tab-panels";
-  #|     tabPanels.style.width = `${viewWidth}px`;
   #|     root.appendChild(tabPanels);
   #|   }
-  #|   tabPanels.style.width = `${viewWidth}px`;
+  #|   tabPanels.style.flex = "1";
+  #|   tabPanels.style.minHeight = "0";
+  #|   tabPanels.style.width = "100%";
+  #|   tabPanels.style.overflow = "hidden";
+  #|   tabPanels.style.position = "relative";
   #|
   #|   const tabs = [
   #|     { key: "game", label: "Game" },
@@ -52,7 +73,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       button = document.createElement("button");
   #|       button.id = buttonId;
   #|       button.textContent = label;
-  #|       button.style.padding = "6px 10px";
+  #|       button.style.padding = "8px 14px";
   #|       button.style.cursor = "pointer";
   #|       button.style.border = "1px solid #486581";
   #|       button.style.background = "#274060";
@@ -64,12 +85,19 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     if (!panel) {
   #|       panel = document.createElement("div");
   #|       panel.id = panelId;
-  #|       panel.style.display = "none";
-  #|       panel.style.width = "100%";
-  #|       panel.style.boxSizing = "border-box";
-  #|       panel.style.gap = "8px";
-  #|       panel.style.alignItems = "start";
   #|       tabPanels.appendChild(panel);
+  #|     }
+  #|     panel.style.display = "none";
+  #|     panel.style.position = "absolute";
+  #|     panel.style.inset = "0";
+  #|     panel.style.width = "100%";
+  #|     panel.style.height = "100%";
+  #|     panel.style.boxSizing = "border-box";
+  #|     panel.style.gap = "8px";
+  #|     panel.style.alignItems = "start";
+  #|     panel.style.overflowY = "auto";
+  #|     if (key !== "game") {
+  #|       panel.style.padding = "8px";
   #|     }
   #|     return { button, panel };
   #|   };
@@ -83,7 +111,13 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     const active = tabs.some((tab) => tab.key === key) ? key : "game";
   #|     tabs.forEach((tab) => {
   #|       const isActive = tab.key === active;
-  #|       tabUi[tab.key].panel.style.display = isActive ? "grid" : "none";
+  #|       const display = isActive ? (tab.key === "game" ? "flex" : "grid") : "none";
+  #|       tabUi[tab.key].panel.style.display = display;
+  #|       if (tab.key === "game") {
+  #|         tabUi[tab.key].panel.style.justifyContent = "center";
+  #|         tabUi[tab.key].panel.style.alignItems = "center";
+  #|         tabUi[tab.key].panel.style.flexDirection = "column";
+  #|       }
   #|       tabUi[tab.key].button.style.background = isActive ? "#2e8b57" : "#274060";
   #|       tabUi[tab.key].button.style.borderColor = isActive ? "#4aa96c" : "#486581";
   #|     });
@@ -110,11 +144,34 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   }
   #|   canvas.width = width;
   #|   canvas.height = height;
-  #|   canvas.style.width = `${viewWidth}px`;
-  #|   canvas.style.height = `${height * scale}px`;
   #|   canvas.style.imageRendering = "pixelated";
   #|   canvas.style.border = "2px solid #333";
+  #|   canvas.style.display = "block";
   #|   globalThis.__moon8bit_scale = scale;
+  #|   globalThis.__moon8bit_logical_width = width;
+  #|   globalThis.__moon8bit_logical_height = height;
+  #|
+  #|   const resizeCanvas = () => {
+  #|     const lw = globalThis.__moon8bit_logical_width;
+  #|     const lh = globalThis.__moon8bit_logical_height;
+  #|     const panelRect = tabPanels.getBoundingClientRect();
+  #|     // Scale by height first, then clamp so canvas fits horizontally too
+  #|     const s = Math.max(1, Math.min(
+  #|       Math.floor(panelRect.height / lh),
+  #|       Math.floor(panelRect.width / lw),
+  #|     ));
+  #|     canvas.style.width = `${lw * s}px`;
+  #|     canvas.style.height = `${lh * s}px`;
+  #|     globalThis.__moon8bit_scale = s;
+  #|   };
+  #|   globalThis.__moon8bit_resize_canvas = resizeCanvas;
+  #|   resizeCanvas();
+  #|   if (!globalThis.__moon8bit_resize_bound) {
+  #|     window.addEventListener("resize", () => {
+  #|       if (globalThis.__moon8bit_resize_canvas) globalThis.__moon8bit_resize_canvas();
+  #|     });
+  #|     globalThis.__moon8bit_resize_bound = true;
+  #|   }
   #|
   #|   let status = document.getElementById("moon8bit-status");
   #|   if (!status) {
@@ -221,13 +278,13 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     textarea = document.createElement("textarea");
   #|     textarea.id = "moon8bit-dsl-input";
   #|     textarea.style.width = "100%";
-  #|     textarea.style.height = "160px";
+  #|     textarea.style.height = "calc(100vh - 160px)";
   #|     textarea.style.background = "#0f1720";
   #|     textarea.style.color = "#d9e2ec";
   #|     textarea.style.border = "1px solid #334e68";
-  #|     textarea.style.padding = "8px";
+  #|     textarea.style.padding = "12px";
   #|     textarea.style.fontFamily = "ui-monospace, SFMono-Regular, Menlo, monospace";
-  #|     textarea.style.fontSize = "12px";
+  #|     textarea.style.fontSize = "15px";
   #|     textarea.spellcheck = false;
   #|     editor.appendChild(textarea);
   #|   }
@@ -248,7 +305,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     button = document.createElement("button");
   #|     button.id = "moon8bit-apply-btn";
   #|     button.textContent = "Apply DSL";
-  #|     button.style.padding = "6px 10px";
+  #|     button.style.padding = "8px 14px";
   #|     button.style.background = "#274060";
   #|     button.style.color = "#f6f7eb";
   #|     button.style.border = "1px solid #486581";
@@ -261,7 +318,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     exportButton = document.createElement("button");
   #|     exportButton.id = "moon8bit-export-btn";
   #|     exportButton.textContent = "Export DSL";
-  #|     exportButton.style.padding = "6px 10px";
+  #|     exportButton.style.padding = "8px 14px";
   #|     exportButton.style.background = "#486581";
   #|     exportButton.style.color = "#f6f7eb";
   #|     exportButton.style.border = "1px solid #627d98";
@@ -274,7 +331,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     importButton = document.createElement("button");
   #|     importButton.id = "moon8bit-import-btn";
   #|     importButton.textContent = "Import DSL";
-  #|     importButton.style.padding = "6px 10px";
+  #|     importButton.style.padding = "8px 14px";
   #|     importButton.style.background = "#486581";
   #|     importButton.style.color = "#f6f7eb";
   #|     importButton.style.border = "1px solid #627d98";
@@ -298,7 +355,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     hint.id = "moon8bit-editor-hint";
   #|     hint.textContent = "Ctrl/Cmd+Enter applies current DSL";
   #|     hint.style.fontFamily = "monospace";
-  #|     hint.style.fontSize = "12px";
+  #|     hint.style.fontSize = "15px";
   #|     hint.style.opacity = "0.8";
   #|     controls.appendChild(hint);
   #|   }
@@ -308,7 +365,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     feedback = document.createElement("div");
   #|     feedback.id = "moon8bit-editor-feedback";
   #|     feedback.style.fontFamily = "monospace";
-  #|     feedback.style.fontSize = "12px";
+  #|     feedback.style.fontSize = "15px";
   #|     feedback.style.color = "#9fb3c8";
   #|     editor.appendChild(feedback);
   #|   }
@@ -344,7 +401,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     soundHint.id = "moon8bit-sound-hint";
   #|     soundHint.textContent = "Tune BGM and SFX synth parameters, then test sounds directly.";
   #|     soundHint.style.fontFamily = "monospace";
-  #|     soundHint.style.fontSize = "12px";
+  #|     soundHint.style.fontSize = "15px";
   #|     soundHint.style.color = "#9fb3c8";
   #|     soundEditor.appendChild(soundHint);
   #|   }
@@ -366,7 +423,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       btn = document.createElement("button");
   #|       btn.id = id;
   #|       btn.textContent = label;
-  #|       btn.style.padding = "4px 8px";
+  #|       btn.style.padding = "6px 12px";
   #|       btn.style.background = bg;
   #|       btn.style.color = "#f6f7eb";
   #|       btn.style.border = `1px solid ${border}`;
@@ -399,7 +456,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     soundDirtyIndicator = document.createElement("span");
   #|     soundDirtyIndicator.id = "moon8bit-sound-dirty";
   #|     soundDirtyIndicator.style.fontFamily = "monospace";
-  #|     soundDirtyIndicator.style.fontSize = "12px";
+  #|     soundDirtyIndicator.style.fontSize = "15px";
   #|     soundDirtyIndicator.style.marginLeft = "4px";
   #|     soundDirtyIndicator.textContent = "Saved";
   #|     soundDirtyIndicator.style.color = "#7bd389";
@@ -445,7 +502,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     soundValidation = document.createElement("div");
   #|     soundValidation.id = "moon8bit-sound-validation";
   #|     soundValidation.style.fontFamily = "monospace";
-  #|     soundValidation.style.fontSize = "12px";
+  #|     soundValidation.style.fontSize = "15px";
   #|     soundValidation.style.color = "#7bd389";
   #|     soundValidation.style.whiteSpace = "pre-wrap";
   #|     soundValidation.style.lineHeight = "1.4";
@@ -1163,7 +1220,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       text.id = `${id}-label`;
   #|       text.textContent = label;
   #|       text.style.fontFamily = "monospace";
-  #|       text.style.fontSize = "12px";
+  #|       text.style.fontSize = "15px";
   #|       row.appendChild(text);
   #|     }
   #|
@@ -1183,7 +1240,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       valueText = document.createElement("div");
   #|       valueText.id = `${id}-value`;
   #|       valueText.style.fontFamily = "monospace";
-  #|       valueText.style.fontSize = "12px";
+  #|       valueText.style.fontSize = "15px";
   #|       row.appendChild(valueText);
   #|     }
   #|
@@ -1237,7 +1294,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     bgmSelectorLabel.id = "moon8bit-bgm-selector-label";
   #|     bgmSelectorLabel.textContent = "BGM:";
   #|     bgmSelectorLabel.style.fontFamily = "monospace";
-  #|     bgmSelectorLabel.style.fontSize = "12px";
+  #|     bgmSelectorLabel.style.fontSize = "15px";
   #|     bgmSelectorRow.appendChild(bgmSelectorLabel);
   #|   }
   #|   let bgmSelector = document.getElementById("moon8bit-bgm-selector");
@@ -1245,7 +1302,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     bgmSelector = document.createElement("select");
   #|     bgmSelector.id = "moon8bit-bgm-selector";
   #|     bgmSelector.style.fontFamily = "monospace";
-  #|     bgmSelector.style.fontSize = "12px";
+  #|     bgmSelector.style.fontSize = "15px";
   #|     bgmSelectorRow.appendChild(bgmSelector);
   #|   }
   #|   const refreshBgmSelector = () => {
@@ -1279,13 +1336,13 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     addBgmBtn = document.createElement("button");
   #|     addBgmBtn.id = "moon8bit-bgm-add-btn";
   #|     addBgmBtn.textContent = "+ BGM";
-  #|     addBgmBtn.style.padding = "2px 7px";
+  #|     addBgmBtn.style.padding = "5px 10px";
   #|     addBgmBtn.style.background = "#274060";
   #|     addBgmBtn.style.color = "#f6f7eb";
   #|     addBgmBtn.style.border = "1px solid #486581";
   #|     addBgmBtn.style.cursor = "pointer";
   #|     addBgmBtn.style.fontFamily = "monospace";
-  #|     addBgmBtn.style.fontSize = "12px";
+  #|     addBgmBtn.style.fontSize = "15px";
   #|     bgmSelectorRow.appendChild(addBgmBtn);
   #|   }
   #|   if (addBgmBtn.dataset.bound !== "1") {
@@ -1312,13 +1369,13 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     dupBgmBtn = document.createElement("button");
   #|     dupBgmBtn.id = "moon8bit-bgm-dup-btn";
   #|     dupBgmBtn.textContent = "Dup";
-  #|     dupBgmBtn.style.padding = "2px 7px";
+  #|     dupBgmBtn.style.padding = "5px 10px";
   #|     dupBgmBtn.style.background = "#274060";
   #|     dupBgmBtn.style.color = "#f6f7eb";
   #|     dupBgmBtn.style.border = "1px solid #486581";
   #|     dupBgmBtn.style.cursor = "pointer";
   #|     dupBgmBtn.style.fontFamily = "monospace";
-  #|     dupBgmBtn.style.fontSize = "12px";
+  #|     dupBgmBtn.style.fontSize = "15px";
   #|     bgmSelectorRow.appendChild(dupBgmBtn);
   #|   }
   #|   if (dupBgmBtn.dataset.bound !== "1") {
@@ -1348,13 +1405,13 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     delBgmBtn = document.createElement("button");
   #|     delBgmBtn.id = "moon8bit-bgm-del-btn";
   #|     delBgmBtn.textContent = "Del";
-  #|     delBgmBtn.style.padding = "2px 7px";
+  #|     delBgmBtn.style.padding = "5px 10px";
   #|     delBgmBtn.style.background = "#5c2b2b";
   #|     delBgmBtn.style.color = "#f6f7eb";
   #|     delBgmBtn.style.border = "1px solid #a04040";
   #|     delBgmBtn.style.cursor = "pointer";
   #|     delBgmBtn.style.fontFamily = "monospace";
-  #|     delBgmBtn.style.fontSize = "12px";
+  #|     delBgmBtn.style.fontSize = "15px";
   #|     bgmSelectorRow.appendChild(delBgmBtn);
   #|   }
   #|   if (delBgmBtn.dataset.bound !== "1") {
@@ -1398,12 +1455,12 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       const title = document.createElement("div");
   #|       title.textContent = label;
   #|       title.style.fontFamily = "monospace";
-  #|       title.style.fontSize = "12px";
+  #|       title.style.fontSize = "15px";
   #|       left.appendChild(title);
   #|       const hintEl = document.createElement("div");
   #|       hintEl.textContent = hint;
   #|       hintEl.style.fontFamily = "monospace";
-  #|       hintEl.style.fontSize = "10px";
+  #|       hintEl.style.fontSize = "13px";
   #|       hintEl.style.color = "#9fb3c8";
   #|       left.appendChild(hintEl);
   #|       row.appendChild(left);
@@ -1558,7 +1615,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       button = document.createElement("button");
   #|       button.id = id;
   #|       button.textContent = label;
-  #|       button.style.padding = "6px 10px";
+  #|       button.style.padding = "8px 14px";
   #|       button.style.background = "#274060";
   #|       button.style.color = "#f6f7eb";
   #|       button.style.border = "1px solid #486581";
@@ -1605,7 +1662,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     sfxLegend.id = "moon8bit-sound-sfx-legend";
   #|     sfxLegend.textContent = "SFX params: Wave=oscillator type, F0/F1=frequency(Hz), ATK/DEC=seconds, VOL=volume(0..1)";
   #|     sfxLegend.style.fontFamily = "monospace";
-  #|     sfxLegend.style.fontSize = "11px";
+  #|     sfxLegend.style.fontSize = "14px";
   #|     sfxLegend.style.color = "#9fb3c8";
   #|     soundEditor.insertBefore(sfxLegend, sfxGrid);
   #|   }
@@ -1627,7 +1684,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     const label = document.createElement("div");
   #|     label.textContent = title;
   #|     label.style.fontFamily = "monospace";
-  #|     label.style.fontSize = "12px";
+  #|     label.style.fontSize = "15px";
   #|     card.appendChild(label);
   #|
   #|     // Wave selector
@@ -1637,7 +1694,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     const waveLabel = document.createElement("div");
   #|     waveLabel.textContent = "Wave";
   #|     waveLabel.style.fontFamily = "monospace";
-  #|     waveLabel.style.fontSize = "10px";
+  #|     waveLabel.style.fontSize = "13px";
   #|     waveLabel.style.color = "#9fb3c8";
   #|     waveWrap.appendChild(waveLabel);
   #|     const waveSelect = document.createElement("select");
@@ -1650,7 +1707,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     waveSelect.value = String(profile.type || "square");
   #|     waveSelect.style.width = "100%";
   #|     waveSelect.style.boxSizing = "border-box";
-  #|     waveSelect.style.fontSize = "11px";
+  #|     waveSelect.style.fontSize = "14px";
   #|     waveSelect.addEventListener("change", () => {
   #|       profile.type = waveSelect.value;
   #|       markDirty();
@@ -1673,7 +1730,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       const fieldLabel = document.createElement("div");
   #|       fieldLabel.textContent = field.label;
   #|       fieldLabel.style.fontFamily = "monospace";
-  #|       fieldLabel.style.fontSize = "10px";
+  #|       fieldLabel.style.fontSize = "13px";
   #|       fieldLabel.style.color = "#9fb3c8";
   #|       fieldWrap.appendChild(fieldLabel);
   #|       const input = document.createElement("input");
@@ -1705,7 +1762,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|
   #|     const testBtn = document.createElement("button");
   #|     testBtn.textContent = "Test";
-  #|     testBtn.style.padding = "4px 8px";
+  #|     testBtn.style.padding = "6px 12px";
   #|     testBtn.style.background = "#486581";
   #|     testBtn.style.color = "#f6f7eb";
   #|     testBtn.style.border = "1px solid #627d98";
@@ -1717,7 +1774,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|
   #|     const delBtn = document.createElement("button");
   #|     delBtn.textContent = "Del";
-  #|     delBtn.style.padding = "4px 6px";
+  #|     delBtn.style.padding = "6px 10px";
   #|     delBtn.style.background = "#5c2b2b";
   #|     delBtn.style.color = "#f6f7eb";
   #|     delBtn.style.border = "1px solid #a04040";
@@ -1729,7 +1786,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|
   #|     const dupBtn = document.createElement("button");
   #|     dupBtn.textContent = "Dup";
-  #|     dupBtn.style.padding = "4px 6px";
+  #|     dupBtn.style.padding = "6px 10px";
   #|     dupBtn.style.background = "#274060";
   #|     dupBtn.style.color = "#f6f7eb";
   #|     dupBtn.style.border = "1px solid #486581";
@@ -1845,7 +1902,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     events.forEach((event) => {
   #|       const testBtn = document.createElement("button");
   #|       testBtn.textContent = `Test ${event.label}`;
-  #|       testBtn.style.padding = "6px 10px";
+  #|       testBtn.style.padding = "8px 14px";
   #|       testBtn.style.background = "#274060";
   #|       testBtn.style.color = "#f6f7eb";
   #|       testBtn.style.border = "1px solid #486581";
@@ -1861,7 +1918,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     // Add SFX button
   #|     const addSfxBtn = document.createElement("button");
   #|     addSfxBtn.textContent = "+ SFX";
-  #|     addSfxBtn.style.padding = "6px 10px";
+  #|     addSfxBtn.style.padding = "8px 14px";
   #|     addSfxBtn.style.background = "#1a3a1a";
   #|     addSfxBtn.style.color = "#f6f7eb";
   #|     addSfxBtn.style.border = "1px solid #4aa96c";
@@ -1884,7 +1941,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     if (events.length === 0) {
   #|       const note = document.createElement("div");
   #|       note.style.fontFamily = "monospace";
-  #|       note.style.fontSize = "12px";
+  #|       note.style.fontSize = "15px";
   #|       note.style.color = "#9fb3c8";
   #|       note.textContent = "No SFX defined. Click + SFX to add one.";
   #|       sfxGrid.appendChild(note);
