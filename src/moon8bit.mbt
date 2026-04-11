@@ -121,6 +121,18 @@ pub fn tile_solid_at_px(
 }
 
 ///|
+pub fn tile_solid_any_in_rect(
+  tilemap : Tilemap,
+  tileset : Tileset,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+) -> Bool {
+  @engine.tile_solid_any_in_rect(tilemap, tileset, x, y, w, h)
+}
+
+///|
 pub fn default_engine_config() -> EngineConfig {
   @model.default_engine_config()
 }

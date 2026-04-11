@@ -38,6 +38,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     { key: "game", label: "Game" },
   #|     { key: "dsl", label: "DSL" },
   #|     { key: "sprite", label: "Sprite" },
+  #|     { key: "tile", label: "Tile" },
   #|     { key: "tilemap", label: "Tilemap" },
   #|     { key: "sound", label: "Sound" },
   #|   ];

@@ -35,6 +35,7 @@
 - [x] Utility: `rand(seed, min, max)`, `clamp(value, min, max)`
 - [x] Browser editor: DSL apply/import/export loop
 - [x] Sprite editor GUI tab
+- [x] Tilemap editor GUI tab: tilemap paint/erase, `+ Map`/`Del Map`/`Resize`, tile `name`/`solid`, tile 8x8 pixel edit, dirty/feedback
 - [x] Sound editor GUI tab: SFX cards (wave/f0/f1/ATK/DEC/VOL + Test/Dup/Del), `+ SFX`, multi-BGM selector, `+ BGM`/`Dup`/`Del`, dirty indicator
 - [x] Per-game web pages under `site/g/<game_id>/`
 
@@ -47,7 +48,7 @@
 
 ## Engineering Quality
 
-- [x] 52 tests passing (`moon test`)
+- [x] 62 tests passing (`moon test`)
 - [x] Deterministic runtime: same inputs → same frames
 - [x] Collision regression tests (pipe hit / ground hit / score increment)
 - [x] Timer/event ordering tests
@@ -99,6 +100,7 @@ Expected:
 - [ ] DSL `Import` loads local file and applies
 - [ ] DSL `Export` downloads current editor text
 - [ ] Sprite tab can edit sprite pixels and write back to DSL
+- [ ] Tilemap tab can edit map/tile and write back to DSL
 - [ ] Sound tab can preview/tune BGM/SFX
 
 ## Final Submission Pass

@@ -120,6 +120,13 @@ Editor tabs:
 - `Game`: playable runtime
 - `DSL`: edit/apply/import/export `assets.dsl`
 - `Sprite`: pixel editor synced with DSL sprites
+- `Tilemap`: map + tile editor
+  - Map editor: brush paint/erase on tilemap canvas (`Shift` or right-drag = erase)
+  - Map management: `+ Map` / `Del Map` / `Resize` (`width` / `height` inputs)
+  - Tile metadata: selected tile `name` and `solid` checkbox
+  - Tile pixel editor: edit selected tile's 8x8 pixels with palette brush
+  - `Sync from DSL` / `Write to DSL` / `Write + Apply` round-trip
+  - Parse errors show line-numbered feedback in Tilemap tab
 - `Sound`: SFX/BGM editor
   - Per-SFX cards: wave select, frequency, envelope, volume — Test / Dup / Del per card
   - `+ SFX` button creates new SFX entries from the GUI (no DSL edit needed)

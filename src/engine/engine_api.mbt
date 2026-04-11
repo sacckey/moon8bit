@@ -277,6 +277,47 @@ pub fn tile_solid_at_px(
 }
 
 ///|
+fn floor_div_tile(px : Int) -> Int {
+  if px >= 0 {
+    px / 8
+  } else {
+    (px - 7) / 8
+  }
+}
+
+///|
+/// Return true when any pixel inside the rectangle intersects a solid tile.
+/// - Rect is expressed in map-space pixels.
+/// - Out-of-map area is treated as non-solid.
+/// - Empty or negative-size rect returns false.
+pub fn tile_solid_any_in_rect(
+  tilemap : @model.Tilemap,
+  tileset : @model.Tileset,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+) -> Bool {
+  if w <= 0 || h <= 0 {
+    return false
+  }
+  let left_tx = floor_div_tile(x)
+  let top_ty = floor_div_tile(y)
+  let right_tx = floor_div_tile(x + w - 1)
+  let bottom_ty = floor_div_tile(y + h - 1)
+  for ty in top_ty..<=bottom_ty {
+    for tx in left_tx..<=right_tx {
+      match @model.tile_at(tilemap, tx, ty) {
+        Some(tile_id) if @model.tileset_tile_solid(tileset, tile_id) =>
+          return true
+        _ => ()
+      }
+    }
+  }
+  false
+}
+
+///|
 /// Draw a region of a tilemap onto the frame using inline tileset pixel data.
 ///
 /// - `dst_x/dst_y`: top-left corner in the frame where drawing starts

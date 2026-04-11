@@ -85,3 +85,31 @@ test "root facade exposes collision helpers" {
   }
   assert_eq(hit.tag, "pipe_bottom")
 }
+
+///|
+test "root facade exposes tile_solid_any_in_rect helper" {
+  let solid_px : Array[Int] = []
+  for _ in 0..<64 {
+    solid_px.push(1)
+  }
+  let empty_px : Array[Int] = []
+  for _ in 0..<64 {
+    empty_px.push(2)
+  }
+  let ts = Tileset::{
+    name: "main",
+    tile_count: 2,
+    tile_names: ["solid", "empty"],
+    tile_solid: [true, false],
+    pixels: solid_px + empty_px,
+  }
+  let tm = Tilemap::{
+    name: "m",
+    tileset: "main",
+    width: 2,
+    height: 1,
+    tiles: [0, 1],
+  }
+  assert_true(tile_solid_any_in_rect(tm, ts, 0, 0, 8, 8))
+  assert_true(!tile_solid_any_in_rect(tm, ts, 8, 0, 8, 8))
+}
