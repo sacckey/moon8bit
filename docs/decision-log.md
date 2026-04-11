@@ -176,3 +176,15 @@ Use one short entry per decision to prevent direction drift.
   - `__moon8bit_render_fn` swap pattern allows async GPU init with immediate Canvas2D fallback.
   - `device.lost` detection falls back to Canvas2D silently.
   - Status bar displays `renderer=webgpu` or `renderer=2d` for observability.
+
+- Date: 2026-04-11
+- Decision: Freeze tilemap v1 core semantics before GUI implementation.
+- Why: GUI work was blocked by unresolved DSL/runtime ambiguity (transparent token, map size policy, draw/out-of-bounds behavior, and collision data ownership).
+- Impact:
+  - `tilemap` transparent cell is `.` (authoring syntax).
+  - Map size is variable and may be smaller or larger than screen.
+  - Rendering origin is top-left; v1 uses viewport cutout semantics.
+  - Out-of-bounds draw sampling is `transparent + clip` (no wrap/clamp/error).
+  - Collision semantics belong to `tile` definitions (tile-side ownership).
+  - Defaults locked: single `tileset`, `8x8` tile size, declaration-order IDs, required tile names.
+  - Detailed frozen spec is tracked in `docs/tilemap-spec.md`.
