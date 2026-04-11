@@ -249,3 +249,56 @@ pub fn rect(
 pub fn spr(frame : Frame, sprite : @model.Sprite, x : Int, y : Int) -> Unit {
   frame.blit(sprite, x, y)
 }
+
+///|
+/// Draw a region of a tilemap onto the frame using inline tileset pixel data.
+///
+/// - `dst_x/dst_y`: top-left corner in the frame where drawing starts
+/// - `dst_w/dst_h`: number of pixels to fill (clips at frame edges)
+/// - `cam_x/cam_y`: pixel offset into the tilemap (wraps with tilemap dimensions)
+///
+/// Tile size is fixed at 8×8.  Tile ID -1 = transparent (skip).
+/// Transparent pixels within a tile (value -1) are also skipped.
+pub fn draw_tilemap(
+  frame : Frame,
+  tilemap : @model.Tilemap,
+  tileset : @model.Tileset,
+  dst_x : Int,
+  dst_y : Int,
+  dst_w : Int,
+  dst_h : Int,
+  cam_x : Int,
+  cam_y : Int,
+) -> Unit {
+  if dst_w <= 0 ||
+    dst_h <= 0 ||
+    tilemap.width <= 0 ||
+    tilemap.height <= 0 ||
+    tileset.tile_count <= 0 {
+    return
+  }
+  let tile_size = 8
+  let map_px_w = tilemap.width * tile_size
+  let map_px_h = tilemap.height * tile_size
+  for dy in 0..<dst_h {
+    let src_py = ((cam_y + dy) % map_px_h + map_px_h) % map_px_h
+    let ty = src_py / tile_size
+    let tile_row = src_py % tile_size
+    for dx in 0..<dst_w {
+      let src_px = ((cam_x + dx) % map_px_w + map_px_w) % map_px_w
+      let tx = src_px / tile_size
+      let tile_col = src_px % tile_size
+      let tile_id = match @model.tile_at(tilemap, tx, ty) {
+        Some(id) => id
+        None => -1
+      }
+      if tile_id >= 0 {
+        match @model.tileset_tile_pixel(tileset, tile_id, tile_col, tile_row) {
+          Some(color) if color >= 0 =>
+            frame.set_pixel(dst_x + dx, dst_y + dy, color)
+          _ => ()
+        }
+      }
+    }
+  }
+}

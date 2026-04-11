@@ -20,6 +20,9 @@ let ground_rows = 2
 let ground_y : Int = game_h - ground_rows
 
 ///|
+let bg_color : Int = 1
+
+///|
 pub struct DriftbirdGame {
   bundle : @model.AssetBundle
   mut bird_x : Int
@@ -200,27 +203,6 @@ fn step_physics(
 }
 
 ///|
-fn draw_tilemap_rows(
-  frame : @model.Frame,
-  tilemap : @model.Tilemap,
-  scroll_x : Int,
-  start_y : Int,
-  w : Int,
-  rows : Int,
-) -> Unit {
-  for row in 0..<rows {
-    let ty = row % tilemap.height
-    for x in 0..<w {
-      let tx = (x + scroll_x) % tilemap.width
-      match @model.tile_at(tilemap, tx, ty) {
-        Some(c) => frame.set_pixel(x, start_y + row, c)
-        None => ()
-      }
-    }
-  }
-}
-
-///|
 pub impl @engine.Game for DriftbirdGame with init(self, config) {
   reset(self, config)
 }
@@ -282,25 +264,17 @@ pub impl @engine.Game for DriftbirdGame with update(self, ctx) {
 pub impl @engine.Game for DriftbirdGame with draw(self, _ctx) {
   let w = game_w
   let h = game_h
-  let sky_rows = ground_y - play_y
-  let frame = @model.Frame::new(w, h, fill=0)
-
-  match @model.find_tilemap(self.bundle, "bg") {
-    Some(tm) =>
-      draw_tilemap_rows(frame, tm, self.terrain_offset / 2, play_y, w, sky_rows)
-    None => ()
+  let frame = @model.Frame::new(w, h, fill=bg_color)
+  let tileset = if self.bundle.tilesets.length() > 0 {
+    Some(self.bundle.tilesets[0])
+  } else {
+    None
   }
-  match @model.find_tilemap(self.bundle, "ground") {
-    Some(tm) =>
-      draw_tilemap_rows(
-        frame,
-        tm,
-        self.terrain_offset,
-        ground_y,
-        w,
-        ground_rows,
-      )
-    None => frame.draw_rect(0, ground_y, w, ground_rows, 3)
+
+  match (tileset, @model.find_tilemap(self.bundle, "stage")) {
+    (Some(ts), Some(tm)) =>
+      @engine.draw_tilemap(frame, tm, ts, 0, 0, w, h, self.terrain_offset, 0)
+    _ => frame.draw_rect(0, ground_y, w, ground_rows, 3)
   }
 
   // pipes

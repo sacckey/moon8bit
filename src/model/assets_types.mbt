@@ -13,8 +13,22 @@ pub(all) struct Sprite {
 } derive(Eq, Show)
 
 ///|
+/// A tileset holds inline 8×8 pixel tiles stored row-major per tile.
+/// `pixels` length = tile_count × 64.  Pixel values follow the same
+/// convention as Sprite: -1 = transparent, 0–N = palette index.
+pub(all) struct Tileset {
+  name : String
+  tile_count : Int
+  tile_names : Array[String]
+  pixels : Array[Int]
+} derive(Eq, Show)
+
+///|
+/// A tilemap stores a 2-D grid of tile IDs.
+/// tile ID -1 = empty (transparent).  All other IDs must be in [0, tile_count).
 pub(all) struct Tilemap {
   name : String
+  tileset : String
   width : Int
   height : Int
   tiles : Array[Int]
@@ -45,6 +59,7 @@ pub(all) struct BgmDef {
 pub(all) struct AssetBundle {
   palette : Palette
   sprites : Array[Sprite]
+  tilesets : Array[Tileset]
   tilemaps : Array[Tilemap]
   sounds : Array[SoundDef]
   bgms : Array[BgmDef]
@@ -108,10 +123,39 @@ pub fn tile_at(tilemap : Tilemap, x : Int, y : Int) -> Int? {
 }
 
 ///|
+/// Get the pixel value at (x, y) within tile `tile_id` of a tileset.
+/// Returns None for out-of-range tile_id or coordinates.
+pub fn tileset_tile_pixel(
+  tileset : Tileset,
+  tile_id : Int,
+  x : Int,
+  y : Int,
+) -> Int? {
+  if tile_id < 0 || tile_id >= tileset.tile_count {
+    return None
+  }
+  if x < 0 || x >= 8 || y < 0 || y >= 8 {
+    return None
+  }
+  let idx = tile_id * 64 + y * 8 + x
+  Some(tileset.pixels[idx])
+}
+
+///|
 pub fn find_sprite(bundle : AssetBundle, name : String) -> Sprite? {
   for sprite in bundle.sprites {
     if sprite.name == name {
       return Some(sprite)
+    }
+  }
+  None
+}
+
+///|
+pub fn find_tileset(bundle : AssetBundle, name : String) -> Tileset? {
+  for ts in bundle.tilesets {
+    if ts.name == name {
+      return Some(ts)
     }
   }
   None

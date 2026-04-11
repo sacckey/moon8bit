@@ -5,6 +5,9 @@ pub type Palette = @model.Palette
 pub type Sprite = @model.Sprite
 
 ///|
+pub type Tileset = @model.Tileset
+
+///|
 pub type Tilemap = @model.Tilemap
 
 ///|
@@ -78,8 +81,23 @@ pub fn find_sprite(bundle : AssetBundle, name : String) -> Sprite? {
 }
 
 ///|
+pub fn find_tileset(bundle : AssetBundle, name : String) -> Tileset? {
+  @model.find_tileset(bundle, name)
+}
+
+///|
 pub fn find_tilemap(bundle : AssetBundle, name : String) -> Tilemap? {
   @model.find_tilemap(bundle, name)
+}
+
+///|
+pub fn tileset_tile_pixel(
+  tileset : Tileset,
+  tile_id : Int,
+  x : Int,
+  y : Int,
+) -> Int? {
+  @model.tileset_tile_pixel(tileset, tile_id, x, y)
 }
 
 ///|
@@ -474,6 +492,23 @@ pub fn rect(
 ///|
 pub fn spr(frame : Frame, sprite : Sprite, x : Int, y : Int) -> Unit {
   @engine.spr(frame, sprite, x, y)
+}
+
+///|
+pub fn draw_tilemap(
+  frame : Frame,
+  tilemap : Tilemap,
+  tileset : Tileset,
+  dst_x : Int,
+  dst_y : Int,
+  dst_w : Int,
+  dst_h : Int,
+  cam_x : Int,
+  cam_y : Int,
+) -> Unit {
+  @engine.draw_tilemap(
+    frame, tilemap, tileset, dst_x, dst_y, dst_w, dst_h, cam_x, cam_y,
+  )
 }
 
 ///|

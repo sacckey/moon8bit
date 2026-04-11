@@ -26,6 +26,8 @@ pub fn cls(@model.Frame, Int) -> Unit
 
 pub fn config(Int, Int, fps? : Int, scale? : Int, palette? : @model.Palette) -> @model.EngineConfig
 
+pub fn draw_tilemap(@model.Frame, @model.Tilemap, @model.Tileset, Int, Int, Int, Int, Int, Int) -> Unit
+
 pub fn emit(EngineEvent) -> EngineCommand
 
 pub fn[T] engine_events(EngineInstance[T]) -> Array[EngineEvent]

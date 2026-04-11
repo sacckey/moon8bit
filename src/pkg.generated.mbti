@@ -43,6 +43,8 @@ pub fn config(Int, Int, fps? : Int, scale? : Int, palette? : @model.Palette) -> 
 
 pub fn default_engine_config() -> @model.EngineConfig
 
+pub fn draw_tilemap(@model.Frame, @model.Tilemap, @model.Tileset, Int, Int, Int, Int, Int, Int) -> Unit
+
 pub fn emit(@engine.EngineEvent) -> @engine.EngineCommand
 
 pub fn[T] engine_events(@engine.EngineInstance[T]) -> Array[@engine.EngineEvent]
@@ -64,6 +66,8 @@ pub fn every(Int, Int) -> Bool
 pub fn find_sprite(@model.AssetBundle, String) -> @model.Sprite?
 
 pub fn find_tilemap(@model.AssetBundle, String) -> @model.Tilemap?
+
+pub fn find_tileset(@model.AssetBundle, String) -> @model.Tileset?
 
 pub fn[T] game_state(@engine.EngineInstance[T]) -> T
 
@@ -121,6 +125,8 @@ pub fn tile_at(@model.Tilemap, Int, Int) -> Int?
 
 pub fn tilemap_to_json(@model.Tilemap) -> Json
 
+pub fn tileset_tile_pixel(@model.Tileset, Int, Int, Int) -> Int?
+
 pub fn ui_center_x(Int, Int) -> Int
 
 pub fn ui_center_y(Int, Int) -> Int
@@ -171,6 +177,8 @@ pub using @model {type SoundDef}
 pub using @model {type Sprite}
 
 pub using @model {type Tilemap}
+
+pub using @model {type Tileset}
 
 pub using @engine {type UpdateContext}
 

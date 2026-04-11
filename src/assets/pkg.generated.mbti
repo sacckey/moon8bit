@@ -20,6 +20,8 @@ pub fn sprite_to_json(@model.Sprite) -> Json
 
 pub fn tilemap_to_json(@model.Tilemap) -> Json
 
+pub fn tileset_to_json(@model.Tileset) -> Json
+
 // Errors
 
 // Types and methods

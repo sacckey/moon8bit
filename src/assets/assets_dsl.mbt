@@ -8,6 +8,9 @@ type Palette = @model.Palette
 type Sprite = @model.Sprite
 
 ///|
+type Tileset = @model.Tileset
+
+///|
 type Tilemap = @model.Tilemap
 
 ///|
@@ -220,6 +223,104 @@ fn parse_sprite_block(
 }
 
 ///|
+fn parse_tileset_block(
+  lines : Array[String],
+  header : Array[String],
+  start_line_index : Int,
+) -> Result[(Tileset, Int), DslError] {
+  let header_line = start_line_index + 1
+  if header.length() != 2 {
+    return err(header_line, "tileset header must be: tileset <tile_count>")
+  }
+  let name = "main"
+  let tile_count = match parse_int_token(header[1], header_line, "tile_count") {
+    Ok(v) => v
+    Err(e) => return Err(e)
+  }
+  if tile_count <= 0 {
+    return err(header_line, "tileset tile_count must be positive")
+  }
+  let tile_names : Array[String] = []
+  let pixels : Array[Int] = []
+  let mut tile_count_read = 0
+  let mut cursor = start_line_index + 1
+  while cursor < lines.length() {
+    let raw = normalize_line(lines[cursor])
+    let line_no = cursor + 1
+    if is_ignorable_line(raw) {
+      cursor += 1
+      continue
+    }
+    if raw == "end" {
+      if tile_count_read != tile_count {
+        return err(
+          line_no,
+          "tileset \{name}: expected \{tile_count} tile blocks, got \{tile_count_read}",
+        )
+      }
+      return Ok((Tileset::{ name, tile_count, tile_names, pixels }, cursor + 1))
+    }
+    if tile_count_read >= tile_count {
+      return err(line_no, "tileset \{name}: too many tile blocks")
+    }
+
+    let tile_header = split_ws(raw)
+    if tile_header.length() != 2 || tile_header[0] != "tile" {
+      return err(line_no, "tileset row must be: tile <name>")
+    }
+    tile_names.push(tile_header[1])
+    cursor += 1
+
+    let mut row_count = 0
+    while row_count < 8 {
+      if cursor >= lines.length() {
+        return err(header_line, "tileset block is missing `end`")
+      }
+      let row_raw = normalize_line(lines[cursor])
+      let row_line_no = cursor + 1
+      if is_ignorable_line(row_raw) {
+        cursor += 1
+        continue
+      }
+      if row_raw == "end" {
+        return err(
+          row_line_no,
+          "tileset tile '\{tile_header[1]}' expects 8 rows, got \{row_count}",
+        )
+      }
+      let row_tokens = split_ws(row_raw)
+      if row_tokens.length() >= 1 && row_tokens[0] == "tile" {
+        return err(
+          row_line_no,
+          "tileset tile '\{tile_header[1]}' expects 8 rows, got \{row_count}",
+        )
+      }
+      if row_raw.length() != 8 {
+        return err(
+          row_line_no,
+          "tileset row must be exactly 8 characters wide, got \{row_raw.length()}",
+        )
+      }
+      for _, ch in row_raw {
+        let value = match decode_pixel_symbol(ch) {
+          Some(v) => v
+          None =>
+            return err(
+              row_line_no,
+              "unsupported tileset symbol: \{ch.to_string()} (use .,0-9,a-f)",
+            )
+        }
+        pixels.push(value)
+      }
+      row_count += 1
+      cursor += 1
+    }
+    tile_count_read += 1
+  }
+  err(header_line, "tileset block is missing `end`")
+}
+
+///|
 fn parse_tilemap_block(
   lines : Array[String],
   header : Array[String],
@@ -231,7 +332,7 @@ fn parse_tilemap_block(
       header_line, "tilemap header must be: tilemap <name> <width> <height>",
     )
   }
-
+  let name = header[1]
   let width = match parse_int_token(header[2], header_line, "tilemap width") {
     Ok(v) => v
     Err(e) => return Err(e)
@@ -240,15 +341,12 @@ fn parse_tilemap_block(
     Ok(v) => v
     Err(e) => return Err(e)
   }
-
   if width <= 0 || height <= 0 {
     return err(header_line, "tilemap width/height must be positive")
   }
-
   let tiles : Array[Int] = []
   let mut row_count = 0
   let mut cursor = start_line_index + 1
-
   while cursor < lines.length() {
     let raw = normalize_line(lines[cursor])
     let line_no = cursor + 1
@@ -260,18 +358,16 @@ fn parse_tilemap_block(
       if row_count != height {
         return err(
           line_no,
-          "tilemap \{header[1]} expects \{height} rows, got \{row_count}",
+          "tilemap \{name} expects \{height} rows, got \{row_count}",
         )
       }
       return Ok(
-        (Tilemap::{ name: header[1], width, height, tiles }, cursor + 1),
+        (Tilemap::{ name, tileset: "main", width, height, tiles }, cursor + 1),
       )
     }
-
     if row_count >= height {
       return err(line_no, "tilemap has too many rows")
     }
-
     let row_tokens = split_ws(raw)
     if row_tokens.length() != width {
       return err(
@@ -279,22 +375,16 @@ fn parse_tilemap_block(
         "tilemap row width mismatch: expected \{width}, got \{row_tokens.length()}",
       )
     }
-
     for token in row_tokens {
       let value = match parse_int_token(token, line_no, "tile id") {
         Ok(v) => v
         Err(e) => return Err(e)
       }
-      if value < 0 {
-        return err(line_no, "tile id must be >= 0")
-      }
       tiles.push(value)
     }
-
     row_count += 1
     cursor += 1
   }
-
   err(header_line, "tilemap block is missing `end`")
 }
 
@@ -535,7 +625,9 @@ pub fn parse_assets_dsl(input : String) -> Result[AssetBundle, DslError] {
 
   let mut palette : Palette? = None
   let sprites : Array[Sprite] = []
+  let tilesets : Array[Tileset] = []
   let tilemaps : Array[Tilemap] = []
+  let tilemap_header_lines : Array[Int] = []
   let sounds : Array[SoundDef] = []
   let bgms : Array[BgmDef] = []
 
@@ -573,12 +665,25 @@ pub fn parse_assets_dsl(input : String) -> Result[AssetBundle, DslError] {
         sprites.push(parsed.0)
         cursor = parsed.1
       }
+      "tileset" => {
+        if tilesets.length() > 0 {
+          return err(cursor + 1, "tileset can only be defined once")
+        }
+        let parsed = match parse_tileset_block(lines, tokens, cursor) {
+          Ok(v) => v
+          Err(e) => return Err(e)
+        }
+        tilesets.push(parsed.0)
+        cursor = parsed.1
+      }
       "tilemap" => {
+        let header_line = cursor + 1
         let parsed = match parse_tilemap_block(lines, tokens, cursor) {
           Ok(v) => v
           Err(e) => return Err(e)
         }
         tilemaps.push(parsed.0)
+        tilemap_header_lines.push(header_line)
         cursor = parsed.1
       }
       "sound" => {
@@ -601,12 +706,39 @@ pub fn parse_assets_dsl(input : String) -> Result[AssetBundle, DslError] {
     }
   }
 
+  // Post-parse: validate tile IDs against the single tileset (if tilemaps exist).
+  if tilemaps.length() > 0 && tilesets.length() == 0 {
+    return err(
+      tilemap_header_lines[0],
+      "tilemap requires a preceding tileset block",
+    )
+  }
+  if tilesets.length() > 0 {
+    let ts = tilesets[0]
+    for i in 0..<tilemaps.length() {
+      let tm = tilemaps[i]
+      let header_line = tilemap_header_lines[i]
+      for j in 0..<tm.tiles.length() {
+        let tile_id = tm.tiles[j]
+        if tile_id != -1 && (tile_id < 0 || tile_id >= ts.tile_count) {
+          let row = j / tm.width
+          let col = j % tm.width
+          return err(
+            header_line,
+            "tilemap '\{tm.name}': tile ID \{tile_id} at (\{col}, \{row}) out of range (tileset has \{ts.tile_count} tiles)",
+          )
+        }
+      }
+    }
+  }
+
   Ok(AssetBundle::{
     palette: match palette {
       Some(p) => p
       None => palette_default()
     },
     sprites,
+    tilesets,
     tilemaps,
     sounds,
     bgms,
