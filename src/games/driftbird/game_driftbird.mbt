@@ -134,15 +134,13 @@ fn detect_hit(game : DriftbirdGame, config : @model.EngineConfig) -> String? {
   if game.bird_y < Double::from_int(play_y) {
     return Some("ceiling")
   }
-  let ground_hit = match
-    (game.bundle.tilesets.length(), @model.find_tilemap(game.bundle, "stage")) {
-    (n, Some(tm)) if n > 0 => {
-      let ts = game.bundle.tilesets[0]
+  let ground_hit = match @model.find_tilemap(game.bundle, "stage") {
+    Some(tm) => {
       let foot_y = by + 3
-      @engine.tile_solid_at_px(tm, ts, game.bird_x, foot_y) ||
-      @engine.tile_solid_at_px(tm, ts, game.bird_x + 4, foot_y)
+      @engine.tile_solid_at_px(tm, game.bundle.tiles, game.bird_x, foot_y) ||
+      @engine.tile_solid_at_px(tm, game.bundle.tiles, game.bird_x + 4, foot_y)
     }
-    _ => by + 3 > ground_y
+    None => by + 3 > ground_y
   }
   if ground_hit {
     return Some("ground")
@@ -275,15 +273,9 @@ pub impl @engine.Game for DriftbirdGame with draw(self, _ctx) {
   let w = game_w
   let h = game_h
   let frame = @model.Frame::new(w, h, fill=bg_color)
-  let tileset = if self.bundle.tilesets.length() > 0 {
-    Some(self.bundle.tilesets[0])
-  } else {
-    None
-  }
-
-  match (tileset, @model.find_tilemap(self.bundle, "stage")) {
-    (Some(ts), Some(tm)) =>
-      @engine.draw_tilemap(frame, tm, ts, 0, 0, w, h, 0, 0)
+  match @model.find_tilemap(self.bundle, "stage") {
+    Some(tm) =>
+      @engine.draw_tilemap(frame, tm, self.bundle.tiles, 0, 0, w, h, 0, 0)
     _ => frame.draw_rect(0, ground_y, w, ground_rows, 3)
   }
 

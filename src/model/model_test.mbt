@@ -9,15 +9,21 @@ test "asset lookup helpers work on explicit bundle" {
   }
   let tilemap = @model.Tilemap::{
     name: "stage",
-    tileset: "main",
     width: 2,
     height: 1,
     tiles: [3, 4],
   }
+  let tiles = @model.Tiles::{
+    name: "main",
+    tile_count: 256,
+    tile_names: [],
+    tile_solid: [],
+    pixels: [],
+  }
   let bundle = @model.AssetBundle::{
     palette,
     sprites: [sprite],
-    tilesets: [],
+    tiles,
     tilemaps: [tilemap],
     sounds: [],
     bgms: [],

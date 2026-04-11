@@ -22,8 +22,6 @@ pub fn find_sprite(AssetBundle, String) -> Sprite?
 
 pub fn find_tilemap(AssetBundle, String) -> Tilemap?
 
-pub fn find_tileset(AssetBundle, String) -> Tileset?
-
 pub let input_none : InputState
 
 pub fn input_state(Array[String], Array[String], Array[String], pointer_x? : Int, pointer_y? : Int, pointer_down? : Bool, pointer_pressed? : Bool, pointer_released? : Bool) -> InputState
@@ -48,9 +46,9 @@ pub fn sprite_pixel(Sprite, Int, Int) -> Int?
 
 pub fn tile_at(Tilemap, Int, Int) -> Int?
 
-pub fn tileset_tile_pixel(Tileset, Int, Int, Int) -> Int?
+pub fn tile_pixel(Tiles, Int, Int, Int) -> Int?
 
-pub fn tileset_tile_solid(Tileset, Int) -> Bool
+pub fn tile_solid(Tiles, Int) -> Bool
 
 // Errors
 
@@ -58,7 +56,7 @@ pub fn tileset_tile_solid(Tileset, Int) -> Bool
 pub(all) struct AssetBundle {
   palette : Palette
   sprites : Array[Sprite]
-  tilesets : Array[Tileset]
+  tiles : Tiles
   tilemaps : Array[Tilemap]
   sounds : Array[SoundDef]
   bgms : Array[BgmDef]
@@ -146,13 +144,12 @@ pub(all) struct Sprite {
 
 pub(all) struct Tilemap {
   name : String
-  tileset : String
   width : Int
   height : Int
   tiles : Array[Int]
 } derive(Eq, Show)
 
-pub(all) struct Tileset {
+pub(all) struct Tiles {
   name : String
   tile_count : Int
   tile_names : Array[String]

@@ -13,10 +13,10 @@ pub(all) struct Sprite {
 } derive(Eq, Show)
 
 ///|
-/// A tileset holds inline 8×8 pixel tiles stored row-major per tile.
+/// Tile definitions hold inline 8×8 pixel tiles stored row-major per tile.
 /// `pixels` length = tile_count × 64.  Pixel values follow the same
 /// convention as Sprite: -1 = transparent, 0–N = palette index.
-pub(all) struct Tileset {
+pub(all) struct Tiles {
   name : String
   tile_count : Int
   tile_names : Array[String]
@@ -31,7 +31,6 @@ pub(all) struct Tileset {
 /// All other IDs must be in [0, tile_count).
 pub(all) struct Tilemap {
   name : String
-  tileset : String
   width : Int
   height : Int
   tiles : Array[Int]
@@ -62,7 +61,7 @@ pub(all) struct BgmDef {
 pub(all) struct AssetBundle {
   palette : Palette
   sprites : Array[Sprite]
-  tilesets : Array[Tileset]
+  tiles : Tiles
   tilemaps : Array[Tilemap]
   sounds : Array[SoundDef]
   bgms : Array[BgmDef]
@@ -126,33 +125,28 @@ pub fn tile_at(tilemap : Tilemap, x : Int, y : Int) -> Int? {
 }
 
 ///|
-/// Get the pixel value at (x, y) within tile `tile_id` of a tileset.
+/// Get the pixel value at (x, y) within tile `tile_id`.
 /// Returns None for out-of-range tile_id or coordinates.
-pub fn tileset_tile_pixel(
-  tileset : Tileset,
-  tile_id : Int,
-  x : Int,
-  y : Int,
-) -> Int? {
-  if tile_id < 0 || tile_id >= tileset.tile_count {
+pub fn tile_pixel(tiles : Tiles, tile_id : Int, x : Int, y : Int) -> Int? {
+  if tile_id < 0 || tile_id >= tiles.tile_count {
     return None
   }
   if x < 0 || x >= 8 || y < 0 || y >= 8 {
     return None
   }
   let idx = tile_id * 64 + y * 8 + x
-  Some(tileset.pixels[idx])
+  Some(tiles.pixels[idx])
 }
 
 ///|
-/// Whether tile `tile_id` is marked as solid in the tileset definition.
+/// Whether tile `tile_id` is marked as solid.
 /// Returns false for out-of-range IDs.
-pub fn tileset_tile_solid(tileset : Tileset, tile_id : Int) -> Bool {
-  if tile_id < 0 || tile_id >= tileset.tile_count {
+pub fn tile_solid(tiles : Tiles, tile_id : Int) -> Bool {
+  if tile_id < 0 || tile_id >= tiles.tile_count {
     return false
   }
-  if tile_id < tileset.tile_solid.length() {
-    tileset.tile_solid[tile_id]
+  if tile_id < tiles.tile_solid.length() {
+    tiles.tile_solid[tile_id]
   } else {
     false
   }
@@ -163,16 +157,6 @@ pub fn find_sprite(bundle : AssetBundle, name : String) -> Sprite? {
   for sprite in bundle.sprites {
     if sprite.name == name {
       return Some(sprite)
-    }
-  }
-  None
-}
-
-///|
-pub fn find_tileset(bundle : AssetBundle, name : String) -> Tileset? {
-  for ts in bundle.tilesets {
-    if ts.name == name {
-      return Some(ts)
     }
   }
   None

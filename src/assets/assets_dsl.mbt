@@ -8,7 +8,7 @@ type Palette = @model.Palette
 type Sprite = @model.Sprite
 
 ///|
-type Tileset = @model.Tileset
+type Tiles = @model.Tiles
 
 ///|
 type Tilemap = @model.Tilemap
@@ -344,9 +344,7 @@ fn parse_tilemap_block(
           "tilemap \{name} expects \{height} rows, got \{row_count}",
         )
       }
-      return Ok(
-        (Tilemap::{ name, tileset: "main", width, height, tiles }, cursor + 1),
-      )
+      return Ok((Tilemap::{ name, width, height, tiles }, cursor + 1))
     }
     if row_count >= height {
       return err(line_no, "tilemap has too many rows")
@@ -735,15 +733,13 @@ pub fn parse_assets_dsl(input : String) -> Result[AssetBundle, DslError] {
       None => palette_default()
     },
     sprites,
-    tilesets: [
-      Tileset::{
-        name: "main",
-        tile_count,
-        tile_names,
-        tile_solid,
-        pixels: tile_pixels,
-      },
-    ],
+    tiles: Tiles::{
+      name: "main",
+      tile_count,
+      tile_names,
+      tile_solid,
+      pixels: tile_pixels,
+    },
     tilemaps,
     sounds,
     bgms,

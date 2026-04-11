@@ -43,7 +43,7 @@ pub fn config(Int, Int, fps? : Int, scale? : Int, palette? : @model.Palette) -> 
 
 pub fn default_engine_config() -> @model.EngineConfig
 
-pub fn draw_tilemap(@model.Frame, @model.Tilemap, @model.Tileset, Int, Int, Int, Int, Int, Int) -> Unit
+pub fn draw_tilemap(@model.Frame, @model.Tilemap, @model.Tiles, Int, Int, Int, Int, Int, Int) -> Unit
 
 pub fn emit(@engine.EngineEvent) -> @engine.EngineCommand
 
@@ -66,8 +66,6 @@ pub fn every(Int, Int) -> Bool
 pub fn find_sprite(@model.AssetBundle, String) -> @model.Sprite?
 
 pub fn find_tilemap(@model.AssetBundle, String) -> @model.Tilemap?
-
-pub fn find_tileset(@model.AssetBundle, String) -> @model.Tileset?
 
 pub fn[T] game_state(@engine.EngineInstance[T]) -> T
 
@@ -125,15 +123,15 @@ pub fn tile_at(@model.Tilemap, Int, Int) -> Int?
 
 pub fn tile_id_at_px(@model.Tilemap, Int, Int) -> Int?
 
-pub fn tile_solid_any_in_rect(@model.Tilemap, @model.Tileset, Int, Int, Int, Int) -> Bool
+pub fn tile_pixel(@model.Tiles, Int, Int, Int) -> Int?
 
-pub fn tile_solid_at_px(@model.Tilemap, @model.Tileset, Int, Int) -> Bool
+pub fn tile_solid(@model.Tiles, Int) -> Bool
+
+pub fn tile_solid_any_in_rect(@model.Tilemap, @model.Tiles, Int, Int, Int, Int) -> Bool
+
+pub fn tile_solid_at_px(@model.Tilemap, @model.Tiles, Int, Int) -> Bool
 
 pub fn tilemap_to_json(@model.Tilemap) -> Json
-
-pub fn tileset_tile_pixel(@model.Tileset, Int, Int, Int) -> Int?
-
-pub fn tileset_tile_solid(@model.Tileset, Int) -> Bool
 
 pub fn ui_center_x(Int, Int) -> Int
 
@@ -186,7 +184,7 @@ pub using @model {type Sprite}
 
 pub using @model {type Tilemap}
 
-pub using @model {type Tileset}
+pub using @model {type Tiles}
 
 pub using @engine {type UpdateContext}
 

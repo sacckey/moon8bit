@@ -266,12 +266,12 @@ pub fn tile_id_at_px(tilemap : @model.Tilemap, px : Int, py : Int) -> Int? {
 /// Return true when pixel position (`px`,`py`) falls on a solid tile.
 pub fn tile_solid_at_px(
   tilemap : @model.Tilemap,
-  tileset : @model.Tileset,
+  tiles : @model.Tiles,
   px : Int,
   py : Int,
 ) -> Bool {
   match tile_id_at_px(tilemap, px, py) {
-    Some(tile_id) => @model.tileset_tile_solid(tileset, tile_id)
+    Some(tile_id) => @model.tile_solid(tiles, tile_id)
     None => false
   }
 }
@@ -292,7 +292,7 @@ fn floor_div_tile(px : Int) -> Int {
 /// - Empty or negative-size rect returns false.
 pub fn tile_solid_any_in_rect(
   tilemap : @model.Tilemap,
-  tileset : @model.Tileset,
+  tiles : @model.Tiles,
   x : Int,
   y : Int,
   w : Int,
@@ -308,8 +308,7 @@ pub fn tile_solid_any_in_rect(
   for ty in top_ty..<=bottom_ty {
     for tx in left_tx..<=right_tx {
       match @model.tile_at(tilemap, tx, ty) {
-        Some(tile_id) if @model.tileset_tile_solid(tileset, tile_id) =>
-          return true
+        Some(tile_id) if @model.tile_solid(tiles, tile_id) => return true
         _ => ()
       }
     }
@@ -318,7 +317,7 @@ pub fn tile_solid_any_in_rect(
 }
 
 ///|
-/// Draw a region of a tilemap onto the frame using inline tileset pixel data.
+/// Draw a region of a tilemap onto the frame using inline tile pixel data.
 ///
 /// - `dst_x/dst_y`: top-left corner in the frame where drawing starts
 /// - `dst_w/dst_h`: number of pixels to fill (clips at frame edges)
@@ -329,7 +328,7 @@ pub fn tile_solid_any_in_rect(
 pub fn draw_tilemap(
   frame : Frame,
   tilemap : @model.Tilemap,
-  tileset : @model.Tileset,
+  tiles : @model.Tiles,
   dst_x : Int,
   dst_y : Int,
   dst_w : Int,
@@ -341,7 +340,7 @@ pub fn draw_tilemap(
     dst_h <= 0 ||
     tilemap.width <= 0 ||
     tilemap.height <= 0 ||
-    tileset.tile_count <= 0 {
+    tiles.tile_count <= 0 {
     return
   }
   let tile_size = 8
@@ -366,7 +365,7 @@ pub fn draw_tilemap(
         None => -1
       }
       if tile_id >= 0 {
-        match @model.tileset_tile_pixel(tileset, tile_id, tile_col, tile_row) {
+        match @model.tile_pixel(tiles, tile_id, tile_col, tile_row) {
           Some(color) if color >= 0 =>
             frame.set_pixel(dst_x + dx, dst_y + dy, color)
           _ => ()

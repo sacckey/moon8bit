@@ -727,7 +727,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     globalThis.__moon8bit_tilemap_state = {
   #|       lines: [],
   #|       palette: fallbackPalette.slice(),
-  #|       tileset: null,
+  #|       tiles: null,
   #|       tileRange: null,
   #|       tilemaps: [],
   #|       tilemapRange: null,
@@ -774,7 +774,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   const parseDsl = (text) => {
   #|     const lines = String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
   #|     const palette = fallbackPalette.slice();
-  #|     const tileset = {
+  #|     const tiles = {
   #|       tile_count: 256,
   #|       tile_names: Array.from({ length: 256 }, (_, i) => `tile_${i}`),
   #|       tile_solid: Array(256).fill(false),
@@ -874,11 +874,11 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|           pushErr((endLine >= 0 ? endLine + 1 : i + 1), `tile ${id} expects 8 rows, got ${row}`);
   #|         }
   #|         if (Number.isFinite(id) && id >= 0 && id <= 255) {
-  #|           tileset.tile_names[id] = tileName;
-  #|           tileset.tile_solid[id] = !!solid;
-  #|           tileset.tile_defined[id] = true;
+  #|           tiles.tile_names[id] = tileName;
+  #|           tiles.tile_solid[id] = !!solid;
+  #|           tiles.tile_defined[id] = true;
   #|           const base = id * 64;
-  #|           for (let k = 0; k < 64; k += 1) tileset.pixels[base + k] = pixels[k];
+  #|           for (let k = 0; k < 64; k += 1) tiles.pixels[base + k] = pixels[k];
   #|           if (tileFirstHeader < 0 || headerIndex < tileFirstHeader) tileFirstHeader = headerIndex;
   #|           const realEnd = endLine >= 0 ? endLine : headerIndex;
   #|           if (realEnd > tileLastEnd) tileLastEnd = realEnd;
@@ -970,7 +970,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     const tilemapRange = (tilemapFirstHeader >= 0 && tilemapLastEnd >= tilemapFirstHeader)
   #|       ? { first: tilemapFirstHeader, last: tilemapLastEnd }
   #|       : null;
-  #|     return { lines, palette, tileset, tileRange, tilemaps, tilemapRange, errors };
+  #|     return { lines, palette, tiles, tileRange, tilemaps, tilemapRange, errors };
   #|   };
   #|
   #|   const activeMap = () => {
@@ -988,7 +988,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     transparent.textContent = ". (transparent)";
   #|     brushSelect.appendChild(transparent);
   #|
-  #|     const ts = state.tileset;
+  #|     const ts = state.tiles;
   #|     if (ts && ts.tile_count > 0) {
   #|       for (let i = 0; i < ts.tile_count; i += 1) {
   #|         const opt = document.createElement("option");
@@ -1014,7 +1014,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   const renderTileSelect = () => {
   #|     const before = tileSelect.value;
   #|     tileSelect.innerHTML = "";
-  #|     const ts = state.tileset;
+  #|     const ts = state.tiles;
   #|     if (ts && ts.tile_count > 0) {
   #|       for (let i = 0; i < ts.tile_count; i += 1) {
   #|         const opt = document.createElement("option");
@@ -1063,7 +1063,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   };
   #|
   #|   const activeTileId = () => {
-  #|     const ts = state.tileset;
+  #|     const ts = state.tiles;
   #|     const id = Number(tileSelect.value);
   #|     if (!ts || !Number.isInteger(id) || id < 0 || id >= ts.tile_count) return -1;
   #|     return id;
@@ -1113,7 +1113,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   };
   #|
   #|   const renderTileCanvas = () => {
-  #|     const ts = state.tileset;
+  #|     const ts = state.tiles;
   #|     const id = activeTileId();
   #|     const ctx = tileCanvas.getContext("2d");
   #|     if (!ctx || !ts || id < 0) {
@@ -1155,7 +1155,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   };
   #|
   #|   const refreshSolidUi = () => {
-  #|     const ts = state.tileset;
+  #|     const ts = state.tiles;
   #|     const id = activeTileId();
   #|     if (!ts || !Number.isInteger(id) || id < 0 || id >= ts.tile_count) {
   #|       tileSelect.disabled = true;
@@ -1217,7 +1217,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|         const px = x * state.cell;
   #|         const py = y * state.cell;
   #|         if (v >= 0) {
-  #|           drawTilePreview(ctx, state.tileset, v, px, py, state.cell);
+  #|           drawTilePreview(ctx, state.tiles, v, px, py, state.cell);
   #|         } else {
   #|           ctx.fillStyle = "#1f2a37";
   #|           ctx.fillRect(px, py, state.cell, state.cell);
@@ -1233,7 +1233,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   };
   #|
   #|   const encodeTileBlocks = () => {
-  #|     const ts = state.tileset;
+  #|     const ts = state.tiles;
   #|     if (!ts || ts.tile_count <= 0) return [];
   #|     const out = [];
   #|     for (let i = 0; i < ts.tile_count; i += 1) {
@@ -1386,7 +1386,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     const parsed = parseDsl(textarea.value);
   #|     state.lines = parsed.lines;
   #|     state.palette = parsed.palette;
-  #|     state.tileset = parsed.tileset;
+  #|     state.tiles = parsed.tiles;
   #|     state.tileRange = parsed.tileRange;
   #|     state.tilemaps = parsed.tilemaps;
   #|     state.tilemapRange = parsed.tilemapRange;
@@ -1423,7 +1423,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   };
   #|
   #|   const paintTileAt = (evt) => {
-  #|     const ts = state.tileset;
+  #|     const ts = state.tiles;
   #|     const id = activeTileId();
   #|     if (!ts || id < 0) return;
   #|     const rect = tileCanvas.getBoundingClientRect();
@@ -1514,7 +1514,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     renderCanvas();
   #|   };
   #|   const addTile = () => {
-  #|     const ts = state.tileset;
+  #|     const ts = state.tiles;
   #|     if (!ts) return;
   #|     let id = -1;
   #|     for (let i = 0; i < ts.tile_count; i += 1) {
@@ -1542,7 +1542,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     renderCanvas();
   #|   };
   #|   const deleteTile = () => {
-  #|     const ts = state.tileset;
+  #|     const ts = state.tiles;
   #|     const id = activeTileId();
   #|     if (!ts || id < 0) return;
   #|     ts.tile_names[id] = `tile_${id}`;
@@ -1576,7 +1576,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       refreshSolidUi();
   #|     });
   #|     tileNameInput.addEventListener("input", () => {
-  #|       const ts = state.tileset;
+  #|       const ts = state.tiles;
   #|       const id = activeTileId();
   #|       if (!ts || id < 0) return;
   #|       const next = String(tileNameInput.value || "").trim();
@@ -1591,7 +1591,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       refreshSolidUi();
   #|     });
   #|     solidInput.addEventListener("change", () => {
-  #|       const ts = state.tileset;
+  #|       const ts = state.tiles;
   #|       const id = activeTileId();
   #|       if (!ts || id < 0) return;
   #|       if (!Array.isArray(ts.tile_solid)) ts.tile_solid = [];

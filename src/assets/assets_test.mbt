@@ -273,8 +273,7 @@ test "parse tile block: pixel data and tile id mapping" {
       panic()
     }
   }
-  assert_eq(bundle.tilesets.length(), 1)
-  let ts = bundle.tilesets[0]
+  let ts = bundle.tiles
   assert_eq(ts.name, "main")
   assert_eq(ts.tile_count, 256)
   assert_eq(ts.tile_names[0], "a")
@@ -290,7 +289,7 @@ test "parse tile block: pixel data and tile id mapping" {
 }
 
 ///|
-test "parse tileset block: solid attribute per tile" {
+test "parse tile block: solid attribute per tile" {
   let row = "00000000"
   let rows8 = [row, row, row, row, row, row, row, row]
   let dsl = (["tile 0 floor solid"] +
@@ -302,7 +301,7 @@ test "parse tileset block: solid attribute per tile" {
     Ok(v) => v
     Err(_) => panic()
   }
-  let ts = bundle.tilesets[0]
+  let ts = bundle.tiles
   assert_eq(ts.tile_names[0], "floor")
   assert_eq(ts.tile_names[1], "deco")
   assert_eq(ts.tile_solid[0], true)
@@ -328,7 +327,6 @@ test "parse tilemap block: tile IDs" {
   assert_eq(bundle.tilemaps.length(), 1)
   let tm = bundle.tilemaps[0]
   assert_eq(tm.name, "m")
-  assert_eq(tm.tileset, "main")
   assert_eq(tm.width, 3)
   assert_eq(tm.height, 2)
   assert_eq(tm.tiles, [0, 0, 0, 0, -1, 0])
@@ -377,7 +375,7 @@ test "tilemap validation: tile ID out of range is an error" {
 }
 
 ///|
-test "tileset_tile_pixel returns correct color index" {
+test "tile_pixel returns correct color index" {
   // tile 0: all zeros, tile 1: all sevens
   let tile0 = "00000000"
   let tile1 = "77777777"
@@ -390,12 +388,12 @@ test "tileset_tile_pixel returns correct color index" {
     Ok(v) => v
     Err(_) => panic()
   }
-  let ts = bundle.tilesets[0]
-  assert_eq(@model.tileset_tile_pixel(ts, 0, 0, 0), Some(0))
-  assert_eq(@model.tileset_tile_pixel(ts, 0, 7, 7), Some(0))
-  assert_eq(@model.tileset_tile_pixel(ts, 1, 0, 0), Some(7))
-  assert_eq(@model.tileset_tile_pixel(ts, 1, 7, 7), Some(7))
-  assert_eq(@model.tileset_tile_pixel(ts, 999, 0, 0), None) // out of range
+  let ts = bundle.tiles
+  assert_eq(@model.tile_pixel(ts, 0, 0, 0), Some(0))
+  assert_eq(@model.tile_pixel(ts, 0, 7, 7), Some(0))
+  assert_eq(@model.tile_pixel(ts, 1, 0, 0), Some(7))
+  assert_eq(@model.tile_pixel(ts, 1, 7, 7), Some(7))
+  assert_eq(@model.tile_pixel(ts, 999, 0, 0), None) // out of range
 }
 
 ///|

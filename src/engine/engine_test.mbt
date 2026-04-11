@@ -266,20 +266,14 @@ test "draw_tilemap uses transparent+clip behavior without wrapping" {
   for _ in 0..<64 {
     pixels.push(2)
   }
-  let ts = @model.Tileset::{
+  let ts = @model.Tiles::{
     name: "main",
     tile_count: 1,
     tile_names: ["solid"],
     tile_solid: [true],
     pixels,
   }
-  let tm = @model.Tilemap::{
-    name: "m",
-    tileset: "main",
-    width: 1,
-    height: 1,
-    tiles: [0],
-  }
+  let tm = @model.Tilemap::{ name: "m", width: 1, height: 1, tiles: [0] }
 
   let frame = @model.Frame::new(8, 8, fill=-1)
   @engine.draw_tilemap(frame, tm, ts, 0, 0, 8, 8, 0, 0)
@@ -315,20 +309,14 @@ test "tile_solid_any_in_rect checks overlapped tiles in map-space pixels" {
   for _ in 0..<64 {
     empty_px.push(2)
   }
-  let ts = @model.Tileset::{
+  let ts = @model.Tiles::{
     name: "main",
     tile_count: 2,
     tile_names: ["solid", "empty"],
     tile_solid: [true, false],
     pixels: solid_px + empty_px,
   }
-  let tm = @model.Tilemap::{
-    name: "m",
-    tileset: "main",
-    width: 2,
-    height: 1,
-    tiles: [0, 1],
-  }
+  let tm = @model.Tilemap::{ name: "m", width: 2, height: 1, tiles: [0, 1] }
   assert_true(@engine.tile_solid_any_in_rect(tm, ts, 0, 0, 1, 1))
   assert_true(!@engine.tile_solid_any_in_rect(tm, ts, 8, 0, 8, 8))
   assert_true(@engine.tile_solid_any_in_rect(tm, ts, 7, 0, 2, 8))
