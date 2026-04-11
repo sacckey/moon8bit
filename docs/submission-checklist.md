@@ -4,7 +4,7 @@
 
 - Submission target: MoonBit SCC 2026
 - Deadline: 2026-04-21
-- Last updated: 2026-04-09
+- Last updated: 2026-04-11
 
 ## Stage 1 Gates
 
@@ -22,6 +22,7 @@
 
 - [x] Engine core: `init/update/draw` fixed-step runtime
 - [x] DSL v1: `palette`, `sprite`, `tilemap` with line-numbered diagnostics
+- [x] Tilemap v1 frozen spec documented (`docs/tilemap-spec.md`)
 - [x] CLI flow: DSL conversion and validation
 - [x] Web Canvas2D rendering path
 - [x] WebGPU rendering path with Canvas2D fallback
@@ -71,6 +72,7 @@
 - [x] `docs/decision-log.md`
 - [x] `docs/demo-script.md`
 - [x] `docs/north-star.md`
+- [x] `docs/tilemap-spec.md`
 
 ## Reproducibility Checks
 
