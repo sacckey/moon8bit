@@ -457,6 +457,28 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     row.appendChild(brushSelect);
   #|   }
   #|
+  #|   let solidWrap = document.getElementById("moon8bit-tilemap-solid-wrap");
+  #|   if (!solidWrap) {
+  #|     solidWrap = document.createElement("label");
+  #|     solidWrap.id = "moon8bit-tilemap-solid-wrap";
+  #|     solidWrap.style.display = "inline-flex";
+  #|     solidWrap.style.alignItems = "center";
+  #|     solidWrap.style.gap = "4px";
+  #|     solidWrap.style.fontFamily = "monospace";
+  #|     solidWrap.style.fontSize = "12px";
+  #|     row.appendChild(solidWrap);
+  #|   }
+  #|   let solidInput = document.getElementById("moon8bit-tilemap-solid");
+  #|   if (!solidInput) {
+  #|     solidInput = document.createElement("input");
+  #|     solidInput.id = "moon8bit-tilemap-solid";
+  #|     solidInput.type = "checkbox";
+  #|     solidWrap.appendChild(solidInput);
+  #|     const txt = document.createElement("span");
+  #|     txt.textContent = "selected tile is solid";
+  #|     solidWrap.appendChild(txt);
+  #|   }
+  #|
   #|   const ensureBtn = (id, label, bg, border) => {
   #|     let btn = document.getElementById(id);
   #|     if (!btn) {
@@ -552,6 +574,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|         const tileCount = Math.max(0, Number(tsm[1]) | 0);
   #|         const tile_names = [];
   #|         const tile_solid = [];
+  #|         const tile_header_lines = [];
   #|         const pixels = [];
   #|         let j = i + 1;
   #|         while (j < lines.length) {
@@ -569,6 +592,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|             j += 1;
   #|             continue;
   #|           }
+  #|           tile_header_lines.push(j);
   #|           const name = hm[1];
   #|           const attrs = (hm[2] || "").split(/\s+/).filter(Boolean);
   #|           tile_names.push(name);
@@ -595,7 +619,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|           }
   #|         }
   #|         if (tileCount > 0) {
-  #|           tileset = { tile_count: tileCount, tile_names, tile_solid, pixels };
+  #|           tileset = { tile_count: tileCount, tile_names, tile_solid, tile_header_lines, pixels };
   #|         }
   #|         continue;
   #|       }
@@ -680,6 +704,18 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     }
   #|   };
   #|
+  #|   const refreshSolidUi = () => {
+  #|     const ts = state.tileset;
+  #|     const id = Number(brushSelect.value);
+  #|     if (!ts || !Number.isInteger(id) || id < 0 || id >= ts.tile_count) {
+  #|       solidInput.checked = false;
+  #|       solidInput.disabled = true;
+  #|       return;
+  #|     }
+  #|     solidInput.disabled = false;
+  #|     solidInput.checked = !!(ts.tile_solid && ts.tile_solid[id]);
+  #|   };
+  #|
   #|   const drawTilePreview = (ctx, ts, tileId, px, py, cell) => {
   #|     if (!ts || tileId < 0) return;
   #|     const base = tileId * 64;
@@ -741,6 +777,21 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       return;
   #|     }
   #|     const lines = state.lines.slice();
+  #|     const ts = state.tileset;
+  #|     if (
+  #|       ts &&
+  #|       Array.isArray(ts.tile_header_lines) &&
+  #|       ts.tile_header_lines.length >= ts.tile_count &&
+  #|       Array.isArray(ts.tile_names)
+  #|     ) {
+  #|       for (let i = 0; i < ts.tile_count; i += 1) {
+  #|         const lineIdx = ts.tile_header_lines[i];
+  #|         if (lineIdx < 0 || lineIdx >= lines.length) continue;
+  #|         const nm = ts.tile_names[i] || `tile_${i}`;
+  #|         const solid = ts.tile_solid && ts.tile_solid[i];
+  #|         lines[lineIdx] = solid ? `tile ${nm} solid` : `tile ${nm}`;
+  #|       }
+  #|     }
   #|     for (let y = 0; y < map.height; y += 1) {
   #|       const row = [];
   #|       for (let x = 0; x < map.width; x += 1) {
@@ -783,6 +834,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     }
   #|
   #|     renderBrushSelect();
+  #|     refreshSolidUi();
   #|     renderCanvas();
   #|   };
   #|
@@ -805,6 +857,18 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     });
   #|     brushSelect.addEventListener("change", () => {
   #|       state.selectedToken = Number(brushSelect.value);
+  #|       refreshSolidUi();
+  #|     });
+  #|     solidInput.addEventListener("change", () => {
+  #|       const ts = state.tileset;
+  #|       const id = Number(brushSelect.value);
+  #|       if (!ts || !Number.isInteger(id) || id < 0 || id >= ts.tile_count) return;
+  #|       if (!Array.isArray(ts.tile_solid)) ts.tile_solid = [];
+  #|       ts.tile_solid[id] = !!solidInput.checked;
+  #|       renderBrushSelect();
+  #|       brushSelect.value = String(id);
+  #|       state.selectedToken = id;
+  #|       refreshSolidUi();
   #|     });
   #|     syncBtn.addEventListener("click", refreshFromText);
   #|     writeBtn.addEventListener("click", () => writeTilemapToDsl(false));
