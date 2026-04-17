@@ -915,9 +915,13 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       dirty: false,
   #|       cell: 16,
   #|       tileCell: 20,
+  #|       tileClipboard: null,
   #|     };
   #|   }
   #|   const state = globalThis.__moon8bit_tilemap_state;
+  #|   if (!("tileClipboard" in state)) {
+  #|     state.tileClipboard = null;
+  #|   }
   #|
   #|   const setDirty = (v) => {
   #|     state.dirty = !!v;
@@ -1891,6 +1895,51 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     renderCanvas();
   #|   };
   #|
+  #|   const copySelectedTileToClipboard = () => {
+  #|     const ts = state.tiles;
+  #|     const id = activeTileId();
+  #|     if (!ts || id < 0) {
+  #|       setFeedback("Copy failed: no tile selected.", true);
+  #|       return false;
+  #|     }
+  #|     const base = id * 64;
+  #|     const pixels = Array(64).fill(-1);
+  #|     for (let i = 0; i < 64; i += 1) {
+  #|       const v = ts.pixels[base + i];
+  #|       pixels[i] = Number.isInteger(v) ? v : -1;
+  #|     }
+  #|     state.tileClipboard = { pixels };
+  #|     setFeedback(`Copied tile ${id}.`);
+  #|     return true;
+  #|   };
+  #|
+  #|   const pasteClipboardToSelectedTile = () => {
+  #|     const ts = state.tiles;
+  #|     const id = activeTileId();
+  #|     if (!ts || id < 0) {
+  #|       setFeedback("Paste failed: no tile selected.", true);
+  #|       return false;
+  #|     }
+  #|     const clip = state.tileClipboard;
+  #|     if (!clip || !Array.isArray(clip.pixels) || clip.pixels.length !== 64) {
+  #|       setFeedback("Paste failed: tile clipboard is empty.", true);
+  #|       return false;
+  #|     }
+  #|     const base = id * 64;
+  #|     for (let i = 0; i < 64; i += 1) {
+  #|       const v = clip.pixels[i];
+  #|       ts.pixels[base + i] = Number.isInteger(v) && v >= -1 && v <= 15 ? v : -1;
+  #|     }
+  #|     ts.tile_defined[id] = true;
+  #|     setDirty(true);
+  #|     setFeedback(`Pasted into tile ${id}.`);
+  #|     renderTileCanvas();
+  #|     renderTileThumbnails();
+  #|     renderMapTileThumbnails();
+  #|     renderCanvas();
+  #|     return true;
+  #|   };
+  #|
   #|   if (!globalThis.__moon8bit_tilemap_bound) {
   #|     mapSelect.addEventListener("change", () => {
   #|       state.selectedMap = Number(mapSelect.value) || 0;
@@ -1966,6 +2015,25 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       tileDrawing = false;
   #|     });
   #|     tileCanvas.addEventListener("contextmenu", (evt) => evt.preventDefault());
+  #|
+  #|     globalThis.addEventListener("keydown", (evt) => {
+  #|       if (globalThis.__moon8bit_active_tab !== "tile") return;
+  #|       const target = evt.target;
+  #|       const editable = target && (
+  #|         target.tagName === "TEXTAREA" ||
+  #|         target.tagName === "INPUT" ||
+  #|         target.isContentEditable
+  #|       );
+  #|       if (editable) return;
+  #|       if (!(evt.ctrlKey || evt.metaKey) || evt.altKey || evt.shiftKey) return;
+  #|       const key = String(evt.key || "").toLowerCase();
+  #|       if (key === "c") {
+  #|         if (copySelectedTileToClipboard()) evt.preventDefault();
+  #|       } else if (key === "v") {
+  #|         if (pasteClipboardToSelectedTile()) evt.preventDefault();
+  #|       }
+  #|     });
+  #|
   #|     globalThis.__moon8bit_tilemap_bound = true;
   #|   }
   #|
