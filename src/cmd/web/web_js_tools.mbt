@@ -12,11 +12,59 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     panel = document.createElement("div");
   #|     panel.id = "moon8bit-sprite-panel";
   #|     panel.style.display = "grid";
-  #|     panel.style.gap = "6px";
+  #|     panel.style.gap = "10px";
   #|     panel.style.padding = "8px";
   #|     panel.style.border = "1px solid #334e68";
   #|     panel.style.background = "#111827";
   #|     editor.appendChild(panel);
+  #|   }
+  #|   if (panel.parentElement !== editor) {
+  #|     editor.appendChild(panel);
+  #|   }
+  #|
+  #|   let layout = document.getElementById("moon8bit-sprite-layout");
+  #|   if (!layout) {
+  #|     layout = document.createElement("div");
+  #|     layout.id = "moon8bit-sprite-layout";
+  #|     layout.style.display = "flex";
+  #|     layout.style.flexDirection = "row";
+  #|     layout.style.alignItems = "flex-start";
+  #|     layout.style.flexWrap = "nowrap";
+  #|     layout.style.overflowX = "auto";
+  #|     layout.style.gap = "24px";
+  #|     panel.appendChild(layout);
+  #|   }
+  #|
+  #|   let listPane = document.getElementById("moon8bit-sprite-list-pane");
+  #|   if (!listPane) {
+  #|     listPane = document.createElement("div");
+  #|     listPane.id = "moon8bit-sprite-list-pane";
+  #|     listPane.style.display = "grid";
+  #|     listPane.style.gap = "10px";
+  #|     listPane.style.alignContent = "start";
+  #|     listPane.style.flex = "0 0 360px";
+  #|     listPane.style.width = "360px";
+  #|     listPane.style.minWidth = "360px";
+  #|     listPane.style.maxWidth = "360px";
+  #|     listPane.style.padding = "10px";
+  #|     listPane.style.background = "#0f1720";
+  #|     listPane.style.maxHeight = "70vh";
+  #|     listPane.style.overflowY = "auto";
+  #|     layout.appendChild(listPane);
+  #|   }
+  #|
+  #|   let mainPane = document.getElementById("moon8bit-sprite-main-pane");
+  #|   if (!mainPane) {
+  #|     mainPane = document.createElement("div");
+  #|     mainPane.id = "moon8bit-sprite-main-pane";
+  #|     mainPane.style.display = "grid";
+  #|     mainPane.style.gap = "10px";
+  #|     mainPane.style.alignContent = "start";
+  #|     mainPane.style.flex = "1 1 auto";
+  #|     mainPane.style.minWidth = "0";
+  #|     mainPane.style.padding = "10px";
+  #|     mainPane.style.background = "#0f1720";
+  #|     layout.appendChild(mainPane);
   #|   }
   #|
   #|   let title = document.getElementById("moon8bit-sprite-title");
@@ -26,7 +74,44 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     title.textContent = "Sprite Editor (8/16/32)";
   #|     title.style.fontWeight = "600";
   #|     title.style.fontFamily = "monospace";
-  #|     panel.appendChild(title);
+  #|     mainPane.appendChild(title);
+  #|   }
+  #|   title.style.fontSize = "18px";
+  #|   if (title.parentElement !== mainPane) {
+  #|     mainPane.appendChild(title);
+  #|   }
+  #|
+  #|   let listTitle = document.getElementById("moon8bit-sprite-list-title");
+  #|   if (!listTitle) {
+  #|     listTitle = document.createElement("div");
+  #|     listTitle.id = "moon8bit-sprite-list-title";
+  #|     listTitle.textContent = "All Sprites";
+  #|     listTitle.style.fontWeight = "600";
+  #|     listTitle.style.fontFamily = "monospace";
+  #|     listTitle.style.fontSize = "18px";
+  #|     listPane.appendChild(listTitle);
+  #|   }
+  #|
+  #|   let addSpriteBtn = document.getElementById("moon8bit-sprite-add-btn");
+  #|   if (!addSpriteBtn) {
+  #|     addSpriteBtn = document.createElement("button");
+  #|     addSpriteBtn.id = "moon8bit-sprite-add-btn";
+  #|     addSpriteBtn.textContent = "+ Sprite";
+  #|     addSpriteBtn.style.padding = "8px 14px";
+  #|     addSpriteBtn.style.background = "#1a3a1a";
+  #|     addSpriteBtn.style.color = "#f6f7eb";
+  #|     addSpriteBtn.style.border = "1px solid #4aa96c";
+  #|     addSpriteBtn.style.cursor = "pointer";
+  #|     listPane.appendChild(addSpriteBtn);
+  #|   }
+  #|
+  #|   let listGrid = document.getElementById("moon8bit-sprite-list");
+  #|   if (!listGrid) {
+  #|     listGrid = document.createElement("div");
+  #|     listGrid.id = "moon8bit-sprite-list";
+  #|     listGrid.style.display = "grid";
+  #|     listGrid.style.gap = "6px";
+  #|     listPane.appendChild(listGrid);
   #|   }
   #|
   #|   let row = document.getElementById("moon8bit-sprite-row");
@@ -37,7 +122,63 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     row.style.gap = "6px";
   #|     row.style.flexWrap = "wrap";
   #|     row.style.alignItems = "center";
-  #|     panel.appendChild(row);
+  #|     mainPane.appendChild(row);
+  #|   }
+  #|   if (row.parentElement !== mainPane) {
+  #|     mainPane.appendChild(row);
+  #|   }
+  #|
+  #|   let nameLabel = document.getElementById("moon8bit-sprite-name-label");
+  #|   if (!nameLabel) {
+  #|     nameLabel = document.createElement("label");
+  #|     nameLabel.id = "moon8bit-sprite-name-label";
+  #|     nameLabel.textContent = "Name";
+  #|     nameLabel.style.fontFamily = "monospace";
+  #|     nameLabel.style.fontSize = "12px";
+  #|     nameLabel.style.opacity = "0.8";
+  #|     row.appendChild(nameLabel);
+  #|   }
+  #|
+  #|   let nameInput = document.getElementById("moon8bit-sprite-name");
+  #|   if (!nameInput) {
+  #|     nameInput = document.createElement("input");
+  #|     nameInput.id = "moon8bit-sprite-name";
+  #|     nameInput.type = "text";
+  #|     nameInput.placeholder = "sprite_name";
+  #|     nameInput.style.width = "170px";
+  #|     nameInput.style.background = "#0f1720";
+  #|     nameInput.style.color = "#d9e2ec";
+  #|     nameInput.style.border = "1px solid #486581";
+  #|     nameInput.style.padding = "4px 6px";
+  #|     row.appendChild(nameInput);
+  #|   }
+  #|
+  #|   let sizeLabel = document.getElementById("moon8bit-sprite-size-label");
+  #|   if (!sizeLabel) {
+  #|     sizeLabel = document.createElement("label");
+  #|     sizeLabel.id = "moon8bit-sprite-size-label";
+  #|     sizeLabel.textContent = "Size";
+  #|     sizeLabel.style.fontFamily = "monospace";
+  #|     sizeLabel.style.fontSize = "12px";
+  #|     sizeLabel.style.opacity = "0.8";
+  #|     row.appendChild(sizeLabel);
+  #|   }
+  #|
+  #|   let sizeSelect = document.getElementById("moon8bit-sprite-size");
+  #|   if (!sizeSelect) {
+  #|     sizeSelect = document.createElement("select");
+  #|     sizeSelect.id = "moon8bit-sprite-size";
+  #|     sizeSelect.style.background = "#0f1720";
+  #|     sizeSelect.style.color = "#d9e2ec";
+  #|     sizeSelect.style.border = "1px solid #486581";
+  #|     sizeSelect.style.padding = "4px 6px";
+  #|     [8, 16, 32].forEach((n) => {
+  #|       const opt = document.createElement("option");
+  #|       opt.value = String(n);
+  #|       opt.textContent = `${n}x${n}`;
+  #|       sizeSelect.appendChild(opt);
+  #|     });
+  #|     row.appendChild(sizeSelect);
   #|   }
   #|
   #|   let select = document.getElementById("moon8bit-sprite-select");
@@ -49,6 +190,7 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     select.style.border = "1px solid #486581";
   #|     row.appendChild(select);
   #|   }
+  #|   select.style.display = "none";
   #|
   #|   let syncBtn = document.getElementById("moon8bit-sprite-sync-btn");
   #|   if (!syncBtn) {
@@ -86,6 +228,18 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     row.appendChild(applyBtn);
   #|   }
   #|
+  #|   let dupBtn = document.getElementById("moon8bit-sprite-dup-btn");
+  #|   if (!dupBtn) {
+  #|     dupBtn = document.createElement("button");
+  #|     dupBtn.id = "moon8bit-sprite-dup-btn";
+  #|     dupBtn.textContent = "Dup";
+  #|     dupBtn.style.padding = "4px 8px";
+  #|     dupBtn.style.background = "#355070";
+  #|     dupBtn.style.color = "#f6f7eb";
+  #|     dupBtn.style.border = "1px solid #486581";
+  #|     row.appendChild(dupBtn);
+  #|   }
+  #|
   #|   let paletteRow = document.getElementById("moon8bit-sprite-palette");
   #|   if (!paletteRow) {
   #|     paletteRow = document.createElement("div");
@@ -93,7 +247,10 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     paletteRow.style.display = "flex";
   #|     paletteRow.style.flexWrap = "wrap";
   #|     paletteRow.style.gap = "4px";
-  #|     panel.appendChild(paletteRow);
+  #|     mainPane.appendChild(paletteRow);
+  #|   }
+  #|   if (paletteRow.parentElement !== mainPane) {
+  #|     mainPane.appendChild(paletteRow);
   #|   }
   #|
   #|   let canvas = document.getElementById("moon8bit-sprite-canvas");
@@ -103,7 +260,10 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     canvas.style.border = "1px solid #334e68";
   #|     canvas.style.imageRendering = "pixelated";
   #|     canvas.style.touchAction = "none";
-  #|     panel.appendChild(canvas);
+  #|     mainPane.appendChild(canvas);
+  #|   }
+  #|   if (canvas.parentElement !== mainPane) {
+  #|     mainPane.appendChild(canvas);
   #|   }
   #|
   #|   let info = document.getElementById("moon8bit-sprite-info");
@@ -113,7 +273,10 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     info.style.fontFamily = "monospace";
   #|     info.style.fontSize = "12px";
   #|     info.style.opacity = "0.8";
-  #|     panel.appendChild(info);
+  #|     mainPane.appendChild(info);
+  #|   }
+  #|   if (info.parentElement !== mainPane) {
+  #|     mainPane.appendChild(info);
   #|   }
   #|
   #|   if (!globalThis.__moon8bit_sprite_state) {
@@ -195,6 +358,30 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|   const colorFor = (idx) => {
   #|     if (idx < 0) return null;
   #|     return state.palette[idx] || fallbackPalette[idx % fallbackPalette.length] || "#ffffff";
+  #|   };
+  #|
+  #|   const uniqueSpriteName = (base) => {
+  #|     const used = new Set(state.sprites.map((sp) => sp.name));
+  #|     if (!used.has(base)) return base;
+  #|     let i = 1;
+  #|     while (used.has(`${base}_${i}`)) i += 1;
+  #|     return `${base}_${i}`;
+  #|   };
+  #|
+  #|   const drawSpritePreview = (ctx, sprite, px, py, cell) => {
+  #|     const dot = Math.max(1, Math.floor(cell / Math.max(sprite.width, sprite.height)));
+  #|     const dw = sprite.width * dot;
+  #|     const dh = sprite.height * dot;
+  #|     const ox = px + Math.floor((cell - dw) / 2);
+  #|     const oy = py + Math.floor((cell - dh) / 2);
+  #|     for (let y = 0; y < sprite.height; y++) {
+  #|       for (let x = 0; x < sprite.width; x++) {
+  #|         const ci = sprite.pixels[y * sprite.width + x];
+  #|         if (ci < 0) continue;
+  #|         ctx.fillStyle = colorFor(ci) || "#ffffff";
+  #|         ctx.fillRect(ox + x * dot, oy + y * dot, dot, dot);
+  #|       }
+  #|     }
   #|   };
   #|
   #|   const renderPalette = () => {
@@ -284,6 +471,73 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     }
   #|   };
   #|
+  #|   const renderSpriteList = () => {
+  #|     listGrid.innerHTML = "";
+  #|     listTitle.textContent = `All Sprites (${state.sprites.length})`;
+  #|     if (state.sprites.length === 0) return;
+  #|     const selectedIdx = Math.max(0, Math.min(state.selectedSprite, state.sprites.length - 1));
+  #|
+  #|     state.sprites.forEach((sp, i) => {
+  #|       const rowBtn = document.createElement("button");
+  #|       rowBtn.type = "button";
+  #|       rowBtn.style.display = "grid";
+  #|       rowBtn.style.gridTemplateColumns = "56px 1fr";
+  #|       rowBtn.style.gap = "10px";
+  #|       rowBtn.style.alignItems = "center";
+  #|       rowBtn.style.padding = "6px";
+  #|       rowBtn.style.background = "#0f1720";
+  #|       rowBtn.style.color = "#d9e2ec";
+  #|       rowBtn.style.border = i === selectedIdx ? "2px solid #4aa96c" : "1px solid #334e68";
+  #|       rowBtn.style.cursor = "pointer";
+  #|       rowBtn.style.textAlign = "left";
+  #|
+  #|       const preview = document.createElement("canvas");
+  #|       preview.width = 48;
+  #|       preview.height = 48;
+  #|       preview.style.width = "48px";
+  #|       preview.style.height = "48px";
+  #|       preview.style.imageRendering = "pixelated";
+  #|       preview.style.display = "block";
+  #|       const pctx = preview.getContext("2d");
+  #|       if (pctx) {
+  #|         pctx.imageSmoothingEnabled = false;
+  #|         pctx.fillStyle = "#1f2a37";
+  #|         pctx.fillRect(0, 0, 48, 48);
+  #|         pctx.fillStyle = "#334e68";
+  #|         pctx.fillRect(0, 0, 24, 24);
+  #|         pctx.fillRect(24, 24, 24, 24);
+  #|         drawSpritePreview(pctx, sp, 0, 0, 48);
+  #|       }
+  #|       rowBtn.appendChild(preview);
+  #|
+  #|       const meta = document.createElement("div");
+  #|       meta.style.display = "grid";
+  #|       meta.style.gap = "2px";
+  #|       const nm = document.createElement("div");
+  #|       nm.textContent = sp.name;
+  #|       nm.style.fontFamily = "monospace";
+  #|       nm.style.fontSize = "14px";
+  #|       nm.style.fontWeight = "600";
+  #|       const sz = document.createElement("div");
+  #|       sz.textContent = `${sp.width}x${sp.height}`;
+  #|       sz.style.fontFamily = "monospace";
+  #|       sz.style.fontSize = "12px";
+  #|       sz.style.opacity = "0.8";
+  #|       meta.appendChild(nm);
+  #|       meta.appendChild(sz);
+  #|       rowBtn.appendChild(meta);
+  #|
+  #|       rowBtn.addEventListener("click", () => {
+  #|         state.selectedSprite = i;
+  #|         select.value = String(i);
+  #|         renderSelectedMeta();
+  #|         renderSpriteList();
+  #|         renderCanvas();
+  #|       });
+  #|       listGrid.appendChild(rowBtn);
+  #|     });
+  #|   };
+  #|
   #|   const rowsFromSprite = (sprite) => {
   #|     const rows = [];
   #|     for (let y = 0; y < sprite.height; y++) {
@@ -296,21 +550,82 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     return rows;
   #|   };
   #|
+  #|   const resizeSpritePixels = (sprite, nextSize) => {
+  #|     const oldW = sprite.width;
+  #|     const oldH = sprite.height;
+  #|     if (oldW === nextSize && oldH === nextSize) return;
+  #|     const nextPixels = Array(nextSize * nextSize).fill(-1);
+  #|     for (let y = 0; y < Math.min(oldH, nextSize); y++) {
+  #|       for (let x = 0; x < Math.min(oldW, nextSize); x++) {
+  #|         nextPixels[y * nextSize + x] = sprite.pixels[y * oldW + x];
+  #|       }
+  #|     }
+  #|     sprite.width = nextSize;
+  #|     sprite.height = nextSize;
+  #|     sprite.pixels = nextPixels;
+  #|   };
+  #|
+  #|   const renderSelectedMeta = () => {
+  #|     const sprite = activeSprite();
+  #|     if (!sprite) {
+  #|       nameInput.value = "";
+  #|       nameInput.disabled = true;
+  #|       sizeSelect.disabled = true;
+  #|       return;
+  #|     }
+  #|     nameInput.disabled = false;
+  #|     sizeSelect.disabled = false;
+  #|     nameInput.value = sprite.name;
+  #|     sizeSelect.value = [8, 16, 32].includes(sprite.width) ? String(sprite.width) : "8";
+  #|   };
+  #|
+  #|   const applyMetaFromUi = () => {
+  #|     const sprite = activeSprite();
+  #|     if (!sprite) return;
+  #|     const nm = nameInput.value.trim();
+  #|     if (nm !== "") {
+  #|       sprite.name = nm;
+  #|     }
+  #|     const nextSize = Number(sizeSelect.value || "8");
+  #|     if ([8, 16, 32].includes(nextSize)) {
+  #|       resizeSpritePixels(sprite, nextSize);
+  #|     }
+  #|   };
+  #|
   #|   const writeSpriteToDsl = (andApply) => {
   #|     const sprite = activeSprite();
   #|     if (!sprite) return;
+  #|     applyMetaFromUi();
   #|     if (![8, 16, 32].includes(sprite.width) || ![8, 16, 32].includes(sprite.height)) {
   #|       info.textContent = `Sprite ${sprite.name} is not editable (${sprite.width}x${sprite.height}).`;
   #|       return;
   #|     }
+  #|     if (!/^[A-Za-z0-9_-]+$/.test(sprite.name)) {
+  #|       info.textContent = "Invalid sprite name. Use [A-Za-z0-9_-].";
+  #|       return;
+  #|     }
+  #|     if (state.sprites.some((sp, i) => i !== state.selectedSprite && sp.name === sprite.name)) {
+  #|       info.textContent = `Sprite ${sprite.name} already exists.`;
+  #|       return;
+  #|     }
   #|     const lines = state.lines.slice();
   #|     const rows = rowsFromSprite(sprite);
-  #|     for (let i = 0; i < rows.length; i++) {
-  #|       lines[sprite.dataStart + i] = rows[i];
-  #|     }
+  #|     const block = [`sprite ${sprite.name} ${sprite.width} ${sprite.height}`, ...rows, "end"];
+  #|     const start = sprite.headerLine;
+  #|     const count = Math.max(1, sprite.endLine - sprite.headerLine + 1);
+  #|     lines.splice(start, count, ...block);
   #|     const text = lines.join("\n");
   #|     textarea.value = text;
+  #|     const keepName = sprite.name;
   #|     refreshFromText();
+  #|     const idx = state.sprites.findIndex((sp) => sp.name === keepName);
+  #|     if (idx >= 0) {
+  #|       state.selectedSprite = idx;
+  #|       select.value = String(idx);
+  #|     }
+  #|     renderSelectedMeta();
+  #|     renderSpriteList();
+  #|     renderCanvas();
   #|     if (andApply && globalThis.__moon8bit_apply_cb) {
   #|       globalThis.__moon8bit_apply_cb();
   #|     }
@@ -341,7 +656,9 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|       state.selectedSprite = idx;
   #|       select.value = String(idx);
   #|     }
+  #|     renderSelectedMeta();
   #|     renderPalette();
+  #|     renderSpriteList();
   #|     renderCanvas();
   #|   };
   #|
@@ -361,11 +678,70 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|   if (!globalThis.__moon8bit_sprite_bound) {
   #|     select.addEventListener("change", () => {
   #|       state.selectedSprite = Number(select.value) || 0;
+  #|       renderSelectedMeta();
+  #|       renderSpriteList();
+  #|       renderCanvas();
+  #|     });
+  #|     nameInput.addEventListener("input", () => {
+  #|       applyMetaFromUi();
+  #|       renderSpriteList();
+  #|       renderCanvas();
+  #|     });
+  #|     sizeSelect.addEventListener("change", () => {
+  #|       applyMetaFromUi();
+  #|       renderSelectedMeta();
+  #|       renderSpriteList();
   #|       renderCanvas();
   #|     });
   #|     syncBtn.addEventListener("click", refreshFromText);
   #|     writeBtn.addEventListener("click", () => writeSpriteToDsl(false));
   #|     applyBtn.addEventListener("click", () => writeSpriteToDsl(true));
+  #|     dupBtn.addEventListener("click", () => {
+  #|       const src = activeSprite();
+  #|       if (!src) return;
+  #|       const name = uniqueSpriteName(`${src.name}_copy`);
+  #|       const pixels = src.pixels.slice();
+  #|       const row = (y) => {
+  #|         let out = "";
+  #|         for (let x = 0; x < src.width; x++) {
+  #|           out += encodeSym(pixels[y * src.width + x]);
+  #|         }
+  #|         return out;
+  #|       };
+  #|       const block = [`sprite ${name} ${src.width} ${src.height}`];
+  #|       for (let y = 0; y < src.height; y++) block.push(row(y));
+  #|       block.push("end");
+  #|       const baseText = textarea.value.replace(/\s+$/, "");
+  #|       textarea.value = (baseText ? `${baseText}\n\n` : "") + block.join("\n") + "\n";
+  #|       refreshFromText();
+  #|       const idx = state.sprites.findIndex((sp) => sp.name === name);
+  #|       if (idx >= 0) {
+  #|         state.selectedSprite = idx;
+  #|         select.value = String(idx);
+  #|       }
+  #|       renderSelectedMeta();
+  #|       renderSpriteList();
+  #|       renderCanvas();
+  #|     });
+  #|     addSpriteBtn.addEventListener("click", () => {
+  #|       const name = uniqueSpriteName("sprite");
+  #|       const size = 8;
+  #|       const row = ".".repeat(size);
+  #|       const block = [`sprite ${name} ${size} ${size}`];
+  #|       for (let i = 0; i < size; i++) block.push(row);
+  #|       block.push("end");
+  #|       const baseText = textarea.value.replace(/\s+$/, "");
+  #|       textarea.value = (baseText ? `${baseText}\n\n` : "") + block.join("\n") + "\n";
+  #|       refreshFromText();
+  #|       const idx = state.sprites.findIndex((sp) => sp.name === name);
+  #|       if (idx >= 0) {
+  #|         state.selectedSprite = idx;
+  #|         select.value = String(idx);
+  #|       }
+  #|       renderSelectedMeta();
+  #|       renderSpriteList();
+  #|       renderCanvas();
+  #|     });
   #|     textarea.addEventListener("input", refreshFromText);
   #|
   #|     let drawing = false;
