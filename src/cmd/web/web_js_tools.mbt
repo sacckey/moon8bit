@@ -419,6 +419,57 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     mapEditor.appendChild(panel);
   #|   }
   #|
+  #|   let mapLayout = document.getElementById("moon8bit-tilemap-layout");
+  #|   if (!mapLayout) {
+  #|     mapLayout = document.createElement("div");
+  #|     mapLayout.id = "moon8bit-tilemap-layout";
+  #|     mapLayout.style.display = "flex";
+  #|     mapLayout.style.flexDirection = "row";
+  #|     mapLayout.style.alignItems = "flex-start";
+  #|     mapLayout.style.flexWrap = "nowrap";
+  #|     mapLayout.style.overflowX = "auto";
+  #|     mapLayout.style.gap = "24px";
+  #|   }
+  #|   if (mapLayout.parentElement !== panel) {
+  #|     panel.appendChild(mapLayout);
+  #|   }
+  #|
+  #|   let mapThumbPane = document.getElementById("moon8bit-tilemap-thumb-pane");
+  #|   if (!mapThumbPane) {
+  #|     mapThumbPane = document.createElement("div");
+  #|     mapThumbPane.id = "moon8bit-tilemap-thumb-pane";
+  #|     mapThumbPane.style.display = "grid";
+  #|     mapThumbPane.style.gap = "10px";
+  #|     mapThumbPane.style.alignContent = "start";
+  #|     mapThumbPane.style.flex = "0 0 600px";
+  #|     mapThumbPane.style.width = "600px";
+  #|     mapThumbPane.style.minWidth = "600px";
+  #|     mapThumbPane.style.maxWidth = "600px";
+  #|     mapThumbPane.style.padding = "10px";
+  #|     mapThumbPane.style.background = "#0f1720";
+  #|     mapThumbPane.style.maxHeight = "70vh";
+  #|     mapThumbPane.style.overflowY = "auto";
+  #|   }
+  #|   if (mapThumbPane.parentElement !== mapLayout) {
+  #|     mapLayout.appendChild(mapThumbPane);
+  #|   }
+  #|
+  #|   let mapMainPane = document.getElementById("moon8bit-tilemap-main-pane");
+  #|   if (!mapMainPane) {
+  #|     mapMainPane = document.createElement("div");
+  #|     mapMainPane.id = "moon8bit-tilemap-main-pane";
+  #|     mapMainPane.style.display = "grid";
+  #|     mapMainPane.style.gap = "12px";
+  #|     mapMainPane.style.alignContent = "start";
+  #|     mapMainPane.style.flex = "1 1 auto";
+  #|     mapMainPane.style.minWidth = "0";
+  #|     mapMainPane.style.padding = "10px";
+  #|     mapMainPane.style.background = "#0f1720";
+  #|   }
+  #|   if (mapMainPane.parentElement !== mapLayout) {
+  #|     mapLayout.appendChild(mapMainPane);
+  #|   }
+  #|
   #|   let title = document.getElementById("moon8bit-tilemap-title");
   #|   if (!title) {
   #|     title = document.createElement("div");
@@ -427,8 +478,9 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     title.style.fontWeight = "600";
   #|     title.style.fontFamily = "monospace";
   #|   }
-  #|   if (title.parentElement !== panel) {
-  #|     panel.appendChild(title);
+  #|   title.style.fontSize = "18px";
+  #|   if (title.parentElement !== mapMainPane) {
+  #|     mapMainPane.appendChild(title);
   #|   }
   #|
   #|   let row = document.getElementById("moon8bit-tilemap-row");
@@ -436,12 +488,13 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     row = document.createElement("div");
   #|     row.id = "moon8bit-tilemap-row";
   #|     row.style.display = "flex";
-  #|     row.style.gap = "6px";
+  #|     row.style.gap = "10px";
   #|     row.style.flexWrap = "wrap";
   #|     row.style.alignItems = "center";
   #|   }
-  #|   if (row.parentElement !== panel) {
-  #|     panel.appendChild(row);
+  #|   row.style.gap = "10px";
+  #|   if (row.parentElement !== mapMainPane) {
+  #|     mapMainPane.appendChild(row);
   #|   }
   #|
   #|   let mapSelect = document.getElementById("moon8bit-tilemap-select");
@@ -509,12 +562,15 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       btn = document.createElement("button");
   #|       btn.id = id;
   #|       btn.textContent = label;
-  #|       btn.style.padding = "4px 8px";
+  #|       btn.style.padding = "7px 12px";
   #|       btn.style.background = bg;
   #|       btn.style.color = "#f6f7eb";
   #|       btn.style.border = `1px solid ${border}`;
   #|       btn.style.cursor = "pointer";
+  #|       btn.style.fontSize = "14px";
   #|     }
+  #|     btn.style.padding = "7px 12px";
+  #|     btn.style.fontSize = "14px";
   #|     if (btn.parentElement !== row) {
   #|       row.appendChild(btn);
   #|     }
@@ -536,8 +592,32 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     canvas.style.imageRendering = "pixelated";
   #|     canvas.style.touchAction = "none";
   #|   }
-  #|   if (canvas.parentElement !== panel) {
-  #|     panel.appendChild(canvas);
+  #|   if (canvas.parentElement !== mapMainPane) {
+  #|     mapMainPane.appendChild(canvas);
+  #|   }
+  #|
+  #|   let mapThumbTitle = document.getElementById("moon8bit-tilemap-thumb-title");
+  #|   if (!mapThumbTitle) {
+  #|     mapThumbTitle = document.createElement("div");
+  #|     mapThumbTitle.id = "moon8bit-tilemap-thumb-title";
+  #|     mapThumbTitle.textContent = "All Tiles";
+  #|     mapThumbTitle.style.fontWeight = "600";
+  #|     mapThumbTitle.style.fontFamily = "monospace";
+  #|   }
+  #|   mapThumbTitle.style.fontSize = "18px";
+  #|   if (mapThumbTitle.parentElement !== mapThumbPane) {
+  #|     mapThumbPane.appendChild(mapThumbTitle);
+  #|   }
+  #|
+  #|   let mapThumbGrid = document.getElementById("moon8bit-tilemap-thumb-grid");
+  #|   if (!mapThumbGrid) {
+  #|     mapThumbGrid = document.createElement("div");
+  #|     mapThumbGrid.id = "moon8bit-tilemap-thumb-grid";
+  #|     mapThumbGrid.style.display = "grid";
+  #|     mapThumbGrid.style.gap = "0";
+  #|   }
+  #|   if (mapThumbGrid.parentElement !== mapThumbPane) {
+  #|     mapThumbPane.appendChild(mapThumbGrid);
   #|   }
   #|
   #|   let tilePanel = document.getElementById("moon8bit-tile-panel");
@@ -790,8 +870,8 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     info.style.fontSize = "12px";
   #|     info.style.opacity = "0.8";
   #|   }
-  #|   if (info.parentElement !== panel) {
-  #|     panel.appendChild(info);
+  #|   if (info.parentElement !== mapMainPane) {
+  #|     mapMainPane.appendChild(info);
   #|   }
   #|
   #|   let dirty = document.getElementById("moon8bit-tilemap-dirty");
@@ -803,8 +883,8 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     dirty.style.color = "#7bd389";
   #|     dirty.textContent = "Saved";
   #|   }
-  #|   if (dirty.parentElement !== panel) {
-  #|     panel.appendChild(dirty);
+  #|   if (dirty.parentElement !== mapMainPane) {
+  #|     mapMainPane.appendChild(dirty);
   #|   }
   #|
   #|   let feedback = document.getElementById("moon8bit-tilemap-feedback");
@@ -815,8 +895,8 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     feedback.style.fontSize = "12px";
   #|     feedback.style.color = "#9fb3c8";
   #|   }
-  #|   if (feedback.parentElement !== panel) {
-  #|     panel.appendChild(feedback);
+  #|   if (feedback.parentElement !== mapMainPane) {
+  #|     mapMainPane.appendChild(feedback);
   #|   }
   #|
   #|   if (!globalThis.__moon8bit_tilemap_state) {
@@ -1078,7 +1158,6 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   };
   #|
   #|   const renderBrushSelect = () => {
-  #|     const before = brushSelect.value;
   #|     brushSelect.innerHTML = "";
   #|     const transparent = document.createElement("option");
   #|     transparent.value = "-1";
@@ -1097,10 +1176,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       }
   #|     }
   #|     let candidate = Number.isInteger(state.selectedToken) ? state.selectedToken : -1;
-  #|     if (!Number.isInteger(candidate) || candidate < -1) candidate = -1;
-  #|     if (before !== "" && [...brushSelect.options].some((o) => o.value === before)) {
-  #|       candidate = Number(before);
-  #|     }
+  #|     if (candidate < -1) candidate = -1;
   #|     if (![...brushSelect.options].some((o) => o.value === String(candidate))) {
   #|       candidate = -1;
   #|     }
@@ -1365,6 +1441,109 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     }
   #|   };
   #|
+  #|   const renderMapTileThumbnails = () => {
+  #|     mapThumbGrid.innerHTML = "";
+  #|     const ts = state.tiles;
+  #|     if (!ts || ts.tile_count <= 0) return;
+  #|     const selectedId = Number.isInteger(state.selectedToken) && state.selectedToken >= 0 ? state.selectedToken : -1;
+  #|
+  #|     const cols = 10;
+  #|     const thumbSize = 48;
+  #|     const rows = Math.ceil(ts.tile_count / cols);
+  #|
+  #|     const header = document.createElement("div");
+  #|     header.style.display = "grid";
+  #|     header.style.gridTemplateColumns = `28px repeat(${cols}, ${thumbSize}px)`;
+  #|     header.style.gap = "0";
+  #|     header.style.marginBottom = "0";
+  #|     header.style.width = "fit-content";
+  #|     const headerBlank = document.createElement("div");
+  #|     header.appendChild(headerBlank);
+  #|     for (let col = 0; col < cols; col += 1) {
+  #|       const mark = document.createElement("div");
+  #|       mark.textContent = String(col);
+  #|       mark.style.fontFamily = "monospace";
+  #|       mark.style.fontSize = "13px";
+  #|       mark.style.color = "#9fb3c8";
+  #|       mark.style.textAlign = "center";
+  #|       header.appendChild(mark);
+  #|     }
+  #|     mapThumbGrid.appendChild(header);
+  #|
+  #|     for (let row = 0; row < rows; row += 1) {
+  #|       const rowWrap = document.createElement("div");
+  #|       rowWrap.style.display = "grid";
+  #|       rowWrap.style.gridTemplateColumns = `28px repeat(${cols}, ${thumbSize}px)`;
+  #|       rowWrap.style.gap = "0";
+  #|       rowWrap.style.width = "fit-content";
+  #|
+  #|       const rowMark = document.createElement("div");
+  #|       rowMark.textContent = String(row * cols).toString(16).toUpperCase().padStart(2, "0");
+  #|       rowMark.style.fontFamily = "monospace";
+  #|       rowMark.style.fontSize = "13px";
+  #|       rowMark.style.color = "#9fb3c8";
+  #|       rowMark.style.textAlign = "right";
+  #|       rowMark.style.paddingRight = "4px";
+  #|       rowMark.style.lineHeight = `${thumbSize}px`;
+  #|       rowWrap.appendChild(rowMark);
+  #|
+  #|       for (let col = 0; col < cols; col += 1) {
+  #|         const i = row * cols + col;
+  #|         if (i >= ts.tile_count) {
+  #|           const spacer = document.createElement("div");
+  #|           rowWrap.appendChild(spacer);
+  #|           continue;
+  #|         }
+  #|
+  #|         const cell = document.createElement("button");
+  #|         cell.type = "button";
+  #|         cell.style.display = "grid";
+  #|         cell.style.placeItems = "center";
+  #|         cell.style.padding = "0";
+  #|         cell.style.border = "0";
+  #|         cell.style.background = "transparent";
+  #|         cell.style.outline = i === selectedId ? "2px solid #4aa96c" : "none";
+  #|         cell.style.outlineOffset = i === selectedId ? "-2px" : "0";
+  #|         cell.style.cursor = "pointer";
+  #|         cell.style.borderRadius = "0";
+  #|         cell.style.width = `${thumbSize}px`;
+  #|         cell.style.height = `${thumbSize}px`;
+  #|         cell.style.minHeight = `${thumbSize}px`;
+  #|         const nm = ts.tile_names && ts.tile_names[i] ? ts.tile_names[i] : `tile_${i}`;
+  #|         cell.title = `#${i} ${nm}`;
+  #|
+  #|         const preview = document.createElement("canvas");
+  #|         preview.width = thumbSize;
+  #|         preview.height = thumbSize;
+  #|         preview.style.width = `${thumbSize}px`;
+  #|         preview.style.height = `${thumbSize}px`;
+  #|         preview.style.imageRendering = "pixelated";
+  #|         preview.style.display = "block";
+  #|         const pctx = preview.getContext("2d");
+  #|         if (pctx) {
+  #|           pctx.imageSmoothingEnabled = false;
+  #|           pctx.fillStyle = "#1f2a37";
+  #|           pctx.fillRect(0, 0, thumbSize, thumbSize);
+  #|           pctx.fillStyle = "#334e68";
+  #|           pctx.fillRect(0, 0, thumbSize / 2, thumbSize / 2);
+  #|           pctx.fillRect(thumbSize / 2, thumbSize / 2, thumbSize / 2, thumbSize / 2);
+  #|           if (ts.tile_defined && ts.tile_defined[i]) {
+  #|             drawTilePreview(pctx, ts, i, 0, 0, thumbSize);
+  #|           }
+  #|         }
+  #|         cell.appendChild(preview);
+  #|
+  #|         cell.addEventListener("click", () => {
+  #|           state.selectedToken = i;
+  #|           renderBrushSelect();
+  #|           renderMapTileThumbnails();
+  #|         });
+  #|         rowWrap.appendChild(cell);
+  #|       }
+  #|       mapThumbGrid.appendChild(rowWrap);
+  #|     }
+  #|   };
+  #|
   #|   const renderCanvas = () => {
   #|     const map = activeMap();
   #|     const ctx = canvas.getContext("2d");
@@ -1377,7 +1556,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     info.textContent = `Editing tilemap ${map.name} (${map.width}x${map.height})`;
   #|     mapWInput.value = String(map.width);
   #|     mapHInput.value = String(map.height);
-  #|     state.cell = Math.max(8, Math.floor(320 / Math.max(map.width, map.height)));
+  #|     state.cell = Math.max(8, Math.floor(520 / Math.max(map.width, map.height)));
   #|     canvas.width = map.width * state.cell;
   #|     canvas.height = map.height * state.cell;
   #|     ctx.imageSmoothingEnabled = false;
@@ -1578,6 +1757,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     renderBrushSelect();
   #|     refreshSolidUi();
   #|     renderTileThumbnails();
+  #|     renderMapTileThumbnails();
   #|     renderCanvas();
   #|     setDirty(false);
   #|     if (state.errors.length > 0) {
@@ -1616,6 +1796,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     setDirty(true);
   #|     renderTileCanvas();
   #|     renderTileThumbnails();
+  #|     renderMapTileThumbnails();
   #|     renderCanvas();
   #|   };
   #|
@@ -1706,6 +1887,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     renderBrushSelect();
   #|     refreshSolidUi();
   #|     renderTileThumbnails();
+  #|     renderMapTileThumbnails();
   #|     renderCanvas();
   #|   };
   #|
@@ -1716,6 +1898,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     });
   #|     brushSelect.addEventListener("change", () => {
   #|       state.selectedToken = Number(brushSelect.value);
+  #|       renderMapTileThumbnails();
   #|     });
   #|     tileNameInput.addEventListener("input", () => {
   #|       const ts = state.tiles;
@@ -1731,6 +1914,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       state.selectedToken = id;
   #|       refreshSolidUi();
   #|       renderTileThumbnails();
+  #|       renderMapTileThumbnails();
   #|     });
   #|     solidInput.addEventListener("change", () => {
   #|       const ts = state.tiles;
@@ -1746,6 +1930,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       state.selectedToken = id;
   #|       refreshSolidUi();
   #|       renderTileThumbnails();
+  #|       renderMapTileThumbnails();
   #|     });
   #|     syncBtn.addEventListener("click", refreshFromText);
   #|     writeBtn.addEventListener("click", () => writeTilemapToDsl(false));
