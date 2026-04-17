@@ -61,6 +61,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     { key: "sprite", label: "Sprite" },
   #|     { key: "tile", label: "Tile" },
   #|     { key: "tilemap", label: "Tilemap" },
+  #|     { key: "sfx", label: "SFX" },
   #|     { key: "sound", label: "Sound" },
   #|   ];
   #|
@@ -385,6 +386,21 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     tabUi.sound.panel.appendChild(soundEditor);
   #|   }
   #|
+  #|   let sfxEditor = document.getElementById("moon8bit-sfx-editor");
+  #|   if (!sfxEditor) {
+  #|     sfxEditor = document.createElement("div");
+  #|     sfxEditor.id = "moon8bit-sfx-editor";
+  #|     sfxEditor.style.display = "grid";
+  #|     sfxEditor.style.gap = "8px";
+  #|     sfxEditor.style.padding = "8px";
+  #|     sfxEditor.style.border = "1px solid #334e68";
+  #|     sfxEditor.style.background = "#111827";
+  #|     tabUi.sfx.panel.appendChild(sfxEditor);
+  #|   }
+  #|   if (sfxEditor.parentElement !== tabUi.sfx.panel) {
+  #|     tabUi.sfx.panel.appendChild(sfxEditor);
+  #|   }
+  #|
   #|   let soundTitle = document.getElementById("moon8bit-sound-title");
   #|   if (!soundTitle) {
   #|     soundTitle = document.createElement("div");
@@ -399,7 +415,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   if (!soundHint) {
   #|     soundHint = document.createElement("div");
   #|     soundHint.id = "moon8bit-sound-hint";
-  #|     soundHint.textContent = "Tune BGM and SFX synth parameters, then test sounds directly.";
+  #|     soundHint.textContent = "Tune BGM parameters, then test playback directly.";
   #|     soundHint.style.fontFamily = "monospace";
   #|     soundHint.style.fontSize = "15px";
   #|     soundHint.style.color = "#9fb3c8";
@@ -474,6 +490,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       sfx: {},
   #|       bgms: [],
   #|       selectedBgmName: null,
+  #|       selectedSfxName: null,
   #|       dirty: false,
   #|       transientErrors: {},
   #|     };
@@ -1636,56 +1653,213 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     try { globalThis.__moon8bit_audio_stop_bgm_impl(); } catch (_) {}
   #|   });
   #|
-  #|   let eventControls = document.getElementById("moon8bit-sound-event-controls");
-  #|   if (!eventControls) {
-  #|     eventControls = document.createElement("div");
-  #|     eventControls.id = "moon8bit-sound-event-controls";
-  #|     eventControls.style.display = "flex";
-  #|     eventControls.style.flexWrap = "wrap";
-  #|     eventControls.style.gap = "8px";
-  #|     eventControls.style.alignItems = "center";
-  #|     soundEditor.appendChild(eventControls);
+  #|   let sfxTitle = document.getElementById("moon8bit-sfx-title");
+  #|   if (!sfxTitle) {
+  #|     sfxTitle = document.createElement("div");
+  #|     sfxTitle.id = "moon8bit-sfx-title";
+  #|     sfxTitle.textContent = "SFX Editor";
+  #|     sfxTitle.style.fontWeight = "600";
+  #|     sfxTitle.style.fontFamily = "monospace";
+  #|     sfxEditor.appendChild(sfxTitle);
   #|   }
   #|
-  #|   let sfxGrid = document.getElementById("moon8bit-sound-sfx-grid");
-  #|   if (!sfxGrid) {
-  #|     sfxGrid = document.createElement("div");
-  #|     sfxGrid.id = "moon8bit-sound-sfx-grid";
-  #|     sfxGrid.style.display = "grid";
-  #|     sfxGrid.style.gap = "6px";
-  #|     soundEditor.appendChild(sfxGrid);
+  #|   let sfxHint = document.getElementById("moon8bit-sfx-hint");
+  #|   if (!sfxHint) {
+  #|     sfxHint = document.createElement("div");
+  #|     sfxHint.id = "moon8bit-sfx-hint";
+  #|     sfxHint.textContent = "Select SFX on the left, edit synth params on the right.";
+  #|     sfxHint.style.fontFamily = "monospace";
+  #|     sfxHint.style.fontSize = "15px";
+  #|     sfxHint.style.color = "#9fb3c8";
+  #|     sfxEditor.appendChild(sfxHint);
+  #|   }
+  #|
+  #|   let sfxLayout = document.getElementById("moon8bit-sfx-layout");
+  #|   if (!sfxLayout) {
+  #|     sfxLayout = document.createElement("div");
+  #|     sfxLayout.id = "moon8bit-sfx-layout";
+  #|     sfxLayout.style.display = "flex";
+  #|     sfxLayout.style.gap = "12px";
+  #|     sfxLayout.style.alignItems = "stretch";
+  #|     sfxLayout.style.minHeight = "360px";
+  #|     sfxEditor.appendChild(sfxLayout);
+  #|   }
+  #|   if (sfxLayout.parentElement !== sfxEditor) {
+  #|     sfxEditor.appendChild(sfxLayout);
+  #|   }
+  #|
+  #|   let sfxListPane = document.getElementById("moon8bit-sfx-list-pane");
+  #|   if (!sfxListPane) {
+  #|     sfxListPane = document.createElement("div");
+  #|     sfxListPane.id = "moon8bit-sfx-list-pane";
+  #|     sfxListPane.style.width = "320px";
+  #|     sfxListPane.style.flexShrink = "0";
+  #|     sfxListPane.style.display = "grid";
+  #|     sfxListPane.style.gridTemplateRows = "auto auto auto 1fr";
+  #|     sfxListPane.style.gap = "8px";
+  #|     sfxLayout.appendChild(sfxListPane);
+  #|   }
+  #|
+  #|   let sfxListTitle = document.getElementById("moon8bit-sfx-list-title");
+  #|   if (!sfxListTitle) {
+  #|     sfxListTitle = document.createElement("div");
+  #|     sfxListTitle.id = "moon8bit-sfx-list-title";
+  #|     sfxListTitle.textContent = "All SFX";
+  #|     sfxListTitle.style.fontFamily = "monospace";
+  #|     sfxListTitle.style.fontSize = "18px";
+  #|     sfxListTitle.style.fontWeight = "600";
+  #|     sfxListPane.appendChild(sfxListTitle);
   #|   }
   #|
   #|   let sfxLegend = document.getElementById("moon8bit-sound-sfx-legend");
   #|   if (!sfxLegend) {
   #|     sfxLegend = document.createElement("div");
   #|     sfxLegend.id = "moon8bit-sound-sfx-legend";
-  #|     sfxLegend.textContent = "SFX params: Wave=oscillator type, F0/F1=frequency(Hz), ATK/DEC=seconds, VOL=volume(0..1)";
+  #|     sfxLegend.textContent = "Wave, F0/F1, ATK, DEC, VOL";
   #|     sfxLegend.style.fontFamily = "monospace";
-  #|     sfxLegend.style.fontSize = "14px";
+  #|     sfxLegend.style.fontSize = "13px";
   #|     sfxLegend.style.color = "#9fb3c8";
-  #|     soundEditor.insertBefore(sfxLegend, sfxGrid);
+  #|     sfxListPane.appendChild(sfxLegend);
   #|   }
   #|
-  #|   const renderSfxCard = (kind, title, onDelete, onDuplicate) => {
+  #|   let sfxListActions = document.getElementById("moon8bit-sfx-list-actions");
+  #|   if (!sfxListActions) {
+  #|     sfxListActions = document.createElement("div");
+  #|     sfxListActions.id = "moon8bit-sfx-list-actions";
+  #|     sfxListActions.style.display = "flex";
+  #|     sfxListActions.style.gap = "8px";
+  #|     sfxListActions.style.alignItems = "center";
+  #|     sfxListPane.appendChild(sfxListActions);
+  #|   }
+  #|
+  #|   let addSfxBtn = document.getElementById("moon8bit-sfx-add-btn");
+  #|   if (!addSfxBtn) {
+  #|     addSfxBtn = document.createElement("button");
+  #|     addSfxBtn.id = "moon8bit-sfx-add-btn";
+  #|     addSfxBtn.textContent = "+ SFX";
+  #|     addSfxBtn.style.padding = "8px 14px";
+  #|     addSfxBtn.style.background = "#1a3a1a";
+  #|     addSfxBtn.style.color = "#f6f7eb";
+  #|     addSfxBtn.style.border = "1px solid #4aa96c";
+  #|     addSfxBtn.style.cursor = "pointer";
+  #|     sfxListActions.appendChild(addSfxBtn);
+  #|   }
+  #|
+  #|   let sfxList = document.getElementById("moon8bit-sfx-list");
+  #|   if (!sfxList) {
+  #|     sfxList = document.createElement("div");
+  #|     sfxList.id = "moon8bit-sfx-list";
+  #|     sfxList.style.display = "grid";
+  #|     sfxList.style.gap = "6px";
+  #|     sfxList.style.overflowY = "auto";
+  #|     sfxList.style.minHeight = "0";
+  #|     sfxList.style.paddingRight = "4px";
+  #|     sfxListPane.appendChild(sfxList);
+  #|   }
+  #|
+  #|   let sfxEditorPane = document.getElementById("moon8bit-sfx-editor-pane");
+  #|   if (!sfxEditorPane) {
+  #|     sfxEditorPane = document.createElement("div");
+  #|     sfxEditorPane.id = "moon8bit-sfx-editor-pane";
+  #|     sfxEditorPane.style.flex = "1";
+  #|     sfxEditorPane.style.minWidth = "0";
+  #|     sfxEditorPane.style.display = "grid";
+  #|     sfxEditorPane.style.gridTemplateRows = "auto 1fr";
+  #|     sfxEditorPane.style.gap = "8px";
+  #|     sfxLayout.appendChild(sfxEditorPane);
+  #|   }
+  #|
+  #|   let sfxEditorTitle = document.getElementById("moon8bit-sfx-editor-title");
+  #|   if (!sfxEditorTitle) {
+  #|     sfxEditorTitle = document.createElement("div");
+  #|     sfxEditorTitle.id = "moon8bit-sfx-editor-title";
+  #|     sfxEditorTitle.textContent = "Selected SFX";
+  #|     sfxEditorTitle.style.fontFamily = "monospace";
+  #|     sfxEditorTitle.style.fontSize = "18px";
+  #|     sfxEditorTitle.style.fontWeight = "600";
+  #|     sfxEditorPane.appendChild(sfxEditorTitle);
+  #|   }
+  #|
+  #|   let sfxEditorHost = document.getElementById("moon8bit-sfx-editor-host");
+  #|   if (!sfxEditorHost) {
+  #|     sfxEditorHost = document.createElement("div");
+  #|     sfxEditorHost.id = "moon8bit-sfx-editor-host";
+  #|     sfxEditorHost.style.display = "grid";
+  #|     sfxEditorHost.style.gap = "8px";
+  #|     sfxEditorHost.style.minHeight = "0";
+  #|     sfxEditorPane.appendChild(sfxEditorHost);
+  #|   }
+  #|
+  #|   const renderSfxCard = (kind, title, onDelete, onDuplicate, onRename, host) => {
   #|     const profile = getSfxProfile(kind);
   #|     if (!profile) return;
   #|     const slug = soundKeyToId(kind);
   #|     const card = document.createElement("div");
   #|     card.id = `moon8bit-sfx-${slug}-card`;
   #|     card.style.display = "grid";
-  #|     card.style.gridTemplateColumns = "84px 100px 1fr 1fr 1fr 1fr 1fr 52px 52px 52px";
+  #|     card.style.gridTemplateColumns = "180px 110px 1fr 1fr 1fr 1fr 1fr 72px 72px 72px";
   #|     card.style.gap = "6px";
   #|     card.style.alignItems = "start";
   #|     card.style.padding = "6px";
   #|     card.style.border = "1px solid #334e68";
   #|     card.style.background = "#0f1720";
   #|
-  #|     const label = document.createElement("div");
-  #|     label.textContent = title;
-  #|     label.style.fontFamily = "monospace";
-  #|     label.style.fontSize = "15px";
-  #|     card.appendChild(label);
+  #|     const nameWrap = document.createElement("div");
+  #|     nameWrap.style.display = "grid";
+  #|     nameWrap.style.gap = "2px";
+  #|     const nameLabel = document.createElement("div");
+  #|     nameLabel.textContent = "Name";
+  #|     nameLabel.style.fontFamily = "monospace";
+  #|     nameLabel.style.fontSize = "13px";
+  #|     nameLabel.style.color = "#9fb3c8";
+  #|     nameWrap.appendChild(nameLabel);
+  #|     const nameRow = document.createElement("div");
+  #|     nameRow.style.display = "grid";
+  #|     nameRow.style.gridTemplateColumns = "1fr auto";
+  #|     nameRow.style.gap = "4px";
+  #|     const nameInput = document.createElement("input");
+  #|     nameInput.type = "text";
+  #|     nameInput.value = kind;
+  #|     nameInput.spellcheck = false;
+  #|     nameInput.style.width = "100%";
+  #|     nameInput.style.boxSizing = "border-box";
+  #|     nameInput.style.fontFamily = "monospace";
+  #|     nameInput.style.fontSize = "13px";
+  #|     nameRow.appendChild(nameInput);
+  #|     const renameBtn = document.createElement("button");
+  #|     renameBtn.textContent = "Rename";
+  #|     renameBtn.style.padding = "4px 8px";
+  #|     renameBtn.style.background = "#274060";
+  #|     renameBtn.style.color = "#f6f7eb";
+  #|     renameBtn.style.border = "1px solid #486581";
+  #|     renameBtn.style.cursor = "pointer";
+  #|     renameBtn.style.fontFamily = "monospace";
+  #|     renameBtn.style.fontSize = "12px";
+  #|     const runRename = () => {
+  #|       if (!onRename) return;
+  #|       const ok = onRename(kind, String(nameInput.value || ""));
+  #|       if (!ok) {
+  #|         nameInput.value = kind;
+  #|       }
+  #|     };
+  #|     renameBtn.addEventListener("click", runRename);
+  #|     nameInput.addEventListener("keydown", (ev) => {
+  #|       if (ev.key === "Enter") {
+  #|         ev.preventDefault();
+  #|         runRename();
+  #|       }
+  #|     });
+  #|     nameRow.appendChild(renameBtn);
+  #|     nameWrap.appendChild(nameRow);
+  #|     if (title !== kind) {
+  #|       const alias = document.createElement("div");
+  #|       alias.textContent = `Label: ${title}`;
+  #|       alias.style.fontFamily = "monospace";
+  #|       alias.style.fontSize = "12px";
+  #|       alias.style.color = "#9fb3c8";
+  #|       nameWrap.appendChild(alias);
+  #|     }
+  #|     card.appendChild(nameWrap);
   #|
   #|     // Wave selector
   #|     const waveWrap = document.createElement("div");
@@ -1796,7 +1970,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     });
   #|     card.appendChild(dupBtn);
   #|
-  #|     sfxGrid.appendChild(card);
+  #|     host.appendChild(card);
   #|   };
   #|
   #|   const syncBgmControlsFromState = () => {
@@ -1868,13 +2042,34 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   const refreshSoundEditorFromDsl = () => {
   #|     const events = parseSoundEventsFromDsl(textarea ? textarea.value : "");
   #|     syncBgmControlsFromState();
-  #|     eventControls.innerHTML = "";
-  #|     sfxGrid.innerHTML = "";
+  #|     sfxList.innerHTML = "";
+  #|     sfxEditorHost.innerHTML = "";
   #|     globalThis.__moon8bit_sound_events = events;
+  #|
+  #|     const eventLabelMap = new Map(events.map((e) => [e.key, e.label]));
+  #|     const orderedKeys = [];
+  #|     const seen = new Set();
+  #|     for (const e of events) {
+  #|       if (!seen.has(e.key) && getSfxProfile(e.key)) {
+  #|         seen.add(e.key);
+  #|         orderedKeys.push(e.key);
+  #|       }
+  #|     }
+  #|     for (const key of Object.keys(audioState.sfx || {})) {
+  #|       if (!seen.has(key)) {
+  #|         seen.add(key);
+  #|         orderedKeys.push(key);
+  #|       }
+  #|     }
+  #|
+  #|     if (!audioState.selectedSfxName || !getSfxProfile(audioState.selectedSfxName)) {
+  #|       audioState.selectedSfxName = orderedKeys[0] || null;
+  #|     }
   #|
   #|     const deleteSfx = (kind) => {
   #|       if (!confirm(`Delete SFX "${kind}"?`)) return;
   #|       delete audioState.sfx[kind];
+  #|       if (audioState.selectedSfxName === kind) audioState.selectedSfxName = null;
   #|       if (writeSoundToDsl(false)) {
   #|         markSaved();
   #|         refreshSoundEditorFromDsl();
@@ -1893,36 +2088,81 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|         f0: Math.round(Number(src.f0 ?? 520)),
   #|         f1: Math.round(Number(src.f1 ?? 360)),
   #|       };
+  #|       audioState.selectedSfxName = name;
   #|       if (writeSoundToDsl(false)) {
   #|         markSaved();
   #|         refreshSoundEditorFromDsl();
   #|       }
   #|     };
   #|
-  #|     events.forEach((event) => {
-  #|       const testBtn = document.createElement("button");
-  #|       testBtn.textContent = `Test ${event.label}`;
-  #|       testBtn.style.padding = "8px 14px";
-  #|       testBtn.style.background = "#274060";
-  #|       testBtn.style.color = "#f6f7eb";
-  #|       testBtn.style.border = "1px solid #486581";
-  #|       testBtn.style.cursor = "pointer";
-  #|       testBtn.addEventListener("click", () => {
-  #|         try { globalThis.__moon8bit_audio_play_sfx_impl(event.key); } catch (_) {}
-  #|       });
-  #|       eventControls.appendChild(testBtn);
+  #|     const renameSfx = (from, toRaw) => {
+  #|       const to = String(toRaw || "").trim().replace(/[^A-Za-z0-9_-]/g, "_");
+  #|       if (!to) {
+  #|         alert("Invalid name.");
+  #|         return false;
+  #|       }
+  #|       if (to === from) {
+  #|         return true;
+  #|       }
+  #|       if (audioState.sfx && audioState.sfx[to]) {
+  #|         alert("Name already in use.");
+  #|         return false;
+  #|       }
+  #|       const src = audioState.sfx && audioState.sfx[from] ? audioState.sfx[from] : null;
+  #|       if (!src) return false;
+  #|       audioState.sfx[to] = src;
+  #|       delete audioState.sfx[from];
+  #|       if (audioState.selectedSfxName === from) audioState.selectedSfxName = to;
+  #|       clearTransientErrorsByPrefix(`sfx:${from}:`);
+  #|       if (writeSoundToDsl(false)) {
+  #|         markSaved();
+  #|         refreshSoundEditorFromDsl();
+  #|         return true;
+  #|       }
+  #|       return false;
+  #|     };
   #|
-  #|       renderSfxCard(event.key, event.label, deleteSfx, duplicateSfx);
+  #|     orderedKeys.forEach((key) => {
+  #|       const label = eventLabelMap.get(key) || key;
+  #|       const item = document.createElement("button");
+  #|       item.type = "button";
+  #|       item.textContent = label;
+  #|       item.style.textAlign = "left";
+  #|       item.style.padding = "8px 10px";
+  #|       item.style.background = audioState.selectedSfxName === key ? "#2e8b57" : "#0f1720";
+  #|       item.style.color = "#f6f7eb";
+  #|       item.style.border = audioState.selectedSfxName === key ? "1px solid #6ee7b7" : "1px solid #334e68";
+  #|       item.style.cursor = "pointer";
+  #|       item.style.fontFamily = "monospace";
+  #|       item.style.fontSize = "14px";
+  #|       item.addEventListener("click", () => {
+  #|         audioState.selectedSfxName = key;
+  #|         refreshSoundEditorFromDsl();
+  #|       });
+  #|       sfxList.appendChild(item);
   #|     });
   #|
-  #|     // Add SFX button
-  #|     const addSfxBtn = document.createElement("button");
-  #|     addSfxBtn.textContent = "+ SFX";
-  #|     addSfxBtn.style.padding = "8px 14px";
-  #|     addSfxBtn.style.background = "#1a3a1a";
-  #|     addSfxBtn.style.color = "#f6f7eb";
-  #|     addSfxBtn.style.border = "1px solid #4aa96c";
-  #|     addSfxBtn.style.cursor = "pointer";
+  #|     if (audioState.selectedSfxName && getSfxProfile(audioState.selectedSfxName)) {
+  #|       const key = audioState.selectedSfxName;
+  #|       const label = eventLabelMap.get(key) || key;
+  #|       renderSfxCard(key, label, deleteSfx, duplicateSfx, renameSfx, sfxEditorHost);
+  #|     }
+  #|
+  #|     if (orderedKeys.length === 0) {
+  #|       const note = document.createElement("div");
+  #|       note.style.fontFamily = "monospace";
+  #|       note.style.fontSize = "15px";
+  #|       note.style.color = "#9fb3c8";
+  #|       note.textContent = "No SFX defined. Click + SFX to add one.";
+  #|       sfxEditorHost.appendChild(note);
+  #|     }
+  #|
+  #|     updateSoundDirtyIndicator();
+  #|     renderSoundValidation();
+  #|   };
+  #|
+  #|   if (addSfxBtn.dataset.bound !== "1") {
+  #|     addSfxBtn.dataset.bound = "1";
   #|     addSfxBtn.addEventListener("click", () => {
   #|       let name = prompt("New SFX name:", "sfx" + (Object.keys(audioState.sfx || {}).length + 1));
   #|       if (!name) return;
@@ -1931,25 +2171,13 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       if (audioState.sfx && audioState.sfx[name]) { alert("Name already in use."); return; }
   #|       if (!audioState.sfx) audioState.sfx = {};
   #|       audioState.sfx[name] = { type: "square", attack: 0.003, decay: 0.10, volume: 0.07, f0: 520, f1: 360 };
+  #|       audioState.selectedSfxName = name;
   #|       if (writeSoundToDsl(false)) {
   #|         markSaved();
   #|         refreshSoundEditorFromDsl();
   #|       }
   #|     });
-  #|     eventControls.appendChild(addSfxBtn);
-  #|
-  #|     if (events.length === 0) {
-  #|       const note = document.createElement("div");
-  #|       note.style.fontFamily = "monospace";
-  #|       note.style.fontSize = "15px";
-  #|       note.style.color = "#9fb3c8";
-  #|       note.textContent = "No SFX defined. Click + SFX to add one.";
-  #|       sfxGrid.appendChild(note);
-  #|     }
-  #|
-  #|     updateSoundDirtyIndicator();
-  #|     renderSoundValidation();
-  #|   };
+  #|   }
   #|
   #|   if (textarea && !globalThis.__moon8bit_sound_bound) {
   #|     textarea.addEventListener("input", refreshSoundEditorFromDsl);
