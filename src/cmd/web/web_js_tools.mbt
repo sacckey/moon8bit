@@ -192,42 +192,6 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|   }
   #|   select.style.display = "none";
   #|
-  #|   let syncBtn = document.getElementById("moon8bit-sprite-sync-btn");
-  #|   if (!syncBtn) {
-  #|     syncBtn = document.createElement("button");
-  #|     syncBtn.id = "moon8bit-sprite-sync-btn";
-  #|     syncBtn.textContent = "Sync from DSL";
-  #|     syncBtn.style.padding = "4px 8px";
-  #|     syncBtn.style.background = "#486581";
-  #|     syncBtn.style.color = "#f6f7eb";
-  #|     syncBtn.style.border = "1px solid #627d98";
-  #|     row.appendChild(syncBtn);
-  #|   }
-  #|
-  #|   let writeBtn = document.getElementById("moon8bit-sprite-write-btn");
-  #|   if (!writeBtn) {
-  #|     writeBtn = document.createElement("button");
-  #|     writeBtn.id = "moon8bit-sprite-write-btn";
-  #|     writeBtn.textContent = "Write to DSL";
-  #|     writeBtn.style.padding = "4px 8px";
-  #|     writeBtn.style.background = "#274060";
-  #|     writeBtn.style.color = "#f6f7eb";
-  #|     writeBtn.style.border = "1px solid #486581";
-  #|     row.appendChild(writeBtn);
-  #|   }
-  #|
-  #|   let applyBtn = document.getElementById("moon8bit-sprite-apply-btn");
-  #|   if (!applyBtn) {
-  #|     applyBtn = document.createElement("button");
-  #|     applyBtn.id = "moon8bit-sprite-apply-btn";
-  #|     applyBtn.textContent = "Write + Apply";
-  #|     applyBtn.style.padding = "4px 8px";
-  #|     applyBtn.style.background = "#2e8b57";
-  #|     applyBtn.style.color = "#f6f7eb";
-  #|     applyBtn.style.border = "1px solid #4aa96c";
-  #|     row.appendChild(applyBtn);
-  #|   }
-  #|
   #|   let dupBtn = document.getElementById("moon8bit-sprite-dup-btn");
   #|   if (!dupBtn) {
   #|     dupBtn = document.createElement("button");
@@ -238,6 +202,18 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     dupBtn.style.color = "#f6f7eb";
   #|     dupBtn.style.border = "1px solid #486581";
   #|     row.appendChild(dupBtn);
+  #|   }
+  #|
+  #|   let delBtn = document.getElementById("moon8bit-sprite-del-btn");
+  #|   if (!delBtn) {
+  #|     delBtn = document.createElement("button");
+  #|     delBtn.id = "moon8bit-sprite-del-btn";
+  #|     delBtn.textContent = "Del";
+  #|     delBtn.style.padding = "4px 8px";
+  #|     delBtn.style.background = "#7a2e2e";
+  #|     delBtn.style.color = "#f6f7eb";
+  #|     delBtn.style.border = "1px solid #964040";
+  #|     row.appendChild(delBtn);
   #|   }
   #|
   #|   let paletteRow = document.getElementById("moon8bit-sprite-palette");
@@ -290,6 +266,7 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     };
   #|   }
   #|   const state = globalThis.__moon8bit_sprite_state;
+  #|   let spriteAutoWriteTimer = null;
   #|
   #|   const decodeSym = (ch) => {
   #|     if (ch === ".") return -1;
@@ -631,6 +608,41 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     }
   #|   };
   #|
+  #|   const scheduleSpriteAutoWrite = () => {
+  #|     if (spriteAutoWriteTimer !== null) {
+  #|       clearTimeout(spriteAutoWriteTimer);
+  #|     }
+  #|     spriteAutoWriteTimer = setTimeout(() => {
+  #|       spriteAutoWriteTimer = null;
+  #|       writeSpriteToDsl(false);
+  #|     }, 60);
+  #|   };
+  #|
+  #|   const deleteSelectedSprite = () => {
+  #|     const sprite = activeSprite();
+  #|     if (!sprite) return;
+  #|     const lines = state.lines.slice();
+  #|     const start = Math.max(0, sprite.headerLine);
+  #|     const end = Math.max(start, sprite.endLine);
+  #|     const count = end - start + 1;
+  #|     if (count <= 0 || start >= lines.length) return;
+  #|     lines.splice(start, count);
+  #|     let text = lines.join("\n").replace(/\n{3,}/g, "\n\n");
+  #|     if (text.trim() !== "") {
+  #|       text = text.replace(/\s+$/, "") + "\n";
+  #|     }
+  #|     textarea.value = text;
+  #|     const nextIdx = Math.max(0, state.selectedSprite - 1);
+  #|     refreshFromText();
+  #|     if (state.sprites.length > 0) {
+  #|       state.selectedSprite = Math.min(nextIdx, state.sprites.length - 1);
+  #|       select.value = String(state.selectedSprite);
+  #|     }
+  #|     renderSelectedMeta();
+  #|     renderSpriteList();
+  #|     renderCanvas();
+  #|   };
+  #|
   #|   const refreshFromText = () => {
   #|     const parsed = parseDsl(textarea.value);
   #|     state.lines = parsed.lines;
@@ -673,6 +685,7 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     const erase = (evt.buttons & 2) !== 0;
   #|     sprite.pixels[y * sprite.width + x] = erase ? -1 : state.selectedColor;
   #|     renderCanvas();
+  #|     scheduleSpriteAutoWrite();
   #|   };
   #|
   #|   if (!globalThis.__moon8bit_sprite_bound) {
@@ -686,16 +699,15 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|       applyMetaFromUi();
   #|       renderSpriteList();
   #|       renderCanvas();
+  #|       scheduleSpriteAutoWrite();
   #|     });
   #|     sizeSelect.addEventListener("change", () => {
   #|       applyMetaFromUi();
   #|       renderSelectedMeta();
   #|       renderSpriteList();
   #|       renderCanvas();
+  #|       scheduleSpriteAutoWrite();
   #|     });
-  #|     syncBtn.addEventListener("click", refreshFromText);
-  #|     writeBtn.addEventListener("click", () => writeSpriteToDsl(false));
-  #|     applyBtn.addEventListener("click", () => writeSpriteToDsl(true));
   #|     dupBtn.addEventListener("click", () => {
   #|       const src = activeSprite();
   #|       if (!src) return;
@@ -722,6 +734,12 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|       renderSelectedMeta();
   #|       renderSpriteList();
   #|       renderCanvas();
+  #|     });
+  #|     delBtn.addEventListener("click", () => {
+  #|       const sprite = activeSprite();
+  #|       if (!sprite) return;
+  #|       if (globalThis.confirm && !globalThis.confirm(`Delete sprite "${sprite.name}"?`)) return;
+  #|       deleteSelectedSprite();
   #|     });
   #|     addSpriteBtn.addEventListener("click", () => {
   #|       const name = uniqueSpriteName("sprite");
@@ -953,9 +971,6 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     return btn;
   #|   };
   #|
-  #|   const syncBtn = ensureBtn("moon8bit-tilemap-sync-btn", "Sync from DSL", "#486581", "#627d98");
-  #|   const writeBtn = ensureBtn("moon8bit-tilemap-write-btn", "Write to DSL", "#274060", "#486581");
-  #|   const applyBtn = ensureBtn("moon8bit-tilemap-apply-btn", "Write + Apply", "#2e8b57", "#4aa96c");
   #|   const addMapBtn = ensureBtn("moon8bit-tilemap-add-btn", "+ Map", "#274060", "#486581");
   #|   const delMapBtn = ensureBtn("moon8bit-tilemap-del-btn", "Del Map", "#7a2e2e", "#964040");
   #|   const resizeMapBtn = ensureBtn("moon8bit-tilemap-resize-btn", "Resize", "#486581", "#627d98");
@@ -1295,14 +1310,28 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     };
   #|   }
   #|   const state = globalThis.__moon8bit_tilemap_state;
+  #|   let tilemapAutoWriteTimer = null;
   #|   if (!("tileClipboard" in state)) {
   #|     state.tileClipboard = null;
   #|   }
   #|
-  #|   const setDirty = (v) => {
+  #|   function scheduleTilemapAutoWrite() {
+  #|     if (tilemapAutoWriteTimer !== null) {
+  #|       clearTimeout(tilemapAutoWriteTimer);
+  #|     }
+  #|     tilemapAutoWriteTimer = setTimeout(() => {
+  #|       tilemapAutoWriteTimer = null;
+  #|       writeTilemapToDsl(false);
+  #|     }, 80);
+  #|   }
+  #|
+  #|   const setDirty = (v, autoWrite = true) => {
   #|     state.dirty = !!v;
   #|     dirty.textContent = state.dirty ? "Modified" : "Saved";
   #|     dirty.style.color = state.dirty ? "#efb366" : "#7bd389";
+  #|     if (state.dirty && autoWrite) {
+  #|       scheduleTilemapAutoWrite();
+  #|     }
   #|   };
   #|   const setFeedback = (msg, isErr = false) => {
   #|     feedback.textContent = msg || "";
@@ -2170,14 +2199,15 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     const y = Math.floor((evt.clientY - rect.top) / state.tileCell);
   #|     if (x < 0 || y < 0 || x >= 8 || y >= 8) return;
   #|     const erase = ((evt.buttons & 2) !== 0) || !!evt.shiftKey;
+  #|     const next = erase ? -1 : state.selectedTileColor;
   #|     const base = id * 64;
-  #|     ts.pixels[base + y * 8 + x] = erase ? -1 : state.selectedTileColor;
+  #|     const idx = base + y * 8 + x;
+  #|     if (ts.pixels[idx] === next) return;
+  #|     ts.pixels[idx] = next;
   #|     ts.tile_defined[id] = true;
-  #|     setDirty(true);
+  #|     setDirty(true, false);
+  #|     tilePaintPending = true;
   #|     renderTileCanvas();
-  #|     renderTileThumbnails();
-  #|     renderMapTileThumbnails();
-  #|     renderCanvas();
   #|   };
   #|
   #|   const nextMapName = () => {
@@ -2315,6 +2345,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     renderCanvas();
   #|     return true;
   #|   };
+  #|   let tilePaintPending = false;
   #|
   #|   if (!globalThis.__moon8bit_tilemap_bound) {
   #|     mapSelect.addEventListener("change", () => {
@@ -2357,9 +2388,6 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       renderTileThumbnails();
   #|       renderMapTileThumbnails();
   #|     });
-  #|     syncBtn.addEventListener("click", refreshFromText);
-  #|     writeBtn.addEventListener("click", () => writeTilemapToDsl(false));
-  #|     applyBtn.addEventListener("click", () => writeTilemapToDsl(true));
   #|     addMapBtn.addEventListener("click", addMap);
   #|     delMapBtn.addEventListener("click", deleteMap);
   #|     resizeMapBtn.addEventListener("click", resizeMap);
@@ -2382,12 +2410,20 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     let tileDrawing = false;
   #|     tileCanvas.addEventListener("pointerdown", (evt) => {
   #|       tileDrawing = true;
+  #|       tilePaintPending = false;
   #|       paintTileAt(evt);
   #|     });
   #|     tileCanvas.addEventListener("pointermove", (evt) => {
   #|       if (tileDrawing) paintTileAt(evt);
   #|     });
   #|     globalThis.addEventListener("pointerup", () => {
+  #|       if (tileDrawing && tilePaintPending) {
+  #|         tilePaintPending = false;
+  #|         renderTileThumbnails();
+  #|         renderMapTileThumbnails();
+  #|         renderCanvas();
+  #|         scheduleTilemapAutoWrite();
+  #|       }
   #|       tileDrawing = false;
   #|     });
   #|     tileCanvas.addEventListener("contextmenu", (evt) => evt.preventDefault());

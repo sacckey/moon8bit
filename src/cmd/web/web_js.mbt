@@ -330,13 +330,15 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   if (!button) {
   #|     button = document.createElement("button");
   #|     button.id = "moon8bit-apply-btn";
-  #|     button.textContent = "Apply DSL";
+  #|     button.textContent = "Apply";
   #|     button.style.padding = "8px 14px";
-  #|     button.style.background = "#274060";
+  #|     button.style.background = "#1d4ed8";
   #|     button.style.color = "#f6f7eb";
-  #|     button.style.border = "1px solid #486581";
+  #|     button.style.border = "1px solid #60a5fa";
   #|     button.style.cursor = "pointer";
-  #|     controls.appendChild(button);
+  #|   }
+  #|   if (button.parentElement !== tabButtons) {
+  #|     tabButtons.appendChild(button);
   #|   }
   #|
   #|   let exportButton = document.getElementById("moon8bit-export-btn");
@@ -462,40 +464,6 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     soundEditor.appendChild(soundActionRow);
   #|   }
   #|
-  #|   const ensureSoundActionButton = (id, label, bg, border) => {
-  #|     let btn = document.getElementById(id);
-  #|     if (!btn) {
-  #|       btn = document.createElement("button");
-  #|       btn.id = id;
-  #|       btn.textContent = label;
-  #|       btn.style.padding = "6px 12px";
-  #|       btn.style.background = bg;
-  #|       btn.style.color = "#f6f7eb";
-  #|       btn.style.border = `1px solid ${border}`;
-  #|       btn.style.cursor = "pointer";
-  #|       soundActionRow.appendChild(btn);
-  #|     }
-  #|     return btn;
-  #|   };
-  #|
-  #|   const soundSyncBtn = ensureSoundActionButton(
-  #|     "moon8bit-sound-sync-btn",
-  #|     "Sync from DSL",
-  #|     "#486581",
-  #|     "#627d98",
-  #|   );
-  #|   const soundWriteBtn = ensureSoundActionButton(
-  #|     "moon8bit-sound-write-btn",
-  #|     "Write to DSL",
-  #|     "#274060",
-  #|     "#486581",
-  #|   );
-  #|   const soundApplyBtn = ensureSoundActionButton(
-  #|     "moon8bit-sound-apply-btn",
-  #|     "Write + Apply",
-  #|     "#2e8b57",
-  #|     "#4aa96c",
-  #|   );
   #|   let soundDirtyIndicator = document.getElementById("moon8bit-sound-dirty");
   #|   if (!soundDirtyIndicator) {
   #|     soundDirtyIndicator = document.createElement("span");
@@ -813,8 +781,6 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     if (errors.length == 0) {
   #|       soundValidation.textContent = "Validation: OK";
   #|       soundValidation.style.color = "#7bd389";
-  #|       soundWriteBtn.disabled = false;
-  #|       soundApplyBtn.disabled = false;
   #|       return true;
   #|     }
   #|     let text = `Validation errors (${errors.length}):`;
@@ -827,8 +793,6 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     }
   #|     soundValidation.textContent = text;
   #|     soundValidation.style.color = "#ef6f6c";
-  #|     soundWriteBtn.disabled = true;
-  #|     soundApplyBtn.disabled = true;
   #|     return false;
   #|   };
   #|   const parseSoundEventsFromDsl = (text) => {
@@ -1377,6 +1341,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|
   #|   const getSelectedBgm = () =>
   #|     audioState.bgms.find((b) => b.name === audioState.selectedBgmName) || null;
+  #|   let soundAutoWriteTimer = null;
   #|
   #|   const updateSoundDirtyIndicator = () => {
   #|     const dirtyIndicator = document.getElementById("moon8bit-sound-dirty");
@@ -1404,10 +1369,23 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     }
   #|   };
   #|
+  #|   const scheduleSoundAutoWrite = () => {
+  #|     if (soundAutoWriteTimer !== null) {
+  #|       clearTimeout(soundAutoWriteTimer);
+  #|     }
+  #|     soundAutoWriteTimer = setTimeout(() => {
+  #|       soundAutoWriteTimer = null;
+  #|       if (writeSoundToDsl(false)) {
+  #|         markSaved();
+  #|       }
+  #|     }, 120);
+  #|   };
+  #|
   #|   const markDirty = () => {
   #|     audioState.dirty = true;
   #|     updateSoundDirtyIndicator();
   #|     renderSoundValidation();
+  #|     scheduleSoundAutoWrite();
   #|   };
   #|   const markSaved = () => {
   #|     audioState.dirty = false;
@@ -2645,36 +2623,6 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|
   #|   if (textarea && !globalThis.__moon8bit_sound_bound) {
   #|     textarea.addEventListener("input", refreshSoundEditorFromDsl);
-  #|     soundSyncBtn.addEventListener("click", () => {
-  #|       const bundle = parseSoundBundleFromDsl(textarea.value);
-  #|       applySoundBundleToState(bundle);
-  #|       if (feedback) {
-  #|         if (Array.isArray(bundle.errors) && bundle.errors.length > 0) {
-  #|           const maxLines = Math.min(4, bundle.errors.length);
-  #|           let msg = `Sound DSL sync warnings (${bundle.errors.length}):`;
-  #|           for (let i = 0; i < maxLines; i += 1) msg += `\n- ${bundle.errors[i]}`;
-  #|           if (bundle.errors.length > maxLines) msg += `\n... and ${bundle.errors.length - maxLines} more`;
-  #|           feedback.textContent = msg;
-  #|           feedback.style.color = "#e8c547";
-  #|         } else {
-  #|           feedback.textContent = "Sound DSL synced.";
-  #|           feedback.style.color = "#9fb3c8";
-  #|         }
-  #|       }
-  #|       refreshSoundEditorFromDsl();
-  #|     });
-  #|     soundWriteBtn.addEventListener("click", () => {
-  #|       if (writeSoundToDsl(false)) {
-  #|         markSaved();
-  #|         refreshSoundEditorFromDsl();
-  #|       }
-  #|     });
-  #|     soundApplyBtn.addEventListener("click", () => {
-  #|       if (writeSoundToDsl(true)) {
-  #|         markSaved();
-  #|         refreshSoundEditorFromDsl();
-  #|       }
-  #|     });
   #|     globalThis.__moon8bit_sound_bound = true;
   #|   }
   #|   globalThis.__moon8bit_sound_refresh = refreshSoundEditorFromDsl;
