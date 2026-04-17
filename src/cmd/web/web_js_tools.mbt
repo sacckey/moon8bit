@@ -12,11 +12,59 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     panel = document.createElement("div");
   #|     panel.id = "moon8bit-sprite-panel";
   #|     panel.style.display = "grid";
-  #|     panel.style.gap = "6px";
+  #|     panel.style.gap = "10px";
   #|     panel.style.padding = "8px";
   #|     panel.style.border = "1px solid #334e68";
   #|     panel.style.background = "#111827";
   #|     editor.appendChild(panel);
+  #|   }
+  #|   if (panel.parentElement !== editor) {
+  #|     editor.appendChild(panel);
+  #|   }
+  #|
+  #|   let layout = document.getElementById("moon8bit-sprite-layout");
+  #|   if (!layout) {
+  #|     layout = document.createElement("div");
+  #|     layout.id = "moon8bit-sprite-layout";
+  #|     layout.style.display = "flex";
+  #|     layout.style.flexDirection = "row";
+  #|     layout.style.alignItems = "flex-start";
+  #|     layout.style.flexWrap = "nowrap";
+  #|     layout.style.overflowX = "auto";
+  #|     layout.style.gap = "24px";
+  #|     panel.appendChild(layout);
+  #|   }
+  #|
+  #|   let listPane = document.getElementById("moon8bit-sprite-list-pane");
+  #|   if (!listPane) {
+  #|     listPane = document.createElement("div");
+  #|     listPane.id = "moon8bit-sprite-list-pane";
+  #|     listPane.style.display = "grid";
+  #|     listPane.style.gap = "10px";
+  #|     listPane.style.alignContent = "start";
+  #|     listPane.style.flex = "0 0 360px";
+  #|     listPane.style.width = "360px";
+  #|     listPane.style.minWidth = "360px";
+  #|     listPane.style.maxWidth = "360px";
+  #|     listPane.style.padding = "10px";
+  #|     listPane.style.background = "#0f1720";
+  #|     listPane.style.maxHeight = "70vh";
+  #|     listPane.style.overflowY = "auto";
+  #|     layout.appendChild(listPane);
+  #|   }
+  #|
+  #|   let mainPane = document.getElementById("moon8bit-sprite-main-pane");
+  #|   if (!mainPane) {
+  #|     mainPane = document.createElement("div");
+  #|     mainPane.id = "moon8bit-sprite-main-pane";
+  #|     mainPane.style.display = "grid";
+  #|     mainPane.style.gap = "10px";
+  #|     mainPane.style.alignContent = "start";
+  #|     mainPane.style.flex = "1 1 auto";
+  #|     mainPane.style.minWidth = "0";
+  #|     mainPane.style.padding = "10px";
+  #|     mainPane.style.background = "#0f1720";
+  #|     layout.appendChild(mainPane);
   #|   }
   #|
   #|   let title = document.getElementById("moon8bit-sprite-title");
@@ -26,7 +74,44 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     title.textContent = "Sprite Editor (8/16/32)";
   #|     title.style.fontWeight = "600";
   #|     title.style.fontFamily = "monospace";
-  #|     panel.appendChild(title);
+  #|     mainPane.appendChild(title);
+  #|   }
+  #|   title.style.fontSize = "18px";
+  #|   if (title.parentElement !== mainPane) {
+  #|     mainPane.appendChild(title);
+  #|   }
+  #|
+  #|   let listTitle = document.getElementById("moon8bit-sprite-list-title");
+  #|   if (!listTitle) {
+  #|     listTitle = document.createElement("div");
+  #|     listTitle.id = "moon8bit-sprite-list-title";
+  #|     listTitle.textContent = "All Sprites";
+  #|     listTitle.style.fontWeight = "600";
+  #|     listTitle.style.fontFamily = "monospace";
+  #|     listTitle.style.fontSize = "18px";
+  #|     listPane.appendChild(listTitle);
+  #|   }
+  #|
+  #|   let addSpriteBtn = document.getElementById("moon8bit-sprite-add-btn");
+  #|   if (!addSpriteBtn) {
+  #|     addSpriteBtn = document.createElement("button");
+  #|     addSpriteBtn.id = "moon8bit-sprite-add-btn";
+  #|     addSpriteBtn.textContent = "+ Sprite";
+  #|     addSpriteBtn.style.padding = "8px 14px";
+  #|     addSpriteBtn.style.background = "#1a3a1a";
+  #|     addSpriteBtn.style.color = "#f6f7eb";
+  #|     addSpriteBtn.style.border = "1px solid #4aa96c";
+  #|     addSpriteBtn.style.cursor = "pointer";
+  #|     listPane.appendChild(addSpriteBtn);
+  #|   }
+  #|
+  #|   let listGrid = document.getElementById("moon8bit-sprite-list");
+  #|   if (!listGrid) {
+  #|     listGrid = document.createElement("div");
+  #|     listGrid.id = "moon8bit-sprite-list";
+  #|     listGrid.style.display = "grid";
+  #|     listGrid.style.gap = "6px";
+  #|     listPane.appendChild(listGrid);
   #|   }
   #|
   #|   let row = document.getElementById("moon8bit-sprite-row");
@@ -37,7 +122,63 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     row.style.gap = "6px";
   #|     row.style.flexWrap = "wrap";
   #|     row.style.alignItems = "center";
-  #|     panel.appendChild(row);
+  #|     mainPane.appendChild(row);
+  #|   }
+  #|   if (row.parentElement !== mainPane) {
+  #|     mainPane.appendChild(row);
+  #|   }
+  #|
+  #|   let nameLabel = document.getElementById("moon8bit-sprite-name-label");
+  #|   if (!nameLabel) {
+  #|     nameLabel = document.createElement("label");
+  #|     nameLabel.id = "moon8bit-sprite-name-label";
+  #|     nameLabel.textContent = "Name";
+  #|     nameLabel.style.fontFamily = "monospace";
+  #|     nameLabel.style.fontSize = "12px";
+  #|     nameLabel.style.opacity = "0.8";
+  #|     row.appendChild(nameLabel);
+  #|   }
+  #|
+  #|   let nameInput = document.getElementById("moon8bit-sprite-name");
+  #|   if (!nameInput) {
+  #|     nameInput = document.createElement("input");
+  #|     nameInput.id = "moon8bit-sprite-name";
+  #|     nameInput.type = "text";
+  #|     nameInput.placeholder = "sprite_name";
+  #|     nameInput.style.width = "170px";
+  #|     nameInput.style.background = "#0f1720";
+  #|     nameInput.style.color = "#d9e2ec";
+  #|     nameInput.style.border = "1px solid #486581";
+  #|     nameInput.style.padding = "4px 6px";
+  #|     row.appendChild(nameInput);
+  #|   }
+  #|
+  #|   let sizeLabel = document.getElementById("moon8bit-sprite-size-label");
+  #|   if (!sizeLabel) {
+  #|     sizeLabel = document.createElement("label");
+  #|     sizeLabel.id = "moon8bit-sprite-size-label";
+  #|     sizeLabel.textContent = "Size";
+  #|     sizeLabel.style.fontFamily = "monospace";
+  #|     sizeLabel.style.fontSize = "12px";
+  #|     sizeLabel.style.opacity = "0.8";
+  #|     row.appendChild(sizeLabel);
+  #|   }
+  #|
+  #|   let sizeSelect = document.getElementById("moon8bit-sprite-size");
+  #|   if (!sizeSelect) {
+  #|     sizeSelect = document.createElement("select");
+  #|     sizeSelect.id = "moon8bit-sprite-size";
+  #|     sizeSelect.style.background = "#0f1720";
+  #|     sizeSelect.style.color = "#d9e2ec";
+  #|     sizeSelect.style.border = "1px solid #486581";
+  #|     sizeSelect.style.padding = "4px 6px";
+  #|     [8, 16, 32].forEach((n) => {
+  #|       const opt = document.createElement("option");
+  #|       opt.value = String(n);
+  #|       opt.textContent = `${n}x${n}`;
+  #|       sizeSelect.appendChild(opt);
+  #|     });
+  #|     row.appendChild(sizeSelect);
   #|   }
   #|
   #|   let select = document.getElementById("moon8bit-sprite-select");
@@ -49,41 +190,30 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     select.style.border = "1px solid #486581";
   #|     row.appendChild(select);
   #|   }
+  #|   select.style.display = "none";
   #|
-  #|   let syncBtn = document.getElementById("moon8bit-sprite-sync-btn");
-  #|   if (!syncBtn) {
-  #|     syncBtn = document.createElement("button");
-  #|     syncBtn.id = "moon8bit-sprite-sync-btn";
-  #|     syncBtn.textContent = "Sync from DSL";
-  #|     syncBtn.style.padding = "4px 8px";
-  #|     syncBtn.style.background = "#486581";
-  #|     syncBtn.style.color = "#f6f7eb";
-  #|     syncBtn.style.border = "1px solid #627d98";
-  #|     row.appendChild(syncBtn);
+  #|   let dupBtn = document.getElementById("moon8bit-sprite-dup-btn");
+  #|   if (!dupBtn) {
+  #|     dupBtn = document.createElement("button");
+  #|     dupBtn.id = "moon8bit-sprite-dup-btn";
+  #|     dupBtn.textContent = "Dup";
+  #|     dupBtn.style.padding = "4px 8px";
+  #|     dupBtn.style.background = "#355070";
+  #|     dupBtn.style.color = "#f6f7eb";
+  #|     dupBtn.style.border = "1px solid #486581";
+  #|     row.appendChild(dupBtn);
   #|   }
   #|
-  #|   let writeBtn = document.getElementById("moon8bit-sprite-write-btn");
-  #|   if (!writeBtn) {
-  #|     writeBtn = document.createElement("button");
-  #|     writeBtn.id = "moon8bit-sprite-write-btn";
-  #|     writeBtn.textContent = "Write to DSL";
-  #|     writeBtn.style.padding = "4px 8px";
-  #|     writeBtn.style.background = "#274060";
-  #|     writeBtn.style.color = "#f6f7eb";
-  #|     writeBtn.style.border = "1px solid #486581";
-  #|     row.appendChild(writeBtn);
-  #|   }
-  #|
-  #|   let applyBtn = document.getElementById("moon8bit-sprite-apply-btn");
-  #|   if (!applyBtn) {
-  #|     applyBtn = document.createElement("button");
-  #|     applyBtn.id = "moon8bit-sprite-apply-btn";
-  #|     applyBtn.textContent = "Write + Apply";
-  #|     applyBtn.style.padding = "4px 8px";
-  #|     applyBtn.style.background = "#2e8b57";
-  #|     applyBtn.style.color = "#f6f7eb";
-  #|     applyBtn.style.border = "1px solid #4aa96c";
-  #|     row.appendChild(applyBtn);
+  #|   let delBtn = document.getElementById("moon8bit-sprite-del-btn");
+  #|   if (!delBtn) {
+  #|     delBtn = document.createElement("button");
+  #|     delBtn.id = "moon8bit-sprite-del-btn";
+  #|     delBtn.textContent = "Del";
+  #|     delBtn.style.padding = "4px 8px";
+  #|     delBtn.style.background = "#7a2e2e";
+  #|     delBtn.style.color = "#f6f7eb";
+  #|     delBtn.style.border = "1px solid #964040";
+  #|     row.appendChild(delBtn);
   #|   }
   #|
   #|   let paletteRow = document.getElementById("moon8bit-sprite-palette");
@@ -93,7 +223,10 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     paletteRow.style.display = "flex";
   #|     paletteRow.style.flexWrap = "wrap";
   #|     paletteRow.style.gap = "4px";
-  #|     panel.appendChild(paletteRow);
+  #|     mainPane.appendChild(paletteRow);
+  #|   }
+  #|   if (paletteRow.parentElement !== mainPane) {
+  #|     mainPane.appendChild(paletteRow);
   #|   }
   #|
   #|   let canvas = document.getElementById("moon8bit-sprite-canvas");
@@ -103,7 +236,10 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     canvas.style.border = "1px solid #334e68";
   #|     canvas.style.imageRendering = "pixelated";
   #|     canvas.style.touchAction = "none";
-  #|     panel.appendChild(canvas);
+  #|     mainPane.appendChild(canvas);
+  #|   }
+  #|   if (canvas.parentElement !== mainPane) {
+  #|     mainPane.appendChild(canvas);
   #|   }
   #|
   #|   let info = document.getElementById("moon8bit-sprite-info");
@@ -113,7 +249,10 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     info.style.fontFamily = "monospace";
   #|     info.style.fontSize = "12px";
   #|     info.style.opacity = "0.8";
-  #|     panel.appendChild(info);
+  #|     mainPane.appendChild(info);
+  #|   }
+  #|   if (info.parentElement !== mainPane) {
+  #|     mainPane.appendChild(info);
   #|   }
   #|
   #|   if (!globalThis.__moon8bit_sprite_state) {
@@ -127,6 +266,7 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     };
   #|   }
   #|   const state = globalThis.__moon8bit_sprite_state;
+  #|   let spriteAutoWriteTimer = null;
   #|
   #|   const decodeSym = (ch) => {
   #|     if (ch === ".") return -1;
@@ -195,6 +335,30 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|   const colorFor = (idx) => {
   #|     if (idx < 0) return null;
   #|     return state.palette[idx] || fallbackPalette[idx % fallbackPalette.length] || "#ffffff";
+  #|   };
+  #|
+  #|   const uniqueSpriteName = (base) => {
+  #|     const used = new Set(state.sprites.map((sp) => sp.name));
+  #|     if (!used.has(base)) return base;
+  #|     let i = 1;
+  #|     while (used.has(`${base}_${i}`)) i += 1;
+  #|     return `${base}_${i}`;
+  #|   };
+  #|
+  #|   const drawSpritePreview = (ctx, sprite, px, py, cell) => {
+  #|     const dot = Math.max(1, Math.floor(cell / Math.max(sprite.width, sprite.height)));
+  #|     const dw = sprite.width * dot;
+  #|     const dh = sprite.height * dot;
+  #|     const ox = px + Math.floor((cell - dw) / 2);
+  #|     const oy = py + Math.floor((cell - dh) / 2);
+  #|     for (let y = 0; y < sprite.height; y++) {
+  #|       for (let x = 0; x < sprite.width; x++) {
+  #|         const ci = sprite.pixels[y * sprite.width + x];
+  #|         if (ci < 0) continue;
+  #|         ctx.fillStyle = colorFor(ci) || "#ffffff";
+  #|         ctx.fillRect(ox + x * dot, oy + y * dot, dot, dot);
+  #|       }
+  #|     }
   #|   };
   #|
   #|   const renderPalette = () => {
@@ -284,6 +448,73 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     }
   #|   };
   #|
+  #|   const renderSpriteList = () => {
+  #|     listGrid.innerHTML = "";
+  #|     listTitle.textContent = `All Sprites (${state.sprites.length})`;
+  #|     if (state.sprites.length === 0) return;
+  #|     const selectedIdx = Math.max(0, Math.min(state.selectedSprite, state.sprites.length - 1));
+  #|
+  #|     state.sprites.forEach((sp, i) => {
+  #|       const rowBtn = document.createElement("button");
+  #|       rowBtn.type = "button";
+  #|       rowBtn.style.display = "grid";
+  #|       rowBtn.style.gridTemplateColumns = "56px 1fr";
+  #|       rowBtn.style.gap = "10px";
+  #|       rowBtn.style.alignItems = "center";
+  #|       rowBtn.style.padding = "6px";
+  #|       rowBtn.style.background = "#0f1720";
+  #|       rowBtn.style.color = "#d9e2ec";
+  #|       rowBtn.style.border = i === selectedIdx ? "2px solid #4aa96c" : "1px solid #334e68";
+  #|       rowBtn.style.cursor = "pointer";
+  #|       rowBtn.style.textAlign = "left";
+  #|
+  #|       const preview = document.createElement("canvas");
+  #|       preview.width = 48;
+  #|       preview.height = 48;
+  #|       preview.style.width = "48px";
+  #|       preview.style.height = "48px";
+  #|       preview.style.imageRendering = "pixelated";
+  #|       preview.style.display = "block";
+  #|       const pctx = preview.getContext("2d");
+  #|       if (pctx) {
+  #|         pctx.imageSmoothingEnabled = false;
+  #|         pctx.fillStyle = "#1f2a37";
+  #|         pctx.fillRect(0, 0, 48, 48);
+  #|         pctx.fillStyle = "#334e68";
+  #|         pctx.fillRect(0, 0, 24, 24);
+  #|         pctx.fillRect(24, 24, 24, 24);
+  #|         drawSpritePreview(pctx, sp, 0, 0, 48);
+  #|       }
+  #|       rowBtn.appendChild(preview);
+  #|
+  #|       const meta = document.createElement("div");
+  #|       meta.style.display = "grid";
+  #|       meta.style.gap = "2px";
+  #|       const nm = document.createElement("div");
+  #|       nm.textContent = sp.name;
+  #|       nm.style.fontFamily = "monospace";
+  #|       nm.style.fontSize = "14px";
+  #|       nm.style.fontWeight = "600";
+  #|       const sz = document.createElement("div");
+  #|       sz.textContent = `${sp.width}x${sp.height}`;
+  #|       sz.style.fontFamily = "monospace";
+  #|       sz.style.fontSize = "12px";
+  #|       sz.style.opacity = "0.8";
+  #|       meta.appendChild(nm);
+  #|       meta.appendChild(sz);
+  #|       rowBtn.appendChild(meta);
+  #|
+  #|       rowBtn.addEventListener("click", () => {
+  #|         state.selectedSprite = i;
+  #|         select.value = String(i);
+  #|         renderSelectedMeta();
+  #|         renderSpriteList();
+  #|         renderCanvas();
+  #|       });
+  #|       listGrid.appendChild(rowBtn);
+  #|     });
+  #|   };
+  #|
   #|   const rowsFromSprite = (sprite) => {
   #|     const rows = [];
   #|     for (let y = 0; y < sprite.height; y++) {
@@ -296,24 +527,120 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     return rows;
   #|   };
   #|
+  #|   const resizeSpritePixels = (sprite, nextSize) => {
+  #|     const oldW = sprite.width;
+  #|     const oldH = sprite.height;
+  #|     if (oldW === nextSize && oldH === nextSize) return;
+  #|     const nextPixels = Array(nextSize * nextSize).fill(-1);
+  #|     for (let y = 0; y < Math.min(oldH, nextSize); y++) {
+  #|       for (let x = 0; x < Math.min(oldW, nextSize); x++) {
+  #|         nextPixels[y * nextSize + x] = sprite.pixels[y * oldW + x];
+  #|       }
+  #|     }
+  #|     sprite.width = nextSize;
+  #|     sprite.height = nextSize;
+  #|     sprite.pixels = nextPixels;
+  #|   };
+  #|
+  #|   const renderSelectedMeta = () => {
+  #|     const sprite = activeSprite();
+  #|     if (!sprite) {
+  #|       nameInput.value = "";
+  #|       nameInput.disabled = true;
+  #|       sizeSelect.disabled = true;
+  #|       return;
+  #|     }
+  #|     nameInput.disabled = false;
+  #|     sizeSelect.disabled = false;
+  #|     nameInput.value = sprite.name;
+  #|     sizeSelect.value = [8, 16, 32].includes(sprite.width) ? String(sprite.width) : "8";
+  #|   };
+  #|
+  #|   const applyMetaFromUi = () => {
+  #|     const sprite = activeSprite();
+  #|     if (!sprite) return;
+  #|     const nm = nameInput.value.trim();
+  #|     if (nm !== "") {
+  #|       sprite.name = nm;
+  #|     }
+  #|     const nextSize = Number(sizeSelect.value || "8");
+  #|     if ([8, 16, 32].includes(nextSize)) {
+  #|       resizeSpritePixels(sprite, nextSize);
+  #|     }
+  #|   };
+  #|
   #|   const writeSpriteToDsl = (andApply) => {
   #|     const sprite = activeSprite();
   #|     if (!sprite) return;
+  #|     applyMetaFromUi();
   #|     if (![8, 16, 32].includes(sprite.width) || ![8, 16, 32].includes(sprite.height)) {
   #|       info.textContent = `Sprite ${sprite.name} is not editable (${sprite.width}x${sprite.height}).`;
   #|       return;
   #|     }
+  #|     if (!/^[A-Za-z0-9_-]+$/.test(sprite.name)) {
+  #|       info.textContent = "Invalid sprite name. Use [A-Za-z0-9_-].";
+  #|       return;
+  #|     }
+  #|     if (state.sprites.some((sp, i) => i !== state.selectedSprite && sp.name === sprite.name)) {
+  #|       info.textContent = `Sprite ${sprite.name} already exists.`;
+  #|       return;
+  #|     }
   #|     const lines = state.lines.slice();
   #|     const rows = rowsFromSprite(sprite);
-  #|     for (let i = 0; i < rows.length; i++) {
-  #|       lines[sprite.dataStart + i] = rows[i];
-  #|     }
+  #|     const block = [`sprite ${sprite.name} ${sprite.width} ${sprite.height}`, ...rows, "end"];
+  #|     const start = sprite.headerLine;
+  #|     const count = Math.max(1, sprite.endLine - sprite.headerLine + 1);
+  #|     lines.splice(start, count, ...block);
   #|     const text = lines.join("\n");
   #|     textarea.value = text;
+  #|     const keepName = sprite.name;
   #|     refreshFromText();
+  #|     const idx = state.sprites.findIndex((sp) => sp.name === keepName);
+  #|     if (idx >= 0) {
+  #|       state.selectedSprite = idx;
+  #|       select.value = String(idx);
+  #|     }
+  #|     renderSelectedMeta();
+  #|     renderSpriteList();
+  #|     renderCanvas();
   #|     if (andApply && globalThis.__moon8bit_apply_cb) {
   #|       globalThis.__moon8bit_apply_cb();
   #|     }
+  #|   };
+  #|
+  #|   const scheduleSpriteAutoWrite = () => {
+  #|     if (spriteAutoWriteTimer !== null) {
+  #|       clearTimeout(spriteAutoWriteTimer);
+  #|     }
+  #|     spriteAutoWriteTimer = setTimeout(() => {
+  #|       spriteAutoWriteTimer = null;
+  #|       writeSpriteToDsl(false);
+  #|     }, 60);
+  #|   };
+  #|
+  #|   const deleteSelectedSprite = () => {
+  #|     const sprite = activeSprite();
+  #|     if (!sprite) return;
+  #|     const lines = state.lines.slice();
+  #|     const start = Math.max(0, sprite.headerLine);
+  #|     const end = Math.max(start, sprite.endLine);
+  #|     const count = end - start + 1;
+  #|     if (count <= 0 || start >= lines.length) return;
+  #|     lines.splice(start, count);
+  #|     let text = lines.join("\n").replace(/\n{3,}/g, "\n\n");
+  #|     if (text.trim() !== "") {
+  #|       text = text.replace(/\s+$/, "") + "\n";
+  #|     }
+  #|     textarea.value = text;
+  #|     const nextIdx = Math.max(0, state.selectedSprite - 1);
+  #|     refreshFromText();
+  #|     if (state.sprites.length > 0) {
+  #|       state.selectedSprite = Math.min(nextIdx, state.sprites.length - 1);
+  #|       select.value = String(state.selectedSprite);
+  #|     }
+  #|     renderSelectedMeta();
+  #|     renderSpriteList();
+  #|     renderCanvas();
   #|   };
   #|
   #|   const refreshFromText = () => {
@@ -341,7 +668,9 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|       state.selectedSprite = idx;
   #|       select.value = String(idx);
   #|     }
+  #|     renderSelectedMeta();
   #|     renderPalette();
+  #|     renderSpriteList();
   #|     renderCanvas();
   #|   };
   #|
@@ -356,16 +685,81 @@ extern "js" fn web_init_sprite_editor() -> Unit =
   #|     const erase = (evt.buttons & 2) !== 0;
   #|     sprite.pixels[y * sprite.width + x] = erase ? -1 : state.selectedColor;
   #|     renderCanvas();
+  #|     scheduleSpriteAutoWrite();
   #|   };
   #|
   #|   if (!globalThis.__moon8bit_sprite_bound) {
   #|     select.addEventListener("change", () => {
   #|       state.selectedSprite = Number(select.value) || 0;
+  #|       renderSelectedMeta();
+  #|       renderSpriteList();
   #|       renderCanvas();
   #|     });
-  #|     syncBtn.addEventListener("click", refreshFromText);
-  #|     writeBtn.addEventListener("click", () => writeSpriteToDsl(false));
-  #|     applyBtn.addEventListener("click", () => writeSpriteToDsl(true));
+  #|     nameInput.addEventListener("input", () => {
+  #|       applyMetaFromUi();
+  #|       renderSpriteList();
+  #|       renderCanvas();
+  #|       scheduleSpriteAutoWrite();
+  #|     });
+  #|     sizeSelect.addEventListener("change", () => {
+  #|       applyMetaFromUi();
+  #|       renderSelectedMeta();
+  #|       renderSpriteList();
+  #|       renderCanvas();
+  #|       scheduleSpriteAutoWrite();
+  #|     });
+  #|     dupBtn.addEventListener("click", () => {
+  #|       const src = activeSprite();
+  #|       if (!src) return;
+  #|       const name = uniqueSpriteName(`${src.name}_copy`);
+  #|       const pixels = src.pixels.slice();
+  #|       const row = (y) => {
+  #|         let out = "";
+  #|         for (let x = 0; x < src.width; x++) {
+  #|           out += encodeSym(pixels[y * src.width + x]);
+  #|         }
+  #|         return out;
+  #|       };
+  #|       const block = [`sprite ${name} ${src.width} ${src.height}`];
+  #|       for (let y = 0; y < src.height; y++) block.push(row(y));
+  #|       block.push("end");
+  #|       const baseText = textarea.value.replace(/\s+$/, "");
+  #|       textarea.value = (baseText ? `${baseText}\n\n` : "") + block.join("\n") + "\n";
+  #|       refreshFromText();
+  #|       const idx = state.sprites.findIndex((sp) => sp.name === name);
+  #|       if (idx >= 0) {
+  #|         state.selectedSprite = idx;
+  #|         select.value = String(idx);
+  #|       }
+  #|       renderSelectedMeta();
+  #|       renderSpriteList();
+  #|       renderCanvas();
+  #|     });
+  #|     delBtn.addEventListener("click", () => {
+  #|       const sprite = activeSprite();
+  #|       if (!sprite) return;
+  #|       if (globalThis.confirm && !globalThis.confirm(`Delete sprite "${sprite.name}"?`)) return;
+  #|       deleteSelectedSprite();
+  #|     });
+  #|     addSpriteBtn.addEventListener("click", () => {
+  #|       const name = uniqueSpriteName("sprite");
+  #|       const size = 8;
+  #|       const row = ".".repeat(size);
+  #|       const block = [`sprite ${name} ${size} ${size}`];
+  #|       for (let i = 0; i < size; i++) block.push(row);
+  #|       block.push("end");
+  #|       const baseText = textarea.value.replace(/\s+$/, "");
+  #|       textarea.value = (baseText ? `${baseText}\n\n` : "") + block.join("\n") + "\n";
+  #|       refreshFromText();
+  #|       const idx = state.sprites.findIndex((sp) => sp.name === name);
+  #|       if (idx >= 0) {
+  #|         state.selectedSprite = idx;
+  #|         select.value = String(idx);
+  #|       }
+  #|       renderSelectedMeta();
+  #|       renderSpriteList();
+  #|       renderCanvas();
+  #|     });
   #|     textarea.addEventListener("input", refreshFromText);
   #|
   #|     let drawing = false;
@@ -419,6 +813,57 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     mapEditor.appendChild(panel);
   #|   }
   #|
+  #|   let mapLayout = document.getElementById("moon8bit-tilemap-layout");
+  #|   if (!mapLayout) {
+  #|     mapLayout = document.createElement("div");
+  #|     mapLayout.id = "moon8bit-tilemap-layout";
+  #|     mapLayout.style.display = "flex";
+  #|     mapLayout.style.flexDirection = "row";
+  #|     mapLayout.style.alignItems = "flex-start";
+  #|     mapLayout.style.flexWrap = "nowrap";
+  #|     mapLayout.style.overflowX = "auto";
+  #|     mapLayout.style.gap = "24px";
+  #|   }
+  #|   if (mapLayout.parentElement !== panel) {
+  #|     panel.appendChild(mapLayout);
+  #|   }
+  #|
+  #|   let mapThumbPane = document.getElementById("moon8bit-tilemap-thumb-pane");
+  #|   if (!mapThumbPane) {
+  #|     mapThumbPane = document.createElement("div");
+  #|     mapThumbPane.id = "moon8bit-tilemap-thumb-pane";
+  #|     mapThumbPane.style.display = "grid";
+  #|     mapThumbPane.style.gap = "10px";
+  #|     mapThumbPane.style.alignContent = "start";
+  #|     mapThumbPane.style.flex = "0 0 600px";
+  #|     mapThumbPane.style.width = "600px";
+  #|     mapThumbPane.style.minWidth = "600px";
+  #|     mapThumbPane.style.maxWidth = "600px";
+  #|     mapThumbPane.style.padding = "10px";
+  #|     mapThumbPane.style.background = "#0f1720";
+  #|     mapThumbPane.style.maxHeight = "70vh";
+  #|     mapThumbPane.style.overflowY = "auto";
+  #|   }
+  #|   if (mapThumbPane.parentElement !== mapLayout) {
+  #|     mapLayout.appendChild(mapThumbPane);
+  #|   }
+  #|
+  #|   let mapMainPane = document.getElementById("moon8bit-tilemap-main-pane");
+  #|   if (!mapMainPane) {
+  #|     mapMainPane = document.createElement("div");
+  #|     mapMainPane.id = "moon8bit-tilemap-main-pane";
+  #|     mapMainPane.style.display = "grid";
+  #|     mapMainPane.style.gap = "12px";
+  #|     mapMainPane.style.alignContent = "start";
+  #|     mapMainPane.style.flex = "1 1 auto";
+  #|     mapMainPane.style.minWidth = "0";
+  #|     mapMainPane.style.padding = "10px";
+  #|     mapMainPane.style.background = "#0f1720";
+  #|   }
+  #|   if (mapMainPane.parentElement !== mapLayout) {
+  #|     mapLayout.appendChild(mapMainPane);
+  #|   }
+  #|
   #|   let title = document.getElementById("moon8bit-tilemap-title");
   #|   if (!title) {
   #|     title = document.createElement("div");
@@ -427,8 +872,9 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     title.style.fontWeight = "600";
   #|     title.style.fontFamily = "monospace";
   #|   }
-  #|   if (title.parentElement !== panel) {
-  #|     panel.appendChild(title);
+  #|   title.style.fontSize = "18px";
+  #|   if (title.parentElement !== mapMainPane) {
+  #|     mapMainPane.appendChild(title);
   #|   }
   #|
   #|   let row = document.getElementById("moon8bit-tilemap-row");
@@ -436,12 +882,13 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     row = document.createElement("div");
   #|     row.id = "moon8bit-tilemap-row";
   #|     row.style.display = "flex";
-  #|     row.style.gap = "6px";
+  #|     row.style.gap = "10px";
   #|     row.style.flexWrap = "wrap";
   #|     row.style.alignItems = "center";
   #|   }
-  #|   if (row.parentElement !== panel) {
-  #|     panel.appendChild(row);
+  #|   row.style.gap = "10px";
+  #|   if (row.parentElement !== mapMainPane) {
+  #|     mapMainPane.appendChild(row);
   #|   }
   #|
   #|   let mapSelect = document.getElementById("moon8bit-tilemap-select");
@@ -509,21 +956,21 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       btn = document.createElement("button");
   #|       btn.id = id;
   #|       btn.textContent = label;
-  #|       btn.style.padding = "4px 8px";
+  #|       btn.style.padding = "7px 12px";
   #|       btn.style.background = bg;
   #|       btn.style.color = "#f6f7eb";
   #|       btn.style.border = `1px solid ${border}`;
   #|       btn.style.cursor = "pointer";
+  #|       btn.style.fontSize = "14px";
   #|     }
+  #|     btn.style.padding = "7px 12px";
+  #|     btn.style.fontSize = "14px";
   #|     if (btn.parentElement !== row) {
   #|       row.appendChild(btn);
   #|     }
   #|     return btn;
   #|   };
   #|
-  #|   const syncBtn = ensureBtn("moon8bit-tilemap-sync-btn", "Sync from DSL", "#486581", "#627d98");
-  #|   const writeBtn = ensureBtn("moon8bit-tilemap-write-btn", "Write to DSL", "#274060", "#486581");
-  #|   const applyBtn = ensureBtn("moon8bit-tilemap-apply-btn", "Write + Apply", "#2e8b57", "#4aa96c");
   #|   const addMapBtn = ensureBtn("moon8bit-tilemap-add-btn", "+ Map", "#274060", "#486581");
   #|   const delMapBtn = ensureBtn("moon8bit-tilemap-del-btn", "Del Map", "#7a2e2e", "#964040");
   #|   const resizeMapBtn = ensureBtn("moon8bit-tilemap-resize-btn", "Resize", "#486581", "#627d98");
@@ -536,8 +983,32 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     canvas.style.imageRendering = "pixelated";
   #|     canvas.style.touchAction = "none";
   #|   }
-  #|   if (canvas.parentElement !== panel) {
-  #|     panel.appendChild(canvas);
+  #|   if (canvas.parentElement !== mapMainPane) {
+  #|     mapMainPane.appendChild(canvas);
+  #|   }
+  #|
+  #|   let mapThumbTitle = document.getElementById("moon8bit-tilemap-thumb-title");
+  #|   if (!mapThumbTitle) {
+  #|     mapThumbTitle = document.createElement("div");
+  #|     mapThumbTitle.id = "moon8bit-tilemap-thumb-title";
+  #|     mapThumbTitle.textContent = "All Tiles";
+  #|     mapThumbTitle.style.fontWeight = "600";
+  #|     mapThumbTitle.style.fontFamily = "monospace";
+  #|   }
+  #|   mapThumbTitle.style.fontSize = "18px";
+  #|   if (mapThumbTitle.parentElement !== mapThumbPane) {
+  #|     mapThumbPane.appendChild(mapThumbTitle);
+  #|   }
+  #|
+  #|   let mapThumbGrid = document.getElementById("moon8bit-tilemap-thumb-grid");
+  #|   if (!mapThumbGrid) {
+  #|     mapThumbGrid = document.createElement("div");
+  #|     mapThumbGrid.id = "moon8bit-tilemap-thumb-grid";
+  #|     mapThumbGrid.style.display = "grid";
+  #|     mapThumbGrid.style.gap = "0";
+  #|   }
+  #|   if (mapThumbGrid.parentElement !== mapThumbPane) {
+  #|     mapThumbPane.appendChild(mapThumbGrid);
   #|   }
   #|
   #|   let tilePanel = document.getElementById("moon8bit-tile-panel");
@@ -545,7 +1016,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     tilePanel = document.createElement("div");
   #|     tilePanel.id = "moon8bit-tile-panel";
   #|     tilePanel.style.display = "grid";
-  #|     tilePanel.style.gap = "6px";
+  #|     tilePanel.style.gap = "10px";
   #|     tilePanel.style.padding = "8px";
   #|     tilePanel.style.border = "1px solid #334e68";
   #|     tilePanel.style.background = "#111827";
@@ -562,8 +1033,82 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     tileTitle.style.fontWeight = "600";
   #|     tileTitle.style.fontFamily = "monospace";
   #|   }
-  #|   if (tileTitle.parentElement !== tilePanel) {
-  #|     tilePanel.appendChild(tileTitle);
+  #|   tileTitle.style.fontSize = "18px";
+  #|
+  #|   let tileLayout = document.getElementById("moon8bit-tile-layout");
+  #|   if (!tileLayout) {
+  #|     tileLayout = document.createElement("div");
+  #|     tileLayout.id = "moon8bit-tile-layout";
+  #|     tileLayout.style.display = "flex";
+  #|     tileLayout.style.flexDirection = "row";
+  #|     tileLayout.style.alignItems = "flex-start";
+  #|     tileLayout.style.flexWrap = "nowrap";
+  #|     tileLayout.style.overflowX = "auto";
+  #|     tileLayout.style.gap = "24px";
+  #|   }
+  #|   tileLayout.style.display = "flex";
+  #|   tileLayout.style.flexDirection = "row";
+  #|   tileLayout.style.alignItems = "flex-start";
+  #|   tileLayout.style.flexWrap = "nowrap";
+  #|   tileLayout.style.overflowX = "auto";
+  #|   tileLayout.style.gridTemplateColumns = "";
+  #|   tileLayout.style.gap = "24px";
+  #|   if (tileLayout.parentElement !== tilePanel) {
+  #|     tilePanel.appendChild(tileLayout);
+  #|   }
+  #|
+  #|   let tileEditorPane = document.getElementById("moon8bit-tile-editor-pane");
+  #|   if (!tileEditorPane) {
+  #|     tileEditorPane = document.createElement("div");
+  #|     tileEditorPane.id = "moon8bit-tile-editor-pane";
+  #|     tileEditorPane.style.display = "grid";
+  #|     tileEditorPane.style.gap = "12px";
+  #|     tileEditorPane.style.alignContent = "start";
+  #|     tileEditorPane.style.minWidth = "0";
+  #|   }
+  #|   tileEditorPane.id = "moon8bit-tile-editor-pane";
+  #|   tileEditorPane.style.gap = "12px";
+  #|   tileEditorPane.style.flex = "1 1 auto";
+  #|   tileEditorPane.style.minWidth = "0";
+  #|   tileEditorPane.style.padding = "10px";
+  #|   tileEditorPane.style.border = "none";
+  #|   tileEditorPane.style.background = "#0f1720";
+  #|   if (tileEditorPane.parentElement !== tileLayout) {
+  #|     tileLayout.appendChild(tileEditorPane);
+  #|   }
+  #|   if (tileTitle.parentElement !== tileEditorPane) {
+  #|     tileEditorPane.appendChild(tileTitle);
+  #|   }
+  #|
+  #|   let tileThumbPane = document.getElementById("moon8bit-tile-thumb-pane");
+  #|   if (!tileThumbPane) {
+  #|     tileThumbPane = document.createElement("div");
+  #|     tileThumbPane.id = "moon8bit-tile-thumb-pane";
+  #|     tileThumbPane.style.display = "grid";
+  #|     tileThumbPane.style.gap = "10px";
+  #|     tileThumbPane.style.alignContent = "start";
+  #|     tileThumbPane.style.minWidth = "600px";
+  #|     tileThumbPane.style.maxHeight = "70vh";
+  #|     tileThumbPane.style.overflowY = "auto";
+  #|   }
+  #|   tileThumbPane.id = "moon8bit-tile-thumb-pane";
+  #|   tileThumbPane.style.gap = "10px";
+  #|   tileThumbPane.style.flex = "0 0 600px";
+  #|   tileThumbPane.style.width = "600px";
+  #|   tileThumbPane.style.minWidth = "600px";
+  #|   tileThumbPane.style.maxWidth = "600px";
+  #|   tileThumbPane.style.padding = "10px";
+  #|   tileThumbPane.style.border = "none";
+  #|   tileThumbPane.style.background = "#0f1720";
+  #|   if (tileThumbPane.parentElement !== tileLayout) {
+  #|     tileLayout.appendChild(tileThumbPane);
+  #|   }
+  #|   // Keep visual order: left = thumbnails (tileThumbPane), right = editor (tileEditorPane)
+  #|   if (tileLayout.firstElementChild !== tileThumbPane) {
+  #|     tileLayout.insertBefore(tileThumbPane, tileLayout.firstElementChild);
+  #|   }
+  #|   if (tileLayout.lastElementChild !== tileEditorPane) {
+  #|     tileLayout.appendChild(tileEditorPane);
   #|   }
   #|
   #|   let tileRow = document.getElementById("moon8bit-tile-row");
@@ -571,24 +1116,13 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     tileRow = document.createElement("div");
   #|     tileRow.id = "moon8bit-tile-row";
   #|     tileRow.style.display = "flex";
-  #|     tileRow.style.gap = "6px";
+  #|     tileRow.style.gap = "10px";
   #|     tileRow.style.flexWrap = "wrap";
   #|     tileRow.style.alignItems = "center";
   #|   }
-  #|   if (tileRow.parentElement !== tilePanel) {
-  #|     tilePanel.appendChild(tileRow);
-  #|   }
-  #|
-  #|   let tileSelect = document.getElementById("moon8bit-tile-select");
-  #|   if (!tileSelect) {
-  #|     tileSelect = document.createElement("select");
-  #|     tileSelect.id = "moon8bit-tile-select";
-  #|     tileSelect.style.background = "#0f1720";
-  #|     tileSelect.style.color = "#d9e2ec";
-  #|     tileSelect.style.border = "1px solid #486581";
-  #|   }
-  #|   if (tileSelect.parentElement !== tileRow) {
-  #|     tileRow.appendChild(tileSelect);
+  #|   tileRow.style.gap = "10px";
+  #|   if (tileRow.parentElement !== tileEditorPane) {
+  #|     tileEditorPane.appendChild(tileRow);
   #|   }
   #|
   #|   let tileNameInput = document.getElementById("moon8bit-tilemap-tile-name");
@@ -597,11 +1131,14 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     tileNameInput.id = "moon8bit-tilemap-tile-name";
   #|     tileNameInput.type = "text";
   #|     tileNameInput.placeholder = "selected tile name";
-  #|     tileNameInput.style.width = "160px";
+  #|     tileNameInput.style.width = "320px";
   #|     tileNameInput.style.background = "#0f1720";
   #|     tileNameInput.style.color = "#d9e2ec";
   #|     tileNameInput.style.border = "1px solid #486581";
   #|   }
+  #|   tileNameInput.style.width = "320px";
+  #|   tileNameInput.style.fontSize = "15px";
+  #|   tileNameInput.style.padding = "6px 8px";
   #|   if (tileNameInput.parentElement !== tileRow) {
   #|     tileRow.appendChild(tileNameInput);
   #|   }
@@ -612,10 +1149,12 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     solidWrap.id = "moon8bit-tilemap-solid-wrap";
   #|     solidWrap.style.display = "inline-flex";
   #|     solidWrap.style.alignItems = "center";
-  #|     solidWrap.style.gap = "4px";
+  #|     solidWrap.style.gap = "6px";
   #|     solidWrap.style.fontFamily = "monospace";
-  #|     solidWrap.style.fontSize = "12px";
+  #|     solidWrap.style.fontSize = "14px";
   #|   }
+  #|   solidWrap.style.gap = "6px";
+  #|   solidWrap.style.fontSize = "14px";
   #|   if (solidWrap.parentElement !== tileRow) {
   #|     tileRow.appendChild(solidWrap);
   #|   }
@@ -626,7 +1165,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     solidInput.type = "checkbox";
   #|     solidWrap.appendChild(solidInput);
   #|     const txt = document.createElement("span");
-  #|     txt.textContent = "selected tile is solid";
+  #|     txt.textContent = "solid";
   #|     solidWrap.appendChild(txt);
   #|   }
   #|
@@ -636,18 +1175,20 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       btn = document.createElement("button");
   #|       btn.id = id;
   #|       btn.textContent = label;
-  #|       btn.style.padding = "4px 8px";
+  #|       btn.style.padding = "7px 12px";
   #|       btn.style.background = bg;
   #|       btn.style.color = "#f6f7eb";
   #|       btn.style.border = `1px solid ${border}`;
   #|       btn.style.cursor = "pointer";
+  #|       btn.style.fontSize = "14px";
   #|     }
+  #|     btn.style.padding = "7px 12px";
+  #|     btn.style.fontSize = "14px";
   #|     if (btn.parentElement !== tileRow) {
   #|       tileRow.appendChild(btn);
   #|     }
   #|     return btn;
   #|   };
-  #|   const addTileBtn = ensureTileBtn("moon8bit-tile-add-btn", "+ Tile", "#274060", "#486581");
   #|   const delTileBtn = ensureTileBtn("moon8bit-tile-del-btn", "Del Tile", "#7a2e2e", "#964040");
   #|
   #|   let tilePaletteRow = document.getElementById("moon8bit-tilemap-palette");
@@ -656,10 +1197,11 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     tilePaletteRow.id = "moon8bit-tilemap-palette";
   #|     tilePaletteRow.style.display = "flex";
   #|     tilePaletteRow.style.flexWrap = "wrap";
-  #|     tilePaletteRow.style.gap = "4px";
+  #|     tilePaletteRow.style.gap = "8px";
   #|   }
-  #|   if (tilePaletteRow.parentElement !== tilePanel) {
-  #|     tilePanel.appendChild(tilePaletteRow);
+  #|   tilePaletteRow.style.gap = "8px";
+  #|   if (tilePaletteRow.parentElement !== tileEditorPane) {
+  #|     tileEditorPane.appendChild(tilePaletteRow);
   #|   }
   #|
   #|   let tileCanvas = document.getElementById("moon8bit-tilemap-tile-canvas");
@@ -670,8 +1212,8 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     tileCanvas.style.imageRendering = "pixelated";
   #|     tileCanvas.style.touchAction = "none";
   #|   }
-  #|   if (tileCanvas.parentElement !== tilePanel) {
-  #|     tilePanel.appendChild(tileCanvas);
+  #|   if (tileCanvas.parentElement !== tileEditorPane) {
+  #|     tileEditorPane.appendChild(tileCanvas);
   #|   }
   #|
   #|   let tileInfo = document.getElementById("moon8bit-tilemap-tile-info");
@@ -679,11 +1221,36 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     tileInfo = document.createElement("div");
   #|     tileInfo.id = "moon8bit-tilemap-tile-info";
   #|     tileInfo.style.fontFamily = "monospace";
-  #|     tileInfo.style.fontSize = "12px";
+  #|     tileInfo.style.fontSize = "14px";
   #|     tileInfo.style.opacity = "0.8";
   #|   }
-  #|   if (tileInfo.parentElement !== tilePanel) {
-  #|     tilePanel.appendChild(tileInfo);
+  #|   tileInfo.style.fontSize = "14px";
+  #|   if (tileInfo.parentElement !== tileEditorPane) {
+  #|     tileEditorPane.appendChild(tileInfo);
+  #|   }
+  #|
+  #|   let tileThumbTitle = document.getElementById("moon8bit-tile-thumb-title");
+  #|   if (!tileThumbTitle) {
+  #|     tileThumbTitle = document.createElement("div");
+  #|     tileThumbTitle.id = "moon8bit-tile-thumb-title";
+  #|     tileThumbTitle.textContent = "All Tiles";
+  #|     tileThumbTitle.style.fontWeight = "600";
+  #|     tileThumbTitle.style.fontFamily = "monospace";
+  #|   }
+  #|   tileThumbTitle.style.fontSize = "18px";
+  #|   if (tileThumbTitle.parentElement !== tileThumbPane) {
+  #|     tileThumbPane.appendChild(tileThumbTitle);
+  #|   }
+  #|
+  #|   let tileThumbGrid = document.getElementById("moon8bit-tile-thumb-grid");
+  #|   if (!tileThumbGrid) {
+  #|     tileThumbGrid = document.createElement("div");
+  #|     tileThumbGrid.id = "moon8bit-tile-thumb-grid";
+  #|     tileThumbGrid.style.display = "grid";
+  #|     tileThumbGrid.style.gap = "0";
+  #|   }
+  #|   if (tileThumbGrid.parentElement !== tileThumbPane) {
+  #|     tileThumbPane.appendChild(tileThumbGrid);
   #|   }
   #|
   #|   let info = document.getElementById("moon8bit-tilemap-info");
@@ -694,8 +1261,8 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     info.style.fontSize = "12px";
   #|     info.style.opacity = "0.8";
   #|   }
-  #|   if (info.parentElement !== panel) {
-  #|     panel.appendChild(info);
+  #|   if (info.parentElement !== mapMainPane) {
+  #|     mapMainPane.appendChild(info);
   #|   }
   #|
   #|   let dirty = document.getElementById("moon8bit-tilemap-dirty");
@@ -707,8 +1274,8 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     dirty.style.color = "#7bd389";
   #|     dirty.textContent = "Saved";
   #|   }
-  #|   if (dirty.parentElement !== panel) {
-  #|     panel.appendChild(dirty);
+  #|   if (dirty.parentElement !== mapMainPane) {
+  #|     mapMainPane.appendChild(dirty);
   #|   }
   #|
   #|   let feedback = document.getElementById("moon8bit-tilemap-feedback");
@@ -719,8 +1286,8 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     feedback.style.fontSize = "12px";
   #|     feedback.style.color = "#9fb3c8";
   #|   }
-  #|   if (feedback.parentElement !== panel) {
-  #|     panel.appendChild(feedback);
+  #|   if (feedback.parentElement !== mapMainPane) {
+  #|     mapMainPane.appendChild(feedback);
   #|   }
   #|
   #|   if (!globalThis.__moon8bit_tilemap_state) {
@@ -734,18 +1301,37 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       errors: [],
   #|       selectedMap: 0,
   #|       selectedToken: -1,
+  #|       selectedTileId: 0,
   #|       selectedTileColor: 0,
   #|       dirty: false,
   #|       cell: 16,
   #|       tileCell: 20,
+  #|       tileClipboard: null,
   #|     };
   #|   }
   #|   const state = globalThis.__moon8bit_tilemap_state;
+  #|   let tilemapAutoWriteTimer = null;
+  #|   if (!("tileClipboard" in state)) {
+  #|     state.tileClipboard = null;
+  #|   }
   #|
-  #|   const setDirty = (v) => {
+  #|   function scheduleTilemapAutoWrite() {
+  #|     if (tilemapAutoWriteTimer !== null) {
+  #|       clearTimeout(tilemapAutoWriteTimer);
+  #|     }
+  #|     tilemapAutoWriteTimer = setTimeout(() => {
+  #|       tilemapAutoWriteTimer = null;
+  #|       writeTilemapToDsl(false);
+  #|     }, 80);
+  #|   }
+  #|
+  #|   const setDirty = (v, autoWrite = true) => {
   #|     state.dirty = !!v;
   #|     dirty.textContent = state.dirty ? "Modified" : "Saved";
   #|     dirty.style.color = state.dirty ? "#efb366" : "#7bd389";
+  #|     if (state.dirty && autoWrite) {
+  #|       scheduleTilemapAutoWrite();
+  #|     }
   #|   };
   #|   const setFeedback = (msg, isErr = false) => {
   #|     feedback.textContent = msg || "";
@@ -981,7 +1567,6 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   };
   #|
   #|   const renderBrushSelect = () => {
-  #|     const before = brushSelect.value;
   #|     brushSelect.innerHTML = "";
   #|     const transparent = document.createElement("option");
   #|     transparent.value = "-1";
@@ -1000,44 +1585,12 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       }
   #|     }
   #|     let candidate = Number.isInteger(state.selectedToken) ? state.selectedToken : -1;
-  #|     if (!Number.isInteger(candidate) || candidate < -1) candidate = -1;
-  #|     if (before !== "" && [...brushSelect.options].some((o) => o.value === before)) {
-  #|       candidate = Number(before);
-  #|     }
+  #|     if (candidate < -1) candidate = -1;
   #|     if (![...brushSelect.options].some((o) => o.value === String(candidate))) {
   #|       candidate = -1;
   #|     }
   #|     state.selectedToken = candidate;
   #|     brushSelect.value = String(candidate);
-  #|   };
-  #|
-  #|   const renderTileSelect = () => {
-  #|     const before = tileSelect.value;
-  #|     tileSelect.innerHTML = "";
-  #|     const ts = state.tiles;
-  #|     if (ts && ts.tile_count > 0) {
-  #|       for (let i = 0; i < ts.tile_count; i += 1) {
-  #|         const opt = document.createElement("option");
-  #|         const nm = ts.tile_names && ts.tile_names[i] ? ts.tile_names[i] : `tile_${i}`;
-  #|         const solid = ts.tile_solid && ts.tile_solid[i] ? " [solid]" : "";
-  #|         opt.value = String(i);
-  #|         opt.textContent = `${i}: ${nm}${solid}`;
-  #|         tileSelect.appendChild(opt);
-  #|       }
-  #|     }
-  #|     if (!ts || ts.tile_count <= 0) {
-  #|       state.selectedToken = -1;
-  #|       return;
-  #|     }
-  #|     let candidate = Number.isInteger(state.selectedToken) && state.selectedToken >= 0 ? state.selectedToken : 0;
-  #|     if (before !== "" && [...tileSelect.options].some((o) => o.value === before)) {
-  #|       candidate = Number(before);
-  #|     }
-  #|     if (![...tileSelect.options].some((o) => o.value === String(candidate))) {
-  #|       candidate = 0;
-  #|     }
-  #|     state.selectedToken = candidate;
-  #|     tileSelect.value = String(candidate);
   #|   };
   #|
   #|   const renderMapSelect = (preferCurrent = false) => {
@@ -1064,8 +1617,11 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|
   #|   const activeTileId = () => {
   #|     const ts = state.tiles;
-  #|     const id = Number(tileSelect.value);
-  #|     if (!ts || !Number.isInteger(id) || id < 0 || id >= ts.tile_count) return -1;
+  #|     if (!ts || ts.tile_count <= 0) return -1;
+  #|     let id = Number.isInteger(state.selectedTileId) ? state.selectedTileId : 0;
+  #|     if (id < 0) id = 0;
+  #|     if (id >= ts.tile_count) id = ts.tile_count - 1;
+  #|     state.selectedTileId = id;
   #|     return id;
   #|   };
   #|
@@ -1075,8 +1631,8 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       const b = document.createElement("button");
   #|       b.type = "button";
   #|       b.title = label;
-  #|       b.style.width = "20px";
-  #|       b.style.height = "20px";
+  #|       b.style.width = "30px";
+  #|       b.style.height = "30px";
   #|       b.style.padding = "0";
   #|       b.style.border = state.selectedTileColor === idx ? "2px solid #f6f7eb" : "1px solid #627d98";
   #|       b.style.cursor = "pointer";
@@ -1091,8 +1647,8 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     transparent.type = "button";
   #|     transparent.title = "transparent";
   #|     transparent.textContent = ".";
-  #|     transparent.style.width = "20px";
-  #|     transparent.style.height = "20px";
+  #|     transparent.style.width = "30px";
+  #|     transparent.style.height = "30px";
   #|     transparent.style.padding = "0";
   #|     transparent.style.border = state.selectedTileColor < 0 ? "2px solid #f6f7eb" : "1px solid #627d98";
   #|     transparent.style.background = "linear-gradient(45deg,#334e68 25%,#1f2a37 25%,#1f2a37 50%,#334e68 50%,#334e68 75%,#1f2a37 75%)";
@@ -1122,7 +1678,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       tileInfo.textContent = "Tile editor: choose a tile.";
   #|       return;
   #|     }
-  #|     state.tileCell = 20;
+  #|     state.tileCell = 52;
   #|     tileCanvas.width = 8 * state.tileCell;
   #|     tileCanvas.height = 8 * state.tileCell;
   #|     ctx.imageSmoothingEnabled = false;
@@ -1158,17 +1714,12 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     const ts = state.tiles;
   #|     const id = activeTileId();
   #|     if (!ts || !Number.isInteger(id) || id < 0 || id >= ts.tile_count) {
-  #|       tileSelect.disabled = true;
   #|       solidInput.checked = false;
   #|       solidInput.disabled = true;
   #|       tileNameInput.value = "";
   #|       tileNameInput.disabled = true;
   #|       renderTileCanvas();
   #|       return;
-  #|     }
-  #|     tileSelect.disabled = false;
-  #|     if ([...tileSelect.options].some((o) => o.value === String(id))) {
-  #|       tileSelect.value = String(id);
   #|     }
   #|     solidInput.disabled = false;
   #|     tileNameInput.disabled = false;
@@ -1192,6 +1743,216 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     }
   #|   };
   #|
+  #|   const renderTileThumbnails = () => {
+  #|     tileThumbGrid.innerHTML = "";
+  #|     const ts = state.tiles;
+  #|     if (!ts || ts.tile_count <= 0) return;
+  #|     const selectedId = activeTileId();
+  #|
+  #|     const cols = 10;
+  #|     const thumbSize = 48;
+  #|     const rows = Math.ceil(ts.tile_count / cols);
+  #|
+  #|     const header = document.createElement("div");
+  #|     header.style.display = "grid";
+  #|     header.style.gridTemplateColumns = `28px repeat(${cols}, ${thumbSize}px)`;
+  #|     header.style.gap = "0";
+  #|     header.style.marginBottom = "0";
+  #|     header.style.width = "fit-content";
+  #|     const headerBlank = document.createElement("div");
+  #|     header.appendChild(headerBlank);
+  #|     for (let col = 0; col < cols; col += 1) {
+  #|       const mark = document.createElement("div");
+  #|       mark.textContent = String(col);
+  #|       mark.style.fontFamily = "monospace";
+  #|       mark.style.fontSize = "13px";
+  #|       mark.style.color = "#9fb3c8";
+  #|       mark.style.textAlign = "center";
+  #|       header.appendChild(mark);
+  #|     }
+  #|     tileThumbGrid.appendChild(header);
+  #|
+  #|     for (let row = 0; row < rows; row += 1) {
+  #|       const rowWrap = document.createElement("div");
+  #|       rowWrap.style.display = "grid";
+  #|       rowWrap.style.gridTemplateColumns = `28px repeat(${cols}, ${thumbSize}px)`;
+  #|       rowWrap.style.gap = "0";
+  #|       rowWrap.style.width = "fit-content";
+  #|
+  #|       const rowMark = document.createElement("div");
+  #|       rowMark.textContent = String(row * cols).toString(16).toUpperCase().padStart(2, "0");
+  #|       rowMark.style.fontFamily = "monospace";
+  #|       rowMark.style.fontSize = "13px";
+  #|       rowMark.style.color = "#9fb3c8";
+  #|       rowMark.style.textAlign = "right";
+  #|       rowMark.style.paddingRight = "4px";
+  #|       rowMark.style.lineHeight = `${thumbSize}px`;
+  #|       rowWrap.appendChild(rowMark);
+  #|
+  #|       for (let col = 0; col < cols; col += 1) {
+  #|         const i = row * cols + col;
+  #|         if (i >= ts.tile_count) {
+  #|           const spacer = document.createElement("div");
+  #|           rowWrap.appendChild(spacer);
+  #|           continue;
+  #|         }
+  #|
+  #|         const cell = document.createElement("button");
+  #|         cell.type = "button";
+  #|         cell.style.display = "grid";
+  #|         cell.style.placeItems = "center";
+  #|         cell.style.padding = "0";
+  #|         cell.style.border = "0";
+  #|         cell.style.background = "transparent";
+  #|         cell.style.outline = i === selectedId ? "2px solid #4aa96c" : "none";
+  #|         cell.style.outlineOffset = i === selectedId ? "-2px" : "0";
+  #|         cell.style.cursor = "pointer";
+  #|         cell.style.borderRadius = "0";
+  #|         cell.style.width = `${thumbSize}px`;
+  #|         cell.style.height = `${thumbSize}px`;
+  #|         cell.style.minHeight = `${thumbSize}px`;
+  #|         const nm = ts.tile_names && ts.tile_names[i] ? ts.tile_names[i] : `tile_${i}`;
+  #|         cell.title = `#${i} ${nm}`;
+  #|
+  #|         const preview = document.createElement("canvas");
+  #|         preview.width = thumbSize;
+  #|         preview.height = thumbSize;
+  #|         preview.style.width = `${thumbSize}px`;
+  #|         preview.style.height = `${thumbSize}px`;
+  #|         preview.style.imageRendering = "pixelated";
+  #|         preview.style.display = "block";
+  #|         preview.style.filter = "none";
+  #|         const pctx = preview.getContext("2d");
+  #|         if (pctx) {
+  #|           pctx.imageSmoothingEnabled = false;
+  #|           pctx.fillStyle = "#1f2a37";
+  #|           pctx.fillRect(0, 0, thumbSize, thumbSize);
+  #|           pctx.fillStyle = "#334e68";
+  #|           pctx.fillRect(0, 0, thumbSize / 2, thumbSize / 2);
+  #|           pctx.fillRect(thumbSize / 2, thumbSize / 2, thumbSize / 2, thumbSize / 2);
+  #|           if (ts.tile_defined && ts.tile_defined[i]) {
+  #|             drawTilePreview(pctx, ts, i, 0, 0, thumbSize);
+  #|           }
+  #|         }
+  #|         cell.appendChild(preview);
+  #|
+  #|         cell.addEventListener("click", () => {
+  #|           state.selectedTileId = i;
+  #|           state.selectedToken = i;
+  #|           renderBrushSelect();
+  #|           brushSelect.value = String(i);
+  #|           refreshSolidUi();
+  #|           renderTileThumbnails();
+  #|         });
+  #|         rowWrap.appendChild(cell);
+  #|       }
+  #|       tileThumbGrid.appendChild(rowWrap);
+  #|     }
+  #|   };
+  #|
+  #|   const renderMapTileThumbnails = () => {
+  #|     mapThumbGrid.innerHTML = "";
+  #|     const ts = state.tiles;
+  #|     if (!ts || ts.tile_count <= 0) return;
+  #|     const selectedId = Number.isInteger(state.selectedToken) && state.selectedToken >= 0 ? state.selectedToken : -1;
+  #|
+  #|     const cols = 10;
+  #|     const thumbSize = 48;
+  #|     const rows = Math.ceil(ts.tile_count / cols);
+  #|
+  #|     const header = document.createElement("div");
+  #|     header.style.display = "grid";
+  #|     header.style.gridTemplateColumns = `28px repeat(${cols}, ${thumbSize}px)`;
+  #|     header.style.gap = "0";
+  #|     header.style.marginBottom = "0";
+  #|     header.style.width = "fit-content";
+  #|     const headerBlank = document.createElement("div");
+  #|     header.appendChild(headerBlank);
+  #|     for (let col = 0; col < cols; col += 1) {
+  #|       const mark = document.createElement("div");
+  #|       mark.textContent = String(col);
+  #|       mark.style.fontFamily = "monospace";
+  #|       mark.style.fontSize = "13px";
+  #|       mark.style.color = "#9fb3c8";
+  #|       mark.style.textAlign = "center";
+  #|       header.appendChild(mark);
+  #|     }
+  #|     mapThumbGrid.appendChild(header);
+  #|
+  #|     for (let row = 0; row < rows; row += 1) {
+  #|       const rowWrap = document.createElement("div");
+  #|       rowWrap.style.display = "grid";
+  #|       rowWrap.style.gridTemplateColumns = `28px repeat(${cols}, ${thumbSize}px)`;
+  #|       rowWrap.style.gap = "0";
+  #|       rowWrap.style.width = "fit-content";
+  #|
+  #|       const rowMark = document.createElement("div");
+  #|       rowMark.textContent = String(row * cols).toString(16).toUpperCase().padStart(2, "0");
+  #|       rowMark.style.fontFamily = "monospace";
+  #|       rowMark.style.fontSize = "13px";
+  #|       rowMark.style.color = "#9fb3c8";
+  #|       rowMark.style.textAlign = "right";
+  #|       rowMark.style.paddingRight = "4px";
+  #|       rowMark.style.lineHeight = `${thumbSize}px`;
+  #|       rowWrap.appendChild(rowMark);
+  #|
+  #|       for (let col = 0; col < cols; col += 1) {
+  #|         const i = row * cols + col;
+  #|         if (i >= ts.tile_count) {
+  #|           const spacer = document.createElement("div");
+  #|           rowWrap.appendChild(spacer);
+  #|           continue;
+  #|         }
+  #|
+  #|         const cell = document.createElement("button");
+  #|         cell.type = "button";
+  #|         cell.style.display = "grid";
+  #|         cell.style.placeItems = "center";
+  #|         cell.style.padding = "0";
+  #|         cell.style.border = "0";
+  #|         cell.style.background = "transparent";
+  #|         cell.style.outline = i === selectedId ? "2px solid #4aa96c" : "none";
+  #|         cell.style.outlineOffset = i === selectedId ? "-2px" : "0";
+  #|         cell.style.cursor = "pointer";
+  #|         cell.style.borderRadius = "0";
+  #|         cell.style.width = `${thumbSize}px`;
+  #|         cell.style.height = `${thumbSize}px`;
+  #|         cell.style.minHeight = `${thumbSize}px`;
+  #|         const nm = ts.tile_names && ts.tile_names[i] ? ts.tile_names[i] : `tile_${i}`;
+  #|         cell.title = `#${i} ${nm}`;
+  #|
+  #|         const preview = document.createElement("canvas");
+  #|         preview.width = thumbSize;
+  #|         preview.height = thumbSize;
+  #|         preview.style.width = `${thumbSize}px`;
+  #|         preview.style.height = `${thumbSize}px`;
+  #|         preview.style.imageRendering = "pixelated";
+  #|         preview.style.display = "block";
+  #|         const pctx = preview.getContext("2d");
+  #|         if (pctx) {
+  #|           pctx.imageSmoothingEnabled = false;
+  #|           pctx.fillStyle = "#1f2a37";
+  #|           pctx.fillRect(0, 0, thumbSize, thumbSize);
+  #|           pctx.fillStyle = "#334e68";
+  #|           pctx.fillRect(0, 0, thumbSize / 2, thumbSize / 2);
+  #|           pctx.fillRect(thumbSize / 2, thumbSize / 2, thumbSize / 2, thumbSize / 2);
+  #|           if (ts.tile_defined && ts.tile_defined[i]) {
+  #|             drawTilePreview(pctx, ts, i, 0, 0, thumbSize);
+  #|           }
+  #|         }
+  #|         cell.appendChild(preview);
+  #|
+  #|         cell.addEventListener("click", () => {
+  #|           state.selectedToken = i;
+  #|           renderBrushSelect();
+  #|           renderMapTileThumbnails();
+  #|         });
+  #|         rowWrap.appendChild(cell);
+  #|       }
+  #|       mapThumbGrid.appendChild(rowWrap);
+  #|     }
+  #|   };
+  #|
   #|   const renderCanvas = () => {
   #|     const map = activeMap();
   #|     const ctx = canvas.getContext("2d");
@@ -1204,7 +1965,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     info.textContent = `Editing tilemap ${map.name} (${map.width}x${map.height})`;
   #|     mapWInput.value = String(map.width);
   #|     mapHInput.value = String(map.height);
-  #|     state.cell = Math.max(8, Math.floor(320 / Math.max(map.width, map.height)));
+  #|     state.cell = Math.max(8, Math.floor(520 / Math.max(map.width, map.height)));
   #|     canvas.width = map.width * state.cell;
   #|     canvas.height = map.height * state.cell;
   #|     ctx.imageSmoothingEnabled = false;
@@ -1392,13 +2153,20 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     state.tilemapRange = parsed.tilemapRange;
   #|     state.errors = parsed.errors || [];
   #|     if (state.selectedMap >= state.tilemaps.length) state.selectedMap = 0;
+  #|     const tileCount = parsed.tiles && Number.isInteger(parsed.tiles.tile_count) ? parsed.tiles.tile_count : 0;
+  #|     if (tileCount <= 0) {
+  #|       state.selectedTileId = -1;
+  #|     } else if (!Number.isInteger(state.selectedTileId) || state.selectedTileId < 0 || state.selectedTileId >= tileCount) {
+  #|       state.selectedTileId = 0;
+  #|     }
   #|
   #|     renderMapSelect(true);
   #|
   #|     renderTilePalette();
-  #|     renderTileSelect();
   #|     renderBrushSelect();
   #|     refreshSolidUi();
+  #|     renderTileThumbnails();
+  #|     renderMapTileThumbnails();
   #|     renderCanvas();
   #|     setDirty(false);
   #|     if (state.errors.length > 0) {
@@ -1431,12 +2199,15 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     const y = Math.floor((evt.clientY - rect.top) / state.tileCell);
   #|     if (x < 0 || y < 0 || x >= 8 || y >= 8) return;
   #|     const erase = ((evt.buttons & 2) !== 0) || !!evt.shiftKey;
+  #|     const next = erase ? -1 : state.selectedTileColor;
   #|     const base = id * 64;
-  #|     ts.pixels[base + y * 8 + x] = erase ? -1 : state.selectedTileColor;
+  #|     const idx = base + y * 8 + x;
+  #|     if (ts.pixels[idx] === next) return;
+  #|     ts.pixels[idx] = next;
   #|     ts.tile_defined[id] = true;
-  #|     setDirty(true);
+  #|     setDirty(true, false);
+  #|     tilePaintPending = true;
   #|     renderTileCanvas();
-  #|     renderCanvas();
   #|   };
   #|
   #|   const nextMapName = () => {
@@ -1472,7 +2243,6 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     setDirty(true);
   #|     setFeedback(`Added tilemap ${name}.`);
   #|     renderMapSelect(true);
-  #|     renderTileSelect();
   #|     renderBrushSelect();
   #|     refreshSolidUi();
   #|     renderCanvas();
@@ -1487,7 +2257,6 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     setDirty(true);
   #|     setFeedback(`Deleted tilemap ${removed}.`);
   #|     renderMapSelect();
-  #|     renderTileSelect();
   #|     renderBrushSelect();
   #|     refreshSolidUi();
   #|     renderCanvas();
@@ -1513,34 +2282,6 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     renderMapSelect();
   #|     renderCanvas();
   #|   };
-  #|   const addTile = () => {
-  #|     const ts = state.tiles;
-  #|     if (!ts) return;
-  #|     let id = -1;
-  #|     for (let i = 0; i < ts.tile_count; i += 1) {
-  #|       if (!ts.tile_defined[i]) {
-  #|         id = i;
-  #|         break;
-  #|       }
-  #|     }
-  #|     if (id < 0) {
-  #|       setFeedback("All 256 tile IDs are already defined.", true);
-  #|       return;
-  #|     }
-  #|     ts.tile_defined[id] = true;
-  #|     ts.tile_names[id] = `tile_${id}`;
-  #|     ts.tile_solid[id] = false;
-  #|     const base = id * 64;
-  #|     for (let i = 0; i < 64; i += 1) ts.pixels[base + i] = -1;
-  #|     state.selectedToken = id;
-  #|     setDirty(true);
-  #|     setFeedback(`Reserved tile ${id}.`);
-  #|     renderTilePalette();
-  #|     renderTileSelect();
-  #|     renderBrushSelect();
-  #|     refreshSolidUi();
-  #|     renderCanvas();
-  #|   };
   #|   const deleteTile = () => {
   #|     const ts = state.tiles;
   #|     const id = activeTileId();
@@ -1553,11 +2294,58 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     setDirty(true);
   #|     setFeedback(`Cleared tile ${id}.`);
   #|     renderTilePalette();
-  #|     renderTileSelect();
   #|     renderBrushSelect();
   #|     refreshSolidUi();
+  #|     renderTileThumbnails();
+  #|     renderMapTileThumbnails();
   #|     renderCanvas();
   #|   };
+  #|
+  #|   const copySelectedTileToClipboard = () => {
+  #|     const ts = state.tiles;
+  #|     const id = activeTileId();
+  #|     if (!ts || id < 0) {
+  #|       setFeedback("Copy failed: no tile selected.", true);
+  #|       return false;
+  #|     }
+  #|     const base = id * 64;
+  #|     const pixels = Array(64).fill(-1);
+  #|     for (let i = 0; i < 64; i += 1) {
+  #|       const v = ts.pixels[base + i];
+  #|       pixels[i] = Number.isInteger(v) ? v : -1;
+  #|     }
+  #|     state.tileClipboard = { pixels };
+  #|     setFeedback(`Copied tile ${id}.`);
+  #|     return true;
+  #|   };
+  #|
+  #|   const pasteClipboardToSelectedTile = () => {
+  #|     const ts = state.tiles;
+  #|     const id = activeTileId();
+  #|     if (!ts || id < 0) {
+  #|       setFeedback("Paste failed: no tile selected.", true);
+  #|       return false;
+  #|     }
+  #|     const clip = state.tileClipboard;
+  #|     if (!clip || !Array.isArray(clip.pixels) || clip.pixels.length !== 64) {
+  #|       setFeedback("Paste failed: tile clipboard is empty.", true);
+  #|       return false;
+  #|     }
+  #|     const base = id * 64;
+  #|     for (let i = 0; i < 64; i += 1) {
+  #|       const v = clip.pixels[i];
+  #|       ts.pixels[base + i] = Number.isInteger(v) && v >= -1 && v <= 15 ? v : -1;
+  #|     }
+  #|     ts.tile_defined[id] = true;
+  #|     setDirty(true);
+  #|     setFeedback(`Pasted into tile ${id}.`);
+  #|     renderTileCanvas();
+  #|     renderTileThumbnails();
+  #|     renderMapTileThumbnails();
+  #|     renderCanvas();
+  #|     return true;
+  #|   };
+  #|   let tilePaintPending = false;
   #|
   #|   if (!globalThis.__moon8bit_tilemap_bound) {
   #|     mapSelect.addEventListener("change", () => {
@@ -1566,14 +2354,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     });
   #|     brushSelect.addEventListener("change", () => {
   #|       state.selectedToken = Number(brushSelect.value);
-  #|       renderTileSelect();
-  #|       refreshSolidUi();
-  #|     });
-  #|     tileSelect.addEventListener("change", () => {
-  #|       state.selectedToken = Number(tileSelect.value);
-  #|       renderBrushSelect();
-  #|       brushSelect.value = String(state.selectedToken);
-  #|       refreshSolidUi();
+  #|       renderMapTileThumbnails();
   #|     });
   #|     tileNameInput.addEventListener("input", () => {
   #|       const ts = state.tiles;
@@ -1584,11 +2365,12 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       ts.tile_defined[id] = true;
   #|       setDirty(true);
   #|       setFeedback(`Tile ${id} name updated.`);
-  #|       renderTileSelect();
   #|       renderBrushSelect();
   #|       brushSelect.value = String(id);
   #|       state.selectedToken = id;
   #|       refreshSolidUi();
+  #|       renderTileThumbnails();
+  #|       renderMapTileThumbnails();
   #|     });
   #|     solidInput.addEventListener("change", () => {
   #|       const ts = state.tiles;
@@ -1599,19 +2381,16 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       ts.tile_defined[id] = true;
   #|       setDirty(true);
   #|       setFeedback(`Tile ${id} solid=${ts.tile_solid[id] ? "on" : "off"}.`);
-  #|       renderTileSelect();
   #|       renderBrushSelect();
   #|       brushSelect.value = String(id);
   #|       state.selectedToken = id;
   #|       refreshSolidUi();
+  #|       renderTileThumbnails();
+  #|       renderMapTileThumbnails();
   #|     });
-  #|     syncBtn.addEventListener("click", refreshFromText);
-  #|     writeBtn.addEventListener("click", () => writeTilemapToDsl(false));
-  #|     applyBtn.addEventListener("click", () => writeTilemapToDsl(true));
   #|     addMapBtn.addEventListener("click", addMap);
   #|     delMapBtn.addEventListener("click", deleteMap);
   #|     resizeMapBtn.addEventListener("click", resizeMap);
-  #|     addTileBtn.addEventListener("click", addTile);
   #|     delTileBtn.addEventListener("click", deleteTile);
   #|     textarea.addEventListener("input", refreshFromText);
   #|
@@ -1631,15 +2410,42 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     let tileDrawing = false;
   #|     tileCanvas.addEventListener("pointerdown", (evt) => {
   #|       tileDrawing = true;
+  #|       tilePaintPending = false;
   #|       paintTileAt(evt);
   #|     });
   #|     tileCanvas.addEventListener("pointermove", (evt) => {
   #|       if (tileDrawing) paintTileAt(evt);
   #|     });
   #|     globalThis.addEventListener("pointerup", () => {
+  #|       if (tileDrawing && tilePaintPending) {
+  #|         tilePaintPending = false;
+  #|         renderTileThumbnails();
+  #|         renderMapTileThumbnails();
+  #|         renderCanvas();
+  #|         scheduleTilemapAutoWrite();
+  #|       }
   #|       tileDrawing = false;
   #|     });
   #|     tileCanvas.addEventListener("contextmenu", (evt) => evt.preventDefault());
+  #|
+  #|     globalThis.addEventListener("keydown", (evt) => {
+  #|       if (globalThis.__moon8bit_active_tab !== "tile") return;
+  #|       const target = evt.target;
+  #|       const editable = target && (
+  #|         target.tagName === "TEXTAREA" ||
+  #|         target.tagName === "INPUT" ||
+  #|         target.isContentEditable
+  #|       );
+  #|       if (editable) return;
+  #|       if (!(evt.ctrlKey || evt.metaKey) || evt.altKey || evt.shiftKey) return;
+  #|       const key = String(evt.key || "").toLowerCase();
+  #|       if (key === "c") {
+  #|         if (copySelectedTileToClipboard()) evt.preventDefault();
+  #|       } else if (key === "v") {
+  #|         if (pasteClipboardToSelectedTile()) evt.preventDefault();
+  #|       }
+  #|     });
+  #|
   #|     globalThis.__moon8bit_tilemap_bound = true;
   #|   }
   #|
