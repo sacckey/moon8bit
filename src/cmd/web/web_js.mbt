@@ -62,7 +62,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     { key: "tile", label: "Tile" },
   #|     { key: "tilemap", label: "Tilemap" },
   #|     { key: "sfx", label: "SFX" },
-  #|     { key: "sound", label: "Sound" },
+  #|     { key: "sound", label: "BGM" },
   #|   ];
   #|
   #|   const ensureTab = (key, label) => {
@@ -477,6 +477,173 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     soundDirtyIndicator.textContent = "Saved";
   #|     soundDirtyIndicator.style.color = "#7bd389";
   #|     soundActionRow.appendChild(soundDirtyIndicator);
+  #|   }
+  #|
+  #|   let bgmLayout = document.getElementById("moon8bit-bgm-layout");
+  #|   if (!bgmLayout) {
+  #|     bgmLayout = document.createElement("div");
+  #|     bgmLayout.id = "moon8bit-bgm-layout";
+  #|     bgmLayout.style.display = "flex";
+  #|     bgmLayout.style.gap = "12px";
+  #|     bgmLayout.style.alignItems = "stretch";
+  #|     bgmLayout.style.minHeight = "420px";
+  #|     soundEditor.appendChild(bgmLayout);
+  #|   }
+  #|
+  #|   let bgmListPane = document.getElementById("moon8bit-bgm-list-pane");
+  #|   if (!bgmListPane) {
+  #|     bgmListPane = document.createElement("div");
+  #|     bgmListPane.id = "moon8bit-bgm-list-pane";
+  #|     bgmListPane.style.width = "300px";
+  #|     bgmListPane.style.flexShrink = "0";
+  #|     bgmListPane.style.display = "grid";
+  #|     bgmListPane.style.gridTemplateRows = "auto auto auto auto 1fr";
+  #|     bgmListPane.style.gap = "8px";
+  #|     bgmLayout.appendChild(bgmListPane);
+  #|   }
+  #|
+  #|   let bgmListTitle = document.getElementById("moon8bit-bgm-list-title");
+  #|   if (!bgmListTitle) {
+  #|     bgmListTitle = document.createElement("div");
+  #|     bgmListTitle.id = "moon8bit-bgm-list-title";
+  #|     bgmListTitle.textContent = "All BGM";
+  #|     bgmListTitle.style.fontFamily = "monospace";
+  #|     bgmListTitle.style.fontSize = "18px";
+  #|     bgmListTitle.style.fontWeight = "600";
+  #|     bgmListPane.appendChild(bgmListTitle);
+  #|   }
+  #|
+  #|   let bgmListHint = document.getElementById("moon8bit-bgm-list-hint");
+  #|   if (!bgmListHint) {
+  #|     bgmListHint = document.createElement("div");
+  #|     bgmListHint.id = "moon8bit-bgm-list-hint";
+  #|     bgmListHint.textContent = "Select BGM on the left, edit on the right.";
+  #|     bgmListHint.style.fontFamily = "monospace";
+  #|     bgmListHint.style.fontSize = "13px";
+  #|     bgmListHint.style.color = "#9fb3c8";
+  #|     bgmListPane.appendChild(bgmListHint);
+  #|   }
+  #|
+  #|   let bgmListActions = document.getElementById("moon8bit-bgm-list-actions");
+  #|   if (!bgmListActions) {
+  #|     bgmListActions = document.createElement("div");
+  #|     bgmListActions.id = "moon8bit-bgm-list-actions";
+  #|     bgmListActions.style.display = "flex";
+  #|     bgmListActions.style.gap = "8px";
+  #|     bgmListActions.style.alignItems = "center";
+  #|     bgmListPane.appendChild(bgmListActions);
+  #|   }
+  #|
+  #|   let bgmList = document.getElementById("moon8bit-bgm-list");
+  #|   if (!bgmList) {
+  #|     bgmList = document.createElement("div");
+  #|     bgmList.id = "moon8bit-bgm-list";
+  #|     bgmList.style.display = "grid";
+  #|     bgmList.style.gap = "6px";
+  #|     bgmList.style.overflowY = "auto";
+  #|     bgmList.style.minHeight = "0";
+  #|     bgmList.style.paddingRight = "4px";
+  #|     bgmListPane.appendChild(bgmList);
+  #|   }
+  #|
+  #|   let bgmEditPane = document.getElementById("moon8bit-bgm-edit-pane");
+  #|   if (!bgmEditPane) {
+  #|     bgmEditPane = document.createElement("div");
+  #|     bgmEditPane.id = "moon8bit-bgm-edit-pane";
+  #|     bgmEditPane.style.flex = "1";
+  #|     bgmEditPane.style.minWidth = "0";
+  #|     bgmEditPane.style.display = "grid";
+  #|     bgmEditPane.style.gridTemplateRows = "auto 1fr";
+  #|     bgmEditPane.style.gap = "10px";
+  #|     bgmLayout.appendChild(bgmEditPane);
+  #|   }
+  #|
+  #|   let bgmEditorTitle = document.getElementById("moon8bit-bgm-editor-title");
+  #|   if (!bgmEditorTitle) {
+  #|     bgmEditorTitle = document.createElement("div");
+  #|     bgmEditorTitle.id = "moon8bit-bgm-editor-title";
+  #|     bgmEditorTitle.textContent = "Selected BGM";
+  #|     bgmEditorTitle.style.fontFamily = "monospace";
+  #|     bgmEditorTitle.style.fontSize = "18px";
+  #|     bgmEditorTitle.style.fontWeight = "600";
+  #|     bgmEditPane.appendChild(bgmEditorTitle);
+  #|   }
+  #|
+  #|   let bgmEditorBody = document.getElementById("moon8bit-bgm-editor-body");
+  #|   if (!bgmEditorBody) {
+  #|     bgmEditorBody = document.createElement("div");
+  #|     bgmEditorBody.id = "moon8bit-bgm-editor-body";
+  #|     bgmEditorBody.style.display = "grid";
+  #|     bgmEditorBody.style.gridTemplateRows = "auto 1fr";
+  #|     bgmEditorBody.style.gap = "10px";
+  #|     bgmEditorBody.style.minHeight = "0";
+  #|     bgmEditPane.appendChild(bgmEditorBody);
+  #|   }
+  #|
+  #|   let bgmControlsTop = document.getElementById("moon8bit-bgm-controls-top");
+  #|   if (!bgmControlsTop) {
+  #|     bgmControlsTop = document.createElement("div");
+  #|     bgmControlsTop.id = "moon8bit-bgm-controls-top";
+  #|     bgmControlsTop.style.display = "grid";
+  #|     bgmControlsTop.style.gap = "8px";
+  #|     bgmEditorBody.appendChild(bgmControlsTop);
+  #|   }
+  #|
+  #|   let bgmRollWrap = document.getElementById("moon8bit-bgm-roll-wrap");
+  #|   if (!bgmRollWrap) {
+  #|     bgmRollWrap = document.createElement("div");
+  #|     bgmRollWrap.id = "moon8bit-bgm-roll-wrap";
+  #|     bgmRollWrap.style.display = "grid";
+  #|     bgmRollWrap.style.gridTemplateRows = "auto 1fr";
+  #|     bgmRollWrap.style.gap = "6px";
+  #|     bgmRollWrap.style.minHeight = "220px";
+  #|     bgmRollWrap.style.border = "1px solid #334e68";
+  #|     bgmRollWrap.style.padding = "8px";
+  #|     bgmEditorBody.appendChild(bgmRollWrap);
+  #|   }
+  #|
+  #|   let bgmRollTitle = document.getElementById("moon8bit-bgm-roll-title");
+  #|   if (!bgmRollTitle) {
+  #|     bgmRollTitle = document.createElement("div");
+  #|     bgmRollTitle.id = "moon8bit-bgm-roll-title";
+  #|     bgmRollTitle.textContent = "Piano Roll";
+  #|     bgmRollTitle.style.fontFamily = "monospace";
+  #|     bgmRollTitle.style.fontSize = "14px";
+  #|     bgmRollTitle.style.color = "#9fb3c8";
+  #|     bgmRollWrap.appendChild(bgmRollTitle);
+  #|   }
+  #|
+  #|   let bgmRollPanel = document.getElementById("moon8bit-bgm-roll-panel");
+  #|   if (!bgmRollPanel) {
+  #|     bgmRollPanel = document.createElement("div");
+  #|     bgmRollPanel.id = "moon8bit-bgm-roll-panel";
+  #|     bgmRollPanel.style.display = "grid";
+  #|     bgmRollPanel.style.gridTemplateColumns = "52px 1fr";
+  #|     bgmRollPanel.style.gap = "6px";
+  #|     bgmRollPanel.style.minHeight = "0";
+  #|     bgmRollPanel.style.alignItems = "start";
+  #|     bgmRollPanel.style.justifyItems = "start";
+  #|     bgmRollPanel.style.overflow = "auto";
+  #|     bgmRollWrap.appendChild(bgmRollPanel);
+  #|   }
+  #|
+  #|   let bgmRollKeys = document.getElementById("moon8bit-bgm-roll-keys");
+  #|   if (!bgmRollKeys) {
+  #|     bgmRollKeys = document.createElement("canvas");
+  #|     bgmRollKeys.id = "moon8bit-bgm-roll-keys";
+  #|     bgmRollKeys.style.imageRendering = "pixelated";
+  #|     bgmRollKeys.style.border = "1px solid #334e68";
+  #|     bgmRollPanel.appendChild(bgmRollKeys);
+  #|   }
+  #|
+  #|   let bgmRoll = document.getElementById("moon8bit-bgm-roll");
+  #|   if (!bgmRoll) {
+  #|     bgmRoll = document.createElement("canvas");
+  #|     bgmRoll.id = "moon8bit-bgm-roll";
+  #|     bgmRoll.style.imageRendering = "pixelated";
+  #|     bgmRoll.style.border = "1px solid #334e68";
+  #|     bgmRoll.style.cursor = "crosshair";
+  #|     bgmRollPanel.appendChild(bgmRoll);
   #|   }
   #|
   #|   if (!globalThis.__moon8bit_audio_state) {
@@ -1219,7 +1386,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     renderSoundValidation();
   #|   };
   #|
-  #|   const ensureSlider = (id, label, min, max, step, getValue, setValue) => {
+  #|   const ensureSlider = (id, label, min, max, step, getValue, setValue, parent) => {
   #|     let row = document.getElementById(`${id}-row`);
   #|     if (!row) {
   #|       row = document.createElement("div");
@@ -1228,7 +1395,10 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       row.style.gridTemplateColumns = "120px 1fr 56px";
   #|       row.style.alignItems = "center";
   #|       row.style.gap = "8px";
-  #|       soundEditor.appendChild(row);
+  #|       parent.appendChild(row);
+  #|     }
+  #|     if (row.parentElement !== parent) {
+  #|       parent.appendChild(row);
   #|     }
   #|
   #|     let text = document.getElementById(`${id}-label`);
@@ -1292,7 +1462,93 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       if (b) b.volume = v;
   #|       markDirty();
   #|     },
+  #|     bgmControlsTop,
   #|   );
+  #|
+  #|   let bgmNameRow = document.getElementById("moon8bit-bgm-name-row");
+  #|   if (!bgmNameRow) {
+  #|     bgmNameRow = document.createElement("div");
+  #|     bgmNameRow.id = "moon8bit-bgm-name-row";
+  #|     bgmNameRow.style.display = "grid";
+  #|     bgmNameRow.style.gridTemplateColumns = "120px 1fr auto";
+  #|     bgmNameRow.style.alignItems = "center";
+  #|     bgmNameRow.style.gap = "8px";
+  #|     bgmControlsTop.appendChild(bgmNameRow);
+  #|   }
+  #|   if (bgmNameRow.parentElement !== bgmControlsTop) {
+  #|     bgmControlsTop.appendChild(bgmNameRow);
+  #|   }
+  #|
+  #|   let bgmNameLabel = document.getElementById("moon8bit-bgm-name-label");
+  #|   if (!bgmNameLabel) {
+  #|     bgmNameLabel = document.createElement("div");
+  #|     bgmNameLabel.id = "moon8bit-bgm-name-label";
+  #|     bgmNameLabel.textContent = "BGM Name";
+  #|     bgmNameLabel.style.fontFamily = "monospace";
+  #|     bgmNameLabel.style.fontSize = "15px";
+  #|     bgmNameRow.appendChild(bgmNameLabel);
+  #|   }
+  #|
+  #|   let bgmNameInput = document.getElementById("moon8bit-bgm-name-input");
+  #|   if (!bgmNameInput) {
+  #|     bgmNameInput = document.createElement("input");
+  #|     bgmNameInput.id = "moon8bit-bgm-name-input";
+  #|     bgmNameInput.type = "text";
+  #|     bgmNameInput.spellcheck = false;
+  #|     bgmNameInput.style.width = "100%";
+  #|     bgmNameInput.style.boxSizing = "border-box";
+  #|     bgmNameRow.appendChild(bgmNameInput);
+  #|   }
+  #|
+  #|   let bgmRenameBtn = document.getElementById("moon8bit-bgm-rename-btn");
+  #|   if (!bgmRenameBtn) {
+  #|     bgmRenameBtn = document.createElement("button");
+  #|     bgmRenameBtn.id = "moon8bit-bgm-rename-btn";
+  #|     bgmRenameBtn.textContent = "Rename";
+  #|     bgmRenameBtn.style.padding = "6px 10px";
+  #|     bgmRenameBtn.style.background = "#274060";
+  #|     bgmRenameBtn.style.color = "#f6f7eb";
+  #|     bgmRenameBtn.style.border = "1px solid #486581";
+  #|     bgmRenameBtn.style.cursor = "pointer";
+  #|     bgmNameRow.appendChild(bgmRenameBtn);
+  #|   }
+  #|
+  #|   const runBgmRename = () => {
+  #|     const bgm = getSelectedBgm();
+  #|     if (!bgm) return;
+  #|     const oldName = bgm.name;
+  #|     const nextName = String(bgmNameInput.value || "").trim().replace(/[^A-Za-z0-9_-]/g, "_");
+  #|     if (!nextName) {
+  #|       alert("Invalid name.");
+  #|       bgmNameInput.value = oldName;
+  #|       return;
+  #|     }
+  #|     if (nextName === oldName) return;
+  #|     if (audioState.bgms.some((x) => x.name === nextName)) {
+  #|       alert("Name already in use.");
+  #|       bgmNameInput.value = oldName;
+  #|       return;
+  #|     }
+  #|     bgm.name = nextName;
+  #|     audioState.selectedBgmName = nextName;
+  #|     syncPlaybackFromSelectedBgm();
+  #|     markDirty();
+  #|     syncBgmControlsFromState();
+  #|   };
+  #|
+  #|   if (bgmRenameBtn.dataset.bound !== "1") {
+  #|     bgmRenameBtn.dataset.bound = "1";
+  #|     bgmRenameBtn.addEventListener("click", runBgmRename);
+  #|   }
+  #|   if (bgmNameInput.dataset.bound !== "1") {
+  #|     bgmNameInput.dataset.bound = "1";
+  #|     bgmNameInput.addEventListener("keydown", (ev) => {
+  #|       if (ev.key === "Enter") {
+  #|         ev.preventDefault();
+  #|         runBgmRename();
+  #|       }
+  #|     });
+  #|   }
   #|
   #|   // BGM selector row (multi-BGM support)
   #|   let bgmSelectorRow = document.getElementById("moon8bit-bgm-selector-row");
@@ -1303,8 +1559,12 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     bgmSelectorRow.style.gap = "6px";
   #|     bgmSelectorRow.style.alignItems = "center";
   #|     bgmSelectorRow.style.flexWrap = "wrap";
-  #|     soundEditor.appendChild(bgmSelectorRow);
+  #|     bgmListPane.appendChild(bgmSelectorRow);
   #|   }
+  #|   if (bgmSelectorRow.parentElement !== bgmListPane) {
+  #|     bgmListPane.appendChild(bgmSelectorRow);
+  #|   }
+  #|   bgmSelectorRow.style.display = "none";
   #|   let bgmSelectorLabel = document.getElementById("moon8bit-bgm-selector-label");
   #|   if (!bgmSelectorLabel) {
   #|     bgmSelectorLabel = document.createElement("span");
@@ -1314,6 +1574,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     bgmSelectorLabel.style.fontSize = "15px";
   #|     bgmSelectorRow.appendChild(bgmSelectorLabel);
   #|   }
+  #|   bgmSelectorLabel.style.display = "none";
   #|   let bgmSelector = document.getElementById("moon8bit-bgm-selector");
   #|   if (!bgmSelector) {
   #|     bgmSelector = document.createElement("select");
@@ -1322,6 +1583,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     bgmSelector.style.fontSize = "15px";
   #|     bgmSelectorRow.appendChild(bgmSelector);
   #|   }
+  #|   bgmSelector.style.display = "none";
   #|   const refreshBgmSelector = () => {
   #|     bgmSelector.innerHTML = "";
   #|     if (audioState.bgms.length === 0) {
@@ -1360,7 +1622,10 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     addBgmBtn.style.cursor = "pointer";
   #|     addBgmBtn.style.fontFamily = "monospace";
   #|     addBgmBtn.style.fontSize = "15px";
-  #|     bgmSelectorRow.appendChild(addBgmBtn);
+  #|     bgmListActions.appendChild(addBgmBtn);
+  #|   }
+  #|   if (addBgmBtn.parentElement !== bgmListActions) {
+  #|     bgmListActions.appendChild(addBgmBtn);
   #|   }
   #|   if (addBgmBtn.dataset.bound !== "1") {
   #|     addBgmBtn.dataset.bound = "1";
@@ -1393,7 +1658,10 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     dupBgmBtn.style.cursor = "pointer";
   #|     dupBgmBtn.style.fontFamily = "monospace";
   #|     dupBgmBtn.style.fontSize = "15px";
-  #|     bgmSelectorRow.appendChild(dupBgmBtn);
+  #|     bgmListActions.appendChild(dupBgmBtn);
+  #|   }
+  #|   if (dupBgmBtn.parentElement !== bgmListActions) {
+  #|     bgmListActions.appendChild(dupBgmBtn);
   #|   }
   #|   if (dupBgmBtn.dataset.bound !== "1") {
   #|     dupBgmBtn.dataset.bound = "1";
@@ -1429,7 +1697,10 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     delBgmBtn.style.cursor = "pointer";
   #|     delBgmBtn.style.fontFamily = "monospace";
   #|     delBgmBtn.style.fontSize = "15px";
-  #|     bgmSelectorRow.appendChild(delBgmBtn);
+  #|     bgmListActions.appendChild(delBgmBtn);
+  #|   }
+  #|   if (delBgmBtn.parentElement !== bgmListActions) {
+  #|     bgmListActions.appendChild(delBgmBtn);
   #|   }
   #|   if (delBgmBtn.dataset.bound !== "1") {
   #|     delBgmBtn.dataset.bound = "1";
@@ -1453,7 +1724,10 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     bgmAdvanced.id = "moon8bit-sound-bgm-advanced";
   #|     bgmAdvanced.style.display = "grid";
   #|     bgmAdvanced.style.gap = "6px";
-  #|     soundEditor.appendChild(bgmAdvanced);
+  #|     bgmControlsTop.appendChild(bgmAdvanced);
+  #|   }
+  #|   if (bgmAdvanced.parentElement !== bgmControlsTop) {
+  #|     bgmControlsTop.appendChild(bgmAdvanced);
   #|   }
   #|
   #|   const ensureBgmRow = (id, label, hint) => {
@@ -1623,7 +1897,10 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     bgmControls.style.flexWrap = "wrap";
   #|     bgmControls.style.gap = "8px";
   #|     bgmControls.style.alignItems = "center";
-  #|     soundEditor.appendChild(bgmControls);
+  #|     bgmControlsTop.appendChild(bgmControls);
+  #|   }
+  #|   if (bgmControls.parentElement !== bgmControlsTop) {
+  #|     bgmControlsTop.appendChild(bgmControls);
   #|   }
   #|
   #|   const ensureButton = (id, label, onClick) => {
@@ -1973,6 +2250,151 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     host.appendChild(card);
   #|   };
   #|
+  #|   const BGM_PITCH_MIN = 48; // C3
+  #|   const BGM_PITCH_MAX = 84; // C6
+  #|   const BGM_ROLL_ROW = 16;
+  #|   const BGM_ROLL_COL = 20;
+  #|   const BGM_ROLL_MIN_STEPS = 16;
+  #|
+  #|   const renderBgmList = () => {
+  #|     bgmList.innerHTML = "";
+  #|     for (const bgm of audioState.bgms) {
+  #|       const item = document.createElement("button");
+  #|       item.type = "button";
+  #|       item.textContent = bgm.name;
+  #|       item.style.textAlign = "left";
+  #|       item.style.padding = "8px 10px";
+  #|       item.style.background = audioState.selectedBgmName === bgm.name ? "#2e8b57" : "#0f1720";
+  #|       item.style.color = "#f6f7eb";
+  #|       item.style.border = audioState.selectedBgmName === bgm.name ? "1px solid #6ee7b7" : "1px solid #334e68";
+  #|       item.style.cursor = "pointer";
+  #|       item.style.fontFamily = "monospace";
+  #|       item.style.fontSize = "14px";
+  #|       item.addEventListener("click", () => {
+  #|         audioState.selectedBgmName = bgm.name;
+  #|         syncPlaybackFromSelectedBgm();
+  #|         syncBgmControlsFromState();
+  #|       });
+  #|       bgmList.appendChild(item);
+  #|     }
+  #|     if (audioState.bgms.length === 0) {
+  #|       const note = document.createElement("div");
+  #|       note.style.fontFamily = "monospace";
+  #|       note.style.fontSize = "14px";
+  #|       note.style.color = "#9fb3c8";
+  #|       note.textContent = "No BGM defined.";
+  #|       bgmList.appendChild(note);
+  #|     }
+  #|   };
+  #|
+  #|   const renderBgmPianoRoll = () => {
+  #|     const bgm = getSelectedBgm();
+  #|     const rows = BGM_PITCH_MAX - BGM_PITCH_MIN + 1;
+  #|     const steps = Math.max(BGM_ROLL_MIN_STEPS, Array.isArray(bgm?.notes) ? bgm.notes.length : 0);
+  #|     const rollW = steps * BGM_ROLL_COL;
+  #|     const rollH = rows * BGM_ROLL_ROW;
+  #|
+  #|     bgmRoll.width = rollW;
+  #|     bgmRoll.height = rollH;
+  #|     bgmRollKeys.width = 52;
+  #|     bgmRollKeys.height = rollH;
+  #|     bgmRoll.style.width = `${rollW}px`;
+  #|     bgmRoll.style.height = `${rollH}px`;
+  #|     bgmRollKeys.style.width = "52px";
+  #|     bgmRollKeys.style.height = `${rollH}px`;
+  #|
+  #|     const ctx = bgmRoll.getContext("2d");
+  #|     const keyCtx = bgmRollKeys.getContext("2d");
+  #|     if (!ctx || !keyCtx) return;
+  #|
+  #|     ctx.clearRect(0, 0, rollW, rollH);
+  #|     for (let r = 0; r < rows; r += 1) {
+  #|       const midi = BGM_PITCH_MAX - r;
+  #|       const isBlack = [1, 3, 6, 8, 10].includes(midi % 12);
+  #|       ctx.fillStyle = isBlack ? "#132033" : "#101820";
+  #|       ctx.fillRect(0, r * BGM_ROLL_ROW, rollW, BGM_ROLL_ROW);
+  #|     }
+  #|     ctx.strokeStyle = "#1f2f46";
+  #|     for (let x = 0; x <= steps; x += 1) {
+  #|       ctx.beginPath();
+  #|       ctx.moveTo(x * BGM_ROLL_COL + 0.5, 0);
+  #|       ctx.lineTo(x * BGM_ROLL_COL + 0.5, rollH);
+  #|       ctx.stroke();
+  #|     }
+  #|     for (let y = 0; y <= rows; y += 1) {
+  #|       ctx.beginPath();
+  #|       ctx.moveTo(0, y * BGM_ROLL_ROW + 0.5);
+  #|       ctx.lineTo(rollW, y * BGM_ROLL_ROW + 0.5);
+  #|       ctx.stroke();
+  #|     }
+  #|
+  #|     if (bgm && Array.isArray(bgm.notes)) {
+  #|       ctx.fillStyle = "#7f5af0";
+  #|       for (let step = 0; step < bgm.notes.length; step += 1) {
+  #|         const midi = Number(bgm.notes[step]);
+  #|         if (!Number.isInteger(midi) || midi < BGM_PITCH_MIN || midi > BGM_PITCH_MAX) continue;
+  #|         const row = BGM_PITCH_MAX - midi;
+  #|         ctx.fillRect(
+  #|           step * BGM_ROLL_COL + 1,
+  #|           row * BGM_ROLL_ROW + 1,
+  #|           BGM_ROLL_COL - 2,
+  #|           BGM_ROLL_ROW - 2,
+  #|         );
+  #|       }
+  #|     }
+  #|
+  #|     keyCtx.clearRect(0, 0, 52, rollH);
+  #|     keyCtx.fillStyle = "#0f1720";
+  #|     keyCtx.fillRect(0, 0, 52, rollH);
+  #|     keyCtx.font = "11px ui-monospace, SFMono-Regular, Menlo, monospace";
+  #|     keyCtx.textBaseline = "middle";
+  #|     keyCtx.fillStyle = "#9fb3c8";
+  #|     for (let r = 0; r < rows; r += 1) {
+  #|       const midi = BGM_PITCH_MAX - r;
+  #|       if (midi % 12 === 0) {
+  #|         keyCtx.fillText(noteNameFromMidi(midi), 4, r * BGM_ROLL_ROW + BGM_ROLL_ROW / 2);
+  #|       }
+  #|     }
+  #|   };
+  #|
+  #|   const writeRollCell = (evt, forceRest) => {
+  #|     const bgm = getSelectedBgm();
+  #|     if (!bgm) return;
+  #|     const rect = bgmRoll.getBoundingClientRect();
+  #|     const fx = (evt.clientX - rect.left) / Math.max(1, rect.width);
+  #|     const fy = (evt.clientY - rect.top) / Math.max(1, rect.height);
+  #|     const steps = Math.max(BGM_ROLL_MIN_STEPS, Array.isArray(bgm.notes) ? bgm.notes.length : 0);
+  #|     const rows = BGM_PITCH_MAX - BGM_PITCH_MIN + 1;
+  #|     const step = Math.max(0, Math.min(steps - 1, Math.floor(fx * steps)));
+  #|     const row = Math.max(0, Math.min(rows - 1, Math.floor(fy * rows)));
+  #|     const midi = BGM_PITCH_MAX - row;
+  #|     const notes = Array.isArray(bgm.notes) ? bgm.notes.slice() : [];
+  #|     while (notes.length <= step) notes.push(-1);
+  #|     if (forceRest) {
+  #|       notes[step] = -1;
+  #|     } else {
+  #|       notes[step] = notes[step] === midi ? -1 : midi;
+  #|     }
+  #|     bgm.notes = notes;
+  #|     audioState.bgmNotes = notes.slice();
+  #|     if (bgmNotesInput) {
+  #|       bgmNotesInput.value = notes.map(noteNameFromMidi).join(" ");
+  #|     }
+  #|     markDirty();
+  #|     renderBgmPianoRoll();
+  #|   };
+  #|   if (bgmRoll.dataset.bound !== "1") {
+  #|     bgmRoll.dataset.bound = "1";
+  #|     bgmRoll.addEventListener("pointerdown", (evt) => {
+  #|       if (evt.button === 2) return;
+  #|       writeRollCell(evt, false);
+  #|     });
+  #|     bgmRoll.addEventListener("contextmenu", (evt) => {
+  #|       evt.preventDefault();
+  #|       writeRollCell(evt, true);
+  #|     });
+  #|   }
+  #|
   #|   const syncBgmControlsFromState = () => {
   #|     const bgm = getSelectedBgm();
   #|     const defined = bgm !== null;
@@ -2008,6 +2430,13 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       bgmWaveSelect.value = String(bgm ? bgm.wave : (audioState.bgmWave || "square"));
   #|       bgmWaveSelect.disabled = !defined;
   #|     }
+  #|     if (bgmNameInput) {
+  #|       bgmNameInput.value = bgm ? String(bgm.name) : "";
+  #|       bgmNameInput.disabled = !defined;
+  #|     }
+  #|     if (bgmRenameBtn) {
+  #|       bgmRenameBtn.disabled = !defined;
+  #|     }
   #|     if (bgmStepInput) {
   #|       bgmStepInput.value = String(bgm ? bgm.step_sec : Number(audioState.bgmStepSec ?? 0.125));
   #|       bgmStepInput.disabled = !defined;
@@ -2026,6 +2455,10 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     if (bgmStartButton) bgmStartButton.disabled = !defined;
   #|     if (bgmStopButton) bgmStopButton.disabled = !defined;
   #|     if (dupBgmBtn) dupBgmBtn.disabled = !defined;
+  #|     if (delBgmBtn) delBgmBtn.disabled = !defined;
+  #|     if (bgmEditorTitle) {
+  #|       bgmEditorTitle.textContent = bgm ? `Selected BGM: ${bgm.name}` : "Selected BGM";
+  #|     }
   #|     // Sync playback fields from selected BGM
   #|     if (bgm) {
   #|       audioState.bgmDefined = true;
@@ -2037,6 +2470,8 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     } else {
   #|       audioState.bgmDefined = false;
   #|     }
+  #|     renderBgmList();
+  #|     renderBgmPianoRoll();
   #|   };
   #|
   #|   const refreshSoundEditorFromDsl = () => {
