@@ -269,26 +269,51 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     editor.style.display = "grid";
   #|     editor.style.gap = "6px";
   #|     editor.style.width = "100%";
+  #|     editor.style.height = "100%";
+  #|     editor.style.minHeight = "0";
+  #|     editor.style.minWidth = "0";
+  #|     editor.style.boxSizing = "border-box";
+  #|     editor.style.gridTemplateRows = "minmax(0, 1fr) auto auto";
+  #|     editor.style.overflowX = "hidden";
   #|   }
   #|   if (editor.parentElement !== tabUi.dsl.panel) {
   #|     tabUi.dsl.panel.appendChild(editor);
   #|   }
+  #|   editor.style.width = "100%";
+  #|   editor.style.height = "100%";
+  #|   editor.style.minHeight = "0";
+  #|   editor.style.minWidth = "0";
+  #|   editor.style.boxSizing = "border-box";
+  #|   editor.style.gridTemplateRows = "minmax(0, 1fr) auto auto";
+  #|   editor.style.overflowX = "hidden";
   #|
   #|   let textarea = document.getElementById("moon8bit-dsl-input");
   #|   if (!textarea) {
   #|     textarea = document.createElement("textarea");
   #|     textarea.id = "moon8bit-dsl-input";
   #|     textarea.style.width = "100%";
-  #|     textarea.style.height = "calc(100vh - 160px)";
+  #|     textarea.style.height = "100%";
+  #|     textarea.style.minHeight = "220px";
+  #|     textarea.style.maxHeight = "100%";
   #|     textarea.style.background = "#0f1720";
   #|     textarea.style.color = "#d9e2ec";
   #|     textarea.style.border = "1px solid #334e68";
   #|     textarea.style.padding = "12px";
   #|     textarea.style.fontFamily = "ui-monospace, SFMono-Regular, Menlo, monospace";
   #|     textarea.style.fontSize = "15px";
+  #|     textarea.style.boxSizing = "border-box";
+  #|     textarea.style.minWidth = "0";
+  #|     textarea.style.resize = "none";
   #|     textarea.spellcheck = false;
   #|     editor.appendChild(textarea);
   #|   }
+  #|   textarea.style.width = "100%";
+  #|   textarea.style.height = "100%";
+  #|   textarea.style.minHeight = "220px";
+  #|   textarea.style.maxHeight = "100%";
+  #|   textarea.style.boxSizing = "border-box";
+  #|   textarea.style.minWidth = "0";
+  #|   textarea.style.resize = "none";
   #|
   #|   let controls = document.getElementById("moon8bit-editor-controls");
   #|   if (!controls) {
@@ -368,8 +393,12 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     feedback.style.fontFamily = "monospace";
   #|     feedback.style.fontSize = "15px";
   #|     feedback.style.color = "#9fb3c8";
+  #|     feedback.style.overflowWrap = "anywhere";
+  #|     feedback.style.wordBreak = "break-word";
   #|     editor.appendChild(feedback);
   #|   }
+  #|   feedback.style.overflowWrap = "anywhere";
+  #|   feedback.style.wordBreak = "break-word";
   #|
   #|   let soundEditor = document.getElementById("moon8bit-sound-editor");
   #|   if (!soundEditor) {
