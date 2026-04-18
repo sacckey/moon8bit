@@ -1,4 +1,354 @@
 ///|
+extern "js" fn web_init_palette_editor() -> Unit =
+  #| () => {
+  #|   const editor = document.getElementById("moon8bit-tab-panel-palette") || document.getElementById("moon8bit-editor");
+  #|   const textarea = document.getElementById("moon8bit-dsl-input");
+  #|   if (!editor || !textarea) return;
+  #|
+  #|   const fallbackPalette = [
+  #|     "#101820", "#1f4068", "#2e8b57", "#f2aa4c",
+  #|     "#e94f37", "#8f6f4f", "#f6f7eb", "#7f5af0",
+  #|     "#264653", "#2a9d8f", "#e9c46a", "#f4a261",
+  #|     "#e76f51", "#577590", "#90be6d", "#ffffff",
+  #|   ];
+  #|
+  #|   const normalizeHex = (raw, fallback) => {
+  #|     const v = String(raw || "").trim();
+  #|     if (v === "") return fallback;
+  #|     const s = v.startsWith("#") ? v.slice(1) : v;
+  #|     if (/^[0-9a-fA-F]{6}$/.test(s)) return `#${s.toLowerCase()}`;
+  #|     if (/^[0-9a-fA-F]{3}$/.test(s)) {
+  #|       const [r, g, b] = s.toLowerCase().split("");
+  #|       return `#${r}${r}${g}${g}${b}${b}`;
+  #|     }
+  #|     return fallback;
+  #|   };
+  #|
+  #|   let panel = document.getElementById("moon8bit-palette-panel");
+  #|   if (!panel) {
+  #|     panel = document.createElement("div");
+  #|     panel.id = "moon8bit-palette-panel";
+  #|     panel.style.display = "grid";
+  #|     panel.style.gap = "10px";
+  #|     panel.style.padding = "8px";
+  #|     panel.style.border = "1px solid #334e68";
+  #|     panel.style.background = "#111827";
+  #|     editor.appendChild(panel);
+  #|   }
+  #|   if (panel.parentElement !== editor) editor.appendChild(panel);
+  #|
+  #|   let title = document.getElementById("moon8bit-palette-title");
+  #|   if (!title) {
+  #|     title = document.createElement("div");
+  #|     title.id = "moon8bit-palette-title";
+  #|     title.textContent = "Palette Editor (0-15)";
+  #|     title.style.fontWeight = "600";
+  #|     title.style.fontFamily = "monospace";
+  #|     title.style.fontSize = "18px";
+  #|     panel.appendChild(title);
+  #|   }
+  #|
+  #|   let hint = document.getElementById("moon8bit-palette-hint");
+  #|   if (!hint) {
+  #|     hint = document.createElement("div");
+  #|     hint.id = "moon8bit-palette-hint";
+  #|     hint.textContent = "Click a swatch, then use color picker or HEX.";
+  #|     hint.style.fontFamily = "monospace";
+  #|     hint.style.fontSize = "13px";
+  #|     hint.style.color = "#9fb3c8";
+  #|     panel.appendChild(hint);
+  #|   }
+  #|
+  #|   let layout = document.getElementById("moon8bit-palette-layout");
+  #|   if (!layout) {
+  #|     layout = document.createElement("div");
+  #|     layout.id = "moon8bit-palette-layout";
+  #|     layout.style.display = "flex";
+  #|     layout.style.gap = "16px";
+  #|     layout.style.alignItems = "flex-start";
+  #|     layout.style.flexWrap = "nowrap";
+  #|     panel.appendChild(layout);
+  #|   }
+  #|
+  #|   let swatchPane = document.getElementById("moon8bit-palette-swatch-pane");
+  #|   if (!swatchPane) {
+  #|     swatchPane = document.createElement("div");
+  #|     swatchPane.id = "moon8bit-palette-swatch-pane";
+  #|     swatchPane.style.display = "grid";
+  #|     swatchPane.style.gridTemplateColumns = "repeat(4, 72px)";
+  #|     swatchPane.style.gap = "8px";
+  #|     swatchPane.style.alignContent = "start";
+  #|     layout.appendChild(swatchPane);
+  #|   }
+  #|
+  #|   let rightPane = document.getElementById("moon8bit-palette-right-pane");
+  #|   if (!rightPane) {
+  #|     rightPane = document.createElement("div");
+  #|     rightPane.id = "moon8bit-palette-right-pane";
+  #|     rightPane.style.display = "grid";
+  #|     rightPane.style.gap = "10px";
+  #|     rightPane.style.minWidth = "280px";
+  #|     rightPane.style.alignContent = "start";
+  #|     layout.appendChild(rightPane);
+  #|   }
+  #|
+  #|   let indexLabel = document.getElementById("moon8bit-palette-index");
+  #|   if (!indexLabel) {
+  #|     indexLabel = document.createElement("div");
+  #|     indexLabel.id = "moon8bit-palette-index";
+  #|     indexLabel.style.fontFamily = "monospace";
+  #|     indexLabel.style.fontSize = "14px";
+  #|     indexLabel.style.fontWeight = "600";
+  #|     rightPane.appendChild(indexLabel);
+  #|   }
+  #|
+  #|   let preview = document.getElementById("moon8bit-palette-preview");
+  #|   if (!preview) {
+  #|     preview = document.createElement("div");
+  #|     preview.id = "moon8bit-palette-preview";
+  #|     preview.style.width = "140px";
+  #|     preview.style.height = "96px";
+  #|     preview.style.border = "1px solid #486581";
+  #|     preview.style.boxShadow = "inset 0 0 0 1px rgba(255,255,255,0.08)";
+  #|     preview.style.cursor = "pointer";
+  #|     preview.title = "Click to open color picker";
+  #|     rightPane.appendChild(preview);
+  #|   }
+  #|
+  #|   let picker = document.getElementById("moon8bit-palette-hidden-picker");
+  #|   if (!picker) {
+  #|     picker = document.createElement("input");
+  #|     picker.id = "moon8bit-palette-hidden-picker";
+  #|     picker.type = "color";
+  #|     picker.style.position = "absolute";
+  #|     picker.style.opacity = "0";
+  #|     picker.style.pointerEvents = "none";
+  #|     picker.style.width = "1px";
+  #|     picker.style.height = "1px";
+  #|     panel.appendChild(picker);
+  #|   }
+  #|
+  #|   let hexLabel = document.getElementById("moon8bit-palette-hex-label");
+  #|   if (!hexLabel) {
+  #|     hexLabel = document.createElement("label");
+  #|     hexLabel.id = "moon8bit-palette-hex-label";
+  #|     hexLabel.textContent = "HEX (#RRGGBB)";
+  #|     hexLabel.style.fontFamily = "monospace";
+  #|     hexLabel.style.fontSize = "12px";
+  #|     hexLabel.style.opacity = "0.9";
+  #|     rightPane.appendChild(hexLabel);
+  #|   }
+  #|
+  #|   let hexInput = document.getElementById("moon8bit-palette-hex");
+  #|   if (!hexInput) {
+  #|     hexInput = document.createElement("input");
+  #|     hexInput.id = "moon8bit-palette-hex";
+  #|     hexInput.type = "text";
+  #|     hexInput.placeholder = "#2f2a3a";
+  #|     hexInput.style.width = "200px";
+  #|     hexInput.style.background = "#0f1720";
+  #|     hexInput.style.color = "#d9e2ec";
+  #|     hexInput.style.border = "1px solid #486581";
+  #|     hexInput.style.padding = "6px 8px";
+  #|     hexInput.style.fontFamily = "ui-monospace, SFMono-Regular, Menlo, monospace";
+  #|     rightPane.appendChild(hexInput);
+  #|   }
+  #|
+  #|   if (!globalThis.__moon8bit_palette_state) {
+  #|     globalThis.__moon8bit_palette_state = {
+  #|       lines: [],
+  #|       colors: fallbackPalette.slice(0, 16),
+  #|       selected: 0,
+  #|       paletteHeader: "palette default",
+  #|       paletteRange: null,
+  #|     };
+  #|   }
+  #|   const state = globalThis.__moon8bit_palette_state;
+  #|   let writeTimer = null;
+  #|
+  #|   const setFeedback = (text, isError = false) => {
+  #|     const fb = document.getElementById("moon8bit-editor-feedback");
+  #|     if (!fb) return;
+  #|     fb.textContent = text;
+  #|     fb.style.color = isError ? "#ef6f6c" : "#7bd389";
+  #|   };
+  #|
+  #|   const parsePaletteFromText = () => {
+  #|     const lines = textarea.value.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+  #|     const colors = fallbackPalette.slice(0, 16);
+  #|     let header = "palette default";
+  #|     let start = -1;
+  #|     let end = -1;
+  #|
+  #|     for (let i = 0; i < lines.length; i += 1) {
+  #|       const trimmed = lines[i].trim();
+  #|       if (start < 0 && /^palette\s+\S+$/i.test(trimmed)) {
+  #|         start = i;
+  #|         header = trimmed;
+  #|         continue;
+  #|       }
+  #|       if (start >= 0) {
+  #|         if (trimmed === "end") {
+  #|           end = i;
+  #|           break;
+  #|         }
+  #|         const m = trimmed.match(/^color\s+(\d+)\s+(\S+)$/i);
+  #|         if (m) {
+  #|           const idx = Number(m[1]);
+  #|           if (Number.isFinite(idx) && idx >= 0 && idx < 16) {
+  #|             colors[idx] = normalizeHex(m[2], colors[idx]);
+  #|           }
+  #|         }
+  #|       }
+  #|     }
+  #|
+  #|     state.lines = lines;
+  #|     state.colors = colors;
+  #|     state.paletteHeader = header;
+  #|     state.paletteRange = start >= 0 && end >= start ? { start, end } : null;
+  #|     state.selected = Math.max(0, Math.min(15, Number(state.selected) || 0));
+  #|   };
+  #|
+  #|   const renderControls = () => {
+  #|     const idx = state.selected;
+  #|     const color = normalizeHex(state.colors[idx], fallbackPalette[idx]);
+  #|     state.colors[idx] = color;
+  #|     indexLabel.textContent = `Selected color ${idx}`;
+  #|     preview.style.background = color;
+  #|     picker.value = color;
+  #|     hexInput.value = color;
+  #|   };
+  #|
+  #|   const renderSwatches = () => {
+  #|     swatchPane.innerHTML = "";
+  #|     for (let i = 0; i < 16; i += 1) {
+  #|       const cell = document.createElement("div");
+  #|       cell.style.display = "grid";
+  #|       cell.style.gap = "4px";
+  #|       cell.style.justifyItems = "center";
+  #|
+  #|       const label = document.createElement("div");
+  #|       label.textContent = String(i);
+  #|       label.style.fontFamily = "monospace";
+  #|       label.style.fontSize = "12px";
+  #|       label.style.color = "#e5e7eb";
+  #|       label.style.lineHeight = "1";
+  #|       cell.appendChild(label);
+  #|
+  #|       const btn = document.createElement("button");
+  #|       btn.type = "button";
+  #|       btn.style.width = "72px";
+  #|       btn.style.height = "72px";
+  #|       btn.style.padding = "0";
+  #|       btn.style.cursor = "pointer";
+  #|       btn.style.border = i === state.selected ? "3px solid #4aa96c" : "1px solid #486581";
+  #|       btn.style.background = normalizeHex(state.colors[i], fallbackPalette[i]);
+  #|       btn.title = `color ${i}`;
+  #|       btn.addEventListener("click", () => {
+  #|         state.selected = i;
+  #|         renderSwatches();
+  #|         renderControls();
+  #|       });
+  #|       cell.appendChild(btn);
+  #|       swatchPane.appendChild(cell);
+  #|     }
+  #|   };
+  #|
+  #|   const writePaletteToDsl = () => {
+  #|     const block = [state.paletteHeader];
+  #|     for (let i = 0; i < 16; i += 1) {
+  #|       block.push(`color ${i} ${normalizeHex(state.colors[i], fallbackPalette[i])}`);
+  #|     }
+  #|     block.push("end");
+  #|
+  #|     const lines = state.lines.slice();
+  #|     if (state.paletteRange && Number.isInteger(state.paletteRange.start) && Number.isInteger(state.paletteRange.end)) {
+  #|       const count = state.paletteRange.end - state.paletteRange.start + 1;
+  #|       lines.splice(state.paletteRange.start, count, ...block);
+  #|       state.paletteRange = {
+  #|         start: state.paletteRange.start,
+  #|         end: state.paletteRange.start + block.length - 1,
+  #|       };
+  #|     } else {
+  #|       const prefix = block.concat([""]);
+  #|       lines.splice(0, 0, ...prefix);
+  #|       state.paletteRange = { start: 0, end: block.length - 1 };
+  #|     }
+  #|
+  #|     textarea.value = lines.join("\n");
+  #|     state.lines = lines;
+  #|     if (globalThis.__moon8bit_sprite_refresh) globalThis.__moon8bit_sprite_refresh();
+  #|     if (globalThis.__moon8bit_tilemap_refresh) globalThis.__moon8bit_tilemap_refresh();
+  #|     setFeedback("Palette updated in DSL.");
+  #|   };
+  #|
+  #|   const scheduleWrite = () => {
+  #|     if (writeTimer !== null) clearTimeout(writeTimer);
+  #|     writeTimer = setTimeout(() => {
+  #|       writeTimer = null;
+  #|       writePaletteToDsl();
+  #|     }, 60);
+  #|   };
+  #|
+  #|   const refreshFromText = () => {
+  #|     parsePaletteFromText();
+  #|     renderSwatches();
+  #|     renderControls();
+  #|   };
+  #|
+  #|   if (!globalThis.__moon8bit_palette_bound) {
+  #|     preview.addEventListener("click", () => {
+  #|       try {
+  #|         if (typeof picker.showPicker === "function") {
+  #|           picker.showPicker();
+  #|         } else {
+  #|           picker.click();
+  #|         }
+  #|       } catch (_) {
+  #|         picker.click();
+  #|       }
+  #|     });
+  #|     picker.addEventListener("input", () => {
+  #|       const idx = state.selected;
+  #|       state.colors[idx] = normalizeHex(picker.value, state.colors[idx] || fallbackPalette[idx]);
+  #|       renderSwatches();
+  #|       renderControls();
+  #|       scheduleWrite();
+  #|     });
+  #|     hexInput.addEventListener("input", () => {
+  #|       const raw = String(hexInput.value || "").trim();
+  #|       if (!/^#?[0-9a-fA-F]{3}$/.test(raw) && !/^#?[0-9a-fA-F]{6}$/.test(raw)) return;
+  #|       const idx = state.selected;
+  #|       state.colors[idx] = normalizeHex(raw, state.colors[idx] || fallbackPalette[idx]);
+  #|       renderSwatches();
+  #|       renderControls();
+  #|       scheduleWrite();
+  #|     });
+  #|     hexInput.addEventListener("change", () => {
+  #|       const idx = state.selected;
+  #|       const normalized = normalizeHex(hexInput.value, state.colors[idx] || fallbackPalette[idx]);
+  #|       state.colors[idx] = normalized;
+  #|       renderSwatches();
+  #|       renderControls();
+  #|       scheduleWrite();
+  #|     });
+  #|     textarea.addEventListener("input", refreshFromText);
+  #|     globalThis.__moon8bit_palette_bound = true;
+  #|   }
+  #|
+  #|   globalThis.__moon8bit_palette_refresh = refreshFromText;
+  #|   refreshFromText();
+  #| }
+
+///|
+extern "js" fn web_palette_editor_refresh() -> Unit =
+  #| () => {
+  #|   if (globalThis.__moon8bit_palette_refresh) {
+  #|     globalThis.__moon8bit_palette_refresh();
+  #|   }
+  #| }
+
+///|
 extern "js" fn web_init_sprite_editor() -> Unit =
   #| () => {
   #|   const editor = document.getElementById("moon8bit-tab-panel-sprite") || document.getElementById("moon8bit-editor");
