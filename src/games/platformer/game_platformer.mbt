@@ -54,15 +54,6 @@ pub struct PlatformerGame {
 } derive(Eq, Show)
 
 ///|
-fn abs_i(value : Int) -> Int {
-  if value < 0 {
-    -value
-  } else {
-    value
-  }
-}
-
-///|
 fn stage_tilemap(game : PlatformerGame) -> @model.Tilemap? {
   @model.find_tilemap(game.bundle, "stage")
 }
@@ -241,7 +232,7 @@ fn step_horizontal(game : PlatformerGame) -> Unit {
     return
   }
   let step = if game.vel_x > 0 { 1 } else { -1 }
-  for _ in 0..<abs_i(game.vel_x) {
+  for _ in 0..<Int::abs(game.vel_x) {
     let next_x = game.player_x + step
     if player_hits_solid(game, next_x, game.player_y) {
       game.vel_x = 0
@@ -261,7 +252,7 @@ fn step_vertical(game : PlatformerGame) -> Unit {
   }
   game.on_ground = false
   let step = if game.vel_y > 0 { 1 } else { -1 }
-  for _ in 0..<abs_i(game.vel_y) {
+  for _ in 0..<Int::abs(game.vel_y) {
     let next_y = game.player_y + step
     if player_hits_solid(game, game.player_x, next_y) {
       if step > 0 {
