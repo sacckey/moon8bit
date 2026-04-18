@@ -32,6 +32,14 @@ let goal_tile_id = 4
 let enemy_sprite_name = "enemy"
 
 ///|
+struct EnemyActor {
+  name : String
+  x : Int
+  y : Int
+  dir : Int
+} derive(Eq, Show)
+
+///|
 pub struct PlatformerGame {
   bundle : @model.AssetBundle
   mut player_x : Int
@@ -39,6 +47,7 @@ pub struct PlatformerGame {
   mut vel_x : Int
   mut vel_y : Int
   mut on_ground : Bool
+  mut enemies : Array[EnemyActor]
   mut camera : @model.Camera
   mut is_over : Bool
   mut is_clear : Bool
@@ -66,6 +75,14 @@ fn enemy_sprite(game : PlatformerGame) -> @model.Sprite? {
 ///|
 fn enemy_placements(game : PlatformerGame) -> Array[@model.Placement] {
   @model.find_placements_by_sprite(game.bundle, enemy_sprite_name)
+}
+
+///|
+fn enemy_size(game : PlatformerGame) -> (Int, Int) {
+  match enemy_sprite(game) {
+    Some(sp) => (sp.width, sp.height)
+    None => (8, 8)
+  }
 }
 
 ///|
@@ -115,12 +132,102 @@ fn update_camera(game : PlatformerGame) -> Unit {
 }
 
 ///|
+fn clamp_enemy_x_range(game : PlatformerGame, x : Int, enemy_w : Int) -> Int {
+  @engine.clamp(x, 0, map_width_px(game) - enemy_w)
+}
+
+///|
+fn spawn_enemies(game : PlatformerGame) -> Array[EnemyActor] {
+  let actors : Array[EnemyActor] = []
+  let (enemy_w, _) = enemy_size(game)
+  let mut idx = 0
+  for placement in enemy_placements(game) {
+    let cx = clamp_enemy_x_range(game, placement.x, enemy_w)
+    let dir = if idx % 2 == 0 { 1 } else { -1 }
+    actors.push(EnemyActor::{ name: placement.name, x: cx, y: placement.y, dir })
+    idx += 1
+  }
+  actors
+}
+
+///|
+fn enemy_hits_solid(
+  game : PlatformerGame,
+  x : Int,
+  y : Int,
+  enemy_w : Int,
+  enemy_h : Int,
+) -> Bool {
+  match stage_tilemap(game) {
+    Some(tm) =>
+      @engine.tile_solid_any_in_rect(
+        tm,
+        game.bundle.tiles,
+        x,
+        y,
+        enemy_w,
+        enemy_h,
+      )
+    None => false
+  }
+}
+
+///|
+fn enemy_blocked_at(
+  game : PlatformerGame,
+  x : Int,
+  y : Int,
+  enemy_w : Int,
+  enemy_h : Int,
+) -> Bool {
+  if x < 0 || x + enemy_w > map_width_px(game) {
+    return true
+  }
+  if y < 0 || y + enemy_h > map_height_px(game) {
+    return true
+  }
+  enemy_hits_solid(game, x, y, enemy_w, enemy_h)
+}
+
+///|
+fn step_enemies(game : PlatformerGame) -> Unit {
+  if game.enemies.length() == 0 {
+    return
+  }
+  let (enemy_w, enemy_h) = enemy_size(game)
+  let next_enemies : Array[EnemyActor] = []
+  for enemy in game.enemies {
+    let mut dir = if enemy.dir == 0 { 1 } else { enemy.dir }
+    let mut next_x = enemy.x + dir
+
+    if enemy_blocked_at(game, next_x, enemy.y, enemy_w, enemy_h) {
+      dir = -dir
+      let fallback_x = enemy.x + dir
+      if enemy_blocked_at(game, fallback_x, enemy.y, enemy_w, enemy_h) {
+        next_x = enemy.x
+      } else {
+        next_x = fallback_x
+      }
+    }
+
+    next_enemies.push(EnemyActor::{
+      name: enemy.name,
+      x: next_x,
+      y: enemy.y,
+      dir,
+    })
+  }
+  game.enemies = next_enemies
+}
+
+///|
 fn reset_game(game : PlatformerGame) -> PlatformerGame {
   game.player_x = 16
   game.player_y = screen_h - 40
   game.vel_x = 0
   game.vel_y = 0
   game.on_ground = false
+  game.enemies = spawn_enemies(game)
   game.camera = @engine.camera(0, 0)
   game.is_over = false
   game.is_clear = false
@@ -204,10 +311,10 @@ fn check_enemy_hit(game : PlatformerGame, ctx : @engine.UpdateContext) -> Unit {
     w: player_w,
     h: player_h,
   }
-  for placement in enemy_placements(game) {
+  for enemy_actor in game.enemies {
     let enemy_rect = @model.Rect::{
-      x: placement.x,
-      y: placement.y,
+      x: enemy_actor.x,
+      y: enemy_actor.y,
       w: enemy.width,
       h: enemy.height,
     }
@@ -254,6 +361,7 @@ pub fn new_platformer_game(bundle : @model.AssetBundle) -> PlatformerGame {
     vel_x: 0,
     vel_y: 0,
     on_ground: false,
+    enemies: [],
     camera: @engine.camera(0, 0),
     is_over: false,
     is_clear: false,
@@ -290,6 +398,7 @@ pub impl @engine.Game for PlatformerGame with update(self, ctx) {
   }
   step_horizontal(self)
   step_vertical(self)
+  step_enemies(self)
   check_enemy_hit(self, ctx)
 
   if self.is_over {
@@ -349,8 +458,14 @@ pub impl @engine.Game for PlatformerGame with draw(self, _ctx) {
 
   match enemy_sprite(self) {
     Some(enemy) =>
-      for placement in enemy_placements(self) {
-        @engine.spr_world(frame, enemy, placement.x, placement.y, self.camera)
+      for enemy_actor in self.enemies {
+        @engine.spr_world(
+          frame,
+          enemy,
+          enemy_actor.x,
+          enemy_actor.y,
+          self.camera,
+        )
       }
     None => ()
   }
