@@ -71,6 +71,8 @@ pub fn[T] events(@engine.EngineInstance[T]) -> Array[@engine.EngineEvent]
 
 pub fn every(Int, Int) -> Bool
 
+pub fn find_placements_by_sprite(@model.AssetBundle, String) -> Array[@model.Placement]
+
 pub fn find_sprite(@model.AssetBundle, String) -> @model.Sprite?
 
 pub fn find_tilemap(@model.AssetBundle, String) -> @model.Tilemap?
@@ -197,6 +199,8 @@ pub using @model {type Frame}
 pub using @model {type InputState}
 
 pub using @model {type Palette}
+
+pub using @model {type Placement}
 
 pub using @model {type Rect}
 

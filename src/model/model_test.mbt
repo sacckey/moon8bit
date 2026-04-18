@@ -25,6 +25,10 @@ test "asset lookup helpers work on explicit bundle" {
     sprites: [sprite],
     tiles,
     tilemaps: [tilemap],
+    placements: [
+      @model.Placement::{ name: "enemy_1", sprite: "hero", x: 16, y: 8 },
+      @model.Placement::{ name: "enemy_2", sprite: "hero", x: 24, y: 8 },
+    ],
     sounds: [],
     bgms: [],
   }
@@ -44,6 +48,11 @@ test "asset lookup helpers work on explicit bundle" {
   assert_eq(@model.tile_at(found_tilemap, 0, 0), Some(3))
   assert_eq(@model.tile_at(found_tilemap, 1, 0), Some(4))
   assert_eq(@model.tile_at(found_tilemap, 2, 0), None)
+
+  let placements = @model.find_placements_by_sprite(bundle, "hero")
+  assert_eq(placements.length(), 2)
+  assert_eq(placements[0].name, "enemy_1")
+  assert_eq(placements[1].x, 24)
 }
 
 ///|

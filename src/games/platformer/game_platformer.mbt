@@ -29,6 +29,9 @@ let max_fall_speed = 7
 let goal_tile_id = 4
 
 ///|
+let enemy_sprite_name = "enemy"
+
+///|
 pub struct PlatformerGame {
   bundle : @model.AssetBundle
   mut player_x : Int
@@ -53,6 +56,16 @@ fn abs_i(value : Int) -> Int {
 ///|
 fn stage_tilemap(game : PlatformerGame) -> @model.Tilemap? {
   @model.find_tilemap(game.bundle, "stage")
+}
+
+///|
+fn enemy_sprite(game : PlatformerGame) -> @model.Sprite? {
+  @model.find_sprite(game.bundle, enemy_sprite_name)
+}
+
+///|
+fn enemy_placements(game : PlatformerGame) -> Array[@model.Placement] {
+  @model.find_placements_by_sprite(game.bundle, enemy_sprite_name)
 }
 
 ///|
@@ -177,6 +190,37 @@ fn check_goal(game : PlatformerGame, ctx : @engine.UpdateContext) -> Unit {
 }
 
 ///|
+fn check_enemy_hit(game : PlatformerGame, ctx : @engine.UpdateContext) -> Unit {
+  if game.is_over || game.is_clear {
+    return
+  }
+  let enemy = match enemy_sprite(game) {
+    Some(v) => v
+    None => return
+  }
+  let player_rect = @model.Rect::{
+    x: game.player_x,
+    y: game.player_y,
+    w: player_w,
+    h: player_h,
+  }
+  for placement in enemy_placements(game) {
+    let enemy_rect = @model.Rect::{
+      x: placement.x,
+      y: placement.y,
+      w: enemy.width,
+      h: enemy.height,
+    }
+    if @model.rect_intersects(player_rect, enemy_rect) {
+      game.is_over = true
+      ctx.sfx("hit")
+      ctx.bgm_stop()
+      return
+    }
+  }
+}
+
+///|
 fn apply_gameplay_input(
   game : PlatformerGame,
   ctx : @engine.UpdateContext,
@@ -246,6 +290,11 @@ pub impl @engine.Game for PlatformerGame with update(self, ctx) {
   }
   step_horizontal(self)
   step_vertical(self)
+  check_enemy_hit(self, ctx)
+
+  if self.is_over {
+    return self
+  }
 
   if self.player_y > map_height_px(self) + 16 {
     self.is_over = true
@@ -296,6 +345,14 @@ pub impl @engine.Game for PlatformerGame with draw(self, _ctx) {
         3,
         self.camera,
       )
+  }
+
+  match enemy_sprite(self) {
+    Some(enemy) =>
+      for placement in enemy_placements(self) {
+        @engine.spr_world(frame, enemy, placement.x, placement.y, self.camera)
+      }
+    None => ()
   }
 
   frame.draw_rect(0, 0, screen_w, 9, 0)

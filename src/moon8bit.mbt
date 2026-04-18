@@ -11,6 +11,9 @@ pub type Tiles = @model.Tiles
 pub type Tilemap = @model.Tilemap
 
 ///|
+pub type Placement = @model.Placement
+
+///|
 pub type AssetBundle = @model.AssetBundle
 
 ///|
@@ -91,6 +94,14 @@ pub fn find_sprite(bundle : AssetBundle, name : String) -> Sprite? {
 ///|
 pub fn find_tilemap(bundle : AssetBundle, name : String) -> Tilemap? {
   @model.find_tilemap(bundle, name)
+}
+
+///|
+pub fn find_placements_by_sprite(
+  bundle : AssetBundle,
+  sprite_name : String,
+) -> Array[Placement] {
+  @model.find_placements_by_sprite(bundle, sprite_name)
 }
 
 ///|

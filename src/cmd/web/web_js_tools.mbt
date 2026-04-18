@@ -915,6 +915,38 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     row.appendChild(brushSelect);
   #|   }
   #|
+  #|   let brushModeSelect = document.getElementById("moon8bit-tilemap-brush-mode");
+  #|   if (!brushModeSelect) {
+  #|     brushModeSelect = document.createElement("select");
+  #|     brushModeSelect.id = "moon8bit-tilemap-brush-mode";
+  #|     brushModeSelect.style.background = "#0f1720";
+  #|     brushModeSelect.style.color = "#d9e2ec";
+  #|     brushModeSelect.style.border = "1px solid #486581";
+  #|     const optTile = document.createElement("option");
+  #|     optTile.value = "tile";
+  #|     optTile.textContent = "Tile brush";
+  #|     brushModeSelect.appendChild(optTile);
+  #|     const optSprite = document.createElement("option");
+  #|     optSprite.value = "sprite";
+  #|     optSprite.textContent = "Sprite brush";
+  #|     brushModeSelect.appendChild(optSprite);
+  #|   }
+  #|   if (brushModeSelect.parentElement !== row) {
+  #|     row.appendChild(brushModeSelect);
+  #|   }
+  #|
+  #|   let spriteBrushSelect = document.getElementById("moon8bit-tilemap-sprite-brush");
+  #|   if (!spriteBrushSelect) {
+  #|     spriteBrushSelect = document.createElement("select");
+  #|     spriteBrushSelect.id = "moon8bit-tilemap-sprite-brush";
+  #|     spriteBrushSelect.style.background = "#0f1720";
+  #|     spriteBrushSelect.style.color = "#d9e2ec";
+  #|     spriteBrushSelect.style.border = "1px solid #486581";
+  #|   }
+  #|   if (spriteBrushSelect.parentElement !== row) {
+  #|     row.appendChild(spriteBrushSelect);
+  #|   }
+  #|
   #|   let mapWInput = document.getElementById("moon8bit-tilemap-width");
   #|   if (!mapWInput) {
   #|     mapWInput = document.createElement("input");
@@ -991,7 +1023,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   if (!mapThumbTitle) {
   #|     mapThumbTitle = document.createElement("div");
   #|     mapThumbTitle.id = "moon8bit-tilemap-thumb-title";
-  #|     mapThumbTitle.textContent = "All Tiles";
+  #|     mapThumbTitle.textContent = "Brush Assets";
   #|     mapThumbTitle.style.fontWeight = "600";
   #|     mapThumbTitle.style.fontFamily = "monospace";
   #|   }
@@ -999,6 +1031,38 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   if (mapThumbTitle.parentElement !== mapThumbPane) {
   #|     mapThumbPane.appendChild(mapThumbTitle);
   #|   }
+  #|
+  #|   let mapThumbTabRow = document.getElementById("moon8bit-tilemap-thumb-tab-row");
+  #|   if (!mapThumbTabRow) {
+  #|     mapThumbTabRow = document.createElement("div");
+  #|     mapThumbTabRow.id = "moon8bit-tilemap-thumb-tab-row";
+  #|     mapThumbTabRow.style.display = "flex";
+  #|     mapThumbTabRow.style.gap = "8px";
+  #|     mapThumbTabRow.style.alignItems = "center";
+  #|   }
+  #|   if (mapThumbTabRow.parentElement !== mapThumbPane) {
+  #|     mapThumbPane.appendChild(mapThumbTabRow);
+  #|   }
+  #|
+  #|   const ensureMapAssetTabBtn = (id, label) => {
+  #|     let btn = document.getElementById(id);
+  #|     if (!btn) {
+  #|       btn = document.createElement("button");
+  #|       btn.id = id;
+  #|       btn.type = "button";
+  #|       btn.textContent = label;
+  #|       btn.style.padding = "6px 10px";
+  #|       btn.style.cursor = "pointer";
+  #|       btn.style.fontFamily = "monospace";
+  #|       btn.style.fontSize = "13px";
+  #|     }
+  #|     if (btn.parentElement !== mapThumbTabRow) {
+  #|       mapThumbTabRow.appendChild(btn);
+  #|     }
+  #|     return btn;
+  #|   };
+  #|   const mapTilesTabBtn = ensureMapAssetTabBtn("moon8bit-tilemap-assets-tab-tiles", "Tiles");
+  #|   const mapSpritesTabBtn = ensureMapAssetTabBtn("moon8bit-tilemap-assets-tab-sprites", "Sprites");
   #|
   #|   let mapThumbGrid = document.getElementById("moon8bit-tilemap-thumb-grid");
   #|   if (!mapThumbGrid) {
@@ -1009,6 +1073,17 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   }
   #|   if (mapThumbGrid.parentElement !== mapThumbPane) {
   #|     mapThumbPane.appendChild(mapThumbGrid);
+  #|   }
+  #|
+  #|   let mapSpriteThumbGrid = document.getElementById("moon8bit-tilemap-sprite-thumb-grid");
+  #|   if (!mapSpriteThumbGrid) {
+  #|     mapSpriteThumbGrid = document.createElement("div");
+  #|     mapSpriteThumbGrid.id = "moon8bit-tilemap-sprite-thumb-grid";
+  #|     mapSpriteThumbGrid.style.display = "grid";
+  #|     mapSpriteThumbGrid.style.gap = "8px";
+  #|   }
+  #|   if (mapSpriteThumbGrid.parentElement !== mapThumbPane) {
+  #|     mapThumbPane.appendChild(mapSpriteThumbGrid);
   #|   }
   #|
   #|   let tilePanel = document.getElementById("moon8bit-tile-panel");
@@ -1298,9 +1373,15 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       tileRange: null,
   #|       tilemaps: [],
   #|       tilemapRange: null,
+  #|       sprites: [],
+  #|       placements: [],
+  #|       placementRange: null,
   #|       errors: [],
   #|       selectedMap: 0,
   #|       selectedToken: -1,
+  #|       selectedSpriteName: "",
+  #|       brushMode: "tile",
+  #|       mapThumbTab: "tiles",
   #|       selectedTileId: 0,
   #|       selectedTileColor: 0,
   #|       dirty: false,
@@ -1314,6 +1395,14 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   if (!("tileClipboard" in state)) {
   #|     state.tileClipboard = null;
   #|   }
+  #|   if (!Array.isArray(state.sprites)) state.sprites = [];
+  #|   if (!Array.isArray(state.placements)) state.placements = [];
+  #|   if (!state.placementRange || !Number.isInteger(state.placementRange.first) || !Number.isInteger(state.placementRange.last)) {
+  #|     state.placementRange = null;
+  #|   }
+  #|   if (typeof state.selectedSpriteName !== "string") state.selectedSpriteName = "";
+  #|   if (state.brushMode !== "tile" && state.brushMode !== "sprite") state.brushMode = "tile";
+  #|   if (state.mapThumbTab !== "tiles" && state.mapThumbTab !== "sprites") state.mapThumbTab = "tiles";
   #|
   #|   function scheduleTilemapAutoWrite() {
   #|     if (tilemapAutoWriteTimer !== null) {
@@ -1360,6 +1449,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   const parseDsl = (text) => {
   #|     const lines = String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
   #|     const palette = fallbackPalette.slice();
+  #|     const sprites = [];
   #|     const tiles = {
   #|       tile_count: 256,
   #|       tile_names: Array.from({ length: 256 }, (_, i) => `tile_${i}`),
@@ -1368,10 +1458,13 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       pixels: Array(256 * 64).fill(-1),
   #|     };
   #|     const tilemaps = [];
+  #|     const placements = [];
   #|     let tileFirstHeader = -1;
   #|     let tileLastEnd = -1;
   #|     let tilemapFirstHeader = -1;
   #|     let tilemapLastEnd = -1;
+  #|     let placementFirstLine = -1;
+  #|     let placementLastLine = -1;
   #|     const errors = [];
   #|     const pushErr = (line, message) => {
   #|       errors.push({ line, message });
@@ -1394,6 +1487,55 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|
   #|       if (/^tileset\s+/i.test(t)) {
   #|         pushErr(i + 1, "tileset directive was removed; use top-level `tile <id> ... end` blocks");
+  #|         continue;
+  #|       }
+  #|
+  #|       const sm = t.match(/^sprite\s+([^\s]+)\s+(\d+)\s+(\d+)$/i);
+  #|       if (sm) {
+  #|         const name = sm[1];
+  #|         const width = Math.max(1, parseIntStrict(sm[2]) | 0);
+  #|         const height = Math.max(1, parseIntStrict(sm[3]) | 0);
+  #|         const pixels = Array(width * height).fill(-1);
+  #|         let j = i + 1;
+  #|         let row = 0;
+  #|         let endLine = -1;
+  #|         while (j < lines.length) {
+  #|           const raw = lines[j].trim();
+  #|           if (isIgnorable(raw)) {
+  #|             j += 1;
+  #|             continue;
+  #|           }
+  #|           if (raw === "end") {
+  #|             endLine = j;
+  #|             break;
+  #|           }
+  #|           if (row >= height) {
+  #|             pushErr(j + 1, `sprite ${name} has too many rows`);
+  #|             j += 1;
+  #|             continue;
+  #|           }
+  #|           if (raw.length !== width) {
+  #|             pushErr(j + 1, `sprite row width mismatch: expected ${width}, got ${raw.length}`);
+  #|           }
+  #|           for (let x = 0; x < width; x += 1) {
+  #|             const ch = x < raw.length ? raw[x] : ".";
+  #|             if (!/[0-9a-fA-F.]/.test(ch)) {
+  #|               pushErr(j + 1, `unsupported sprite symbol: ${ch}`);
+  #|             }
+  #|             pixels[row * width + x] = decodeSym(ch);
+  #|           }
+  #|           row += 1;
+  #|           j += 1;
+  #|         }
+  #|         if (endLine < 0) {
+  #|           pushErr(i + 1, `sprite ${name} block is missing end`);
+  #|         } else {
+  #|           i = endLine;
+  #|         }
+  #|         if (row !== height) {
+  #|           pushErr((endLine >= 0 ? endLine + 1 : i + 1), `sprite ${name} expects ${height} rows, got ${row}`);
+  #|         }
+  #|         sprites.push({ name, width, height, pixels });
   #|         continue;
   #|       }
   #|
@@ -1537,6 +1679,22 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|         if (realEnd > tilemapLastEnd) tilemapLastEnd = realEnd;
   #|         continue;
   #|       }
+  #|
+  #|       const pm = t.match(/^place\s+([^\s]+)\s+([^\s]+)\s+(-?\d+)\s+(-?\d+)$/i);
+  #|       if (pm) {
+  #|         const name = pm[1];
+  #|         const sprite = pm[2];
+  #|         const x = parseIntStrict(pm[3]);
+  #|         const y = parseIntStrict(pm[4]);
+  #|         if (!Number.isFinite(x) || !Number.isFinite(y)) {
+  #|           pushErr(i + 1, "place directive x/y must be integers");
+  #|         } else {
+  #|           placements.push({ name, sprite, x: x | 0, y: y | 0, line: i });
+  #|           if (placementFirstLine < 0 || i < placementFirstLine) placementFirstLine = i;
+  #|           if (i > placementLastLine) placementLastLine = i;
+  #|         }
+  #|         continue;
+  #|       }
   #|     }
   #|
   #|     for (const tm of tilemaps) {
@@ -1549,6 +1707,11 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|         }
   #|       }
   #|     }
+  #|     for (const p of placements) {
+  #|       if (!sprites.some((s) => s.name === p.sprite)) {
+  #|         pushErr((Number.isInteger(p.line) ? p.line : 0) + 1, `placement '${p.name}' references unknown sprite: ${p.sprite}`);
+  #|       }
+  #|     }
   #|
   #|     const tileRange = (tileFirstHeader >= 0 && tileLastEnd >= tileFirstHeader)
   #|       ? { first: tileFirstHeader, last: tileLastEnd }
@@ -1556,7 +1719,10 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     const tilemapRange = (tilemapFirstHeader >= 0 && tilemapLastEnd >= tilemapFirstHeader)
   #|       ? { first: tilemapFirstHeader, last: tilemapLastEnd }
   #|       : null;
-  #|     return { lines, palette, tiles, tileRange, tilemaps, tilemapRange, errors };
+  #|     const placementRange = (placementFirstLine >= 0 && placementLastLine >= placementFirstLine)
+  #|       ? { first: placementFirstLine, last: placementLastLine }
+  #|       : null;
+  #|     return { lines, palette, sprites, tiles, tileRange, tilemaps, tilemapRange, placements, placementRange, errors };
   #|   };
   #|
   #|   const activeMap = () => {
@@ -1591,6 +1757,50 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     }
   #|     state.selectedToken = candidate;
   #|     brushSelect.value = String(candidate);
+  #|   };
+  #|
+  #|   const renderSpriteBrushSelect = () => {
+  #|     spriteBrushSelect.innerHTML = "";
+  #|     const sprites = Array.isArray(state.sprites) ? state.sprites : [];
+  #|     for (const sp of sprites) {
+  #|       const opt = document.createElement("option");
+  #|       opt.value = String(sp.name || "");
+  #|       opt.textContent = `${sp.name} (${sp.width}x${sp.height})`;
+  #|       spriteBrushSelect.appendChild(opt);
+  #|     }
+  #|     let name = String(state.selectedSpriteName || "");
+  #|     if (!sprites.some((sp) => String(sp.name) === name)) {
+  #|       name = sprites.length > 0 ? String(sprites[0].name || "") : "";
+  #|     }
+  #|     state.selectedSpriteName = name;
+  #|     if (name !== "") {
+  #|       spriteBrushSelect.value = name;
+  #|     }
+  #|   };
+  #|
+  #|   const applyBrushModeUi = () => {
+  #|     const mode = state.brushMode === "sprite" ? "sprite" : "tile";
+  #|     state.brushMode = mode;
+  #|     brushModeSelect.value = mode;
+  #|     brushSelect.disabled = mode !== "tile";
+  #|     spriteBrushSelect.disabled = mode !== "sprite";
+  #|     spriteBrushSelect.style.opacity = mode === "sprite" ? "1" : "0.6";
+  #|     brushSelect.style.opacity = mode === "tile" ? "1" : "0.6";
+  #|   };
+  #|
+  #|   const applyMapAssetTabUi = () => {
+  #|     const tab = state.mapThumbTab === "sprites" ? "sprites" : "tiles";
+  #|     state.mapThumbTab = tab;
+  #|     const tabBtnStyle = (btn, active) => {
+  #|       btn.style.background = active ? "#274060" : "#0f1720";
+  #|       btn.style.color = active ? "#f6f7eb" : "#9fb3c8";
+  #|       btn.style.border = active ? "1px solid #4aa96c" : "1px solid #486581";
+  #|     };
+  #|     tabBtnStyle(mapTilesTabBtn, tab === "tiles");
+  #|     tabBtnStyle(mapSpritesTabBtn, tab === "sprites");
+  #|     mapThumbTitle.textContent = tab === "tiles" ? "All Tiles" : "All Sprites";
+  #|     mapThumbGrid.style.display = tab === "tiles" ? "grid" : "none";
+  #|     mapSpriteThumbGrid.style.display = tab === "sprites" ? "grid" : "none";
   #|   };
   #|
   #|   const renderMapSelect = (preferCurrent = false) => {
@@ -1741,6 +1951,48 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|         }
   #|       }
   #|     }
+  #|   };
+  #|
+  #|   const drawSpritePreviewInMap = (ctx, sprite, px, py, unit) => {
+  #|     if (!sprite || !Array.isArray(sprite.pixels)) return;
+  #|     for (let y = 0; y < sprite.height; y += 1) {
+  #|       for (let x = 0; x < sprite.width; x += 1) {
+  #|         const ci = sprite.pixels[y * sprite.width + x];
+  #|         if (ci < 0) continue;
+  #|         ctx.fillStyle = colorFor(ci) || "#ffffff";
+  #|         const dx = Math.floor(px + x * unit);
+  #|         const dy = Math.floor(py + y * unit);
+  #|         const dw = Math.max(1, Math.ceil(unit));
+  #|         const dh = Math.max(1, Math.ceil(unit));
+  #|         ctx.fillRect(dx, dy, dw, dh);
+  #|       }
+  #|     }
+  #|   };
+  #|
+  #|   const activeSpriteBrushName = () => {
+  #|     const sprites = Array.isArray(state.sprites) ? state.sprites : [];
+  #|     let name = String(state.selectedSpriteName || "");
+  #|     if (!sprites.some((sp) => String(sp.name) === name)) {
+  #|       name = sprites.length > 0 ? String(sprites[0].name || "") : "";
+  #|     }
+  #|     state.selectedSpriteName = name;
+  #|     return name;
+  #|   };
+  #|
+  #|   const findSpriteMetaByName = (name) => {
+  #|     const sprites = Array.isArray(state.sprites) ? state.sprites : [];
+  #|     for (const sp of sprites) {
+  #|       if (String(sp.name) === String(name)) return sp;
+  #|     }
+  #|     return null;
+  #|   };
+  #|
+  #|   const nextPlacementName = (spriteName) => {
+  #|     const base = String(spriteName || "spawn");
+  #|     const used = new Set((state.placements || []).map((p) => String(p.name || "")));
+  #|     let i = 1;
+  #|     while (used.has(`${base}_${i}`)) i += 1;
+  #|     return `${base}_${i}`;
   #|   };
   #|
   #|   const renderTileThumbnails = () => {
@@ -1944,12 +2196,98 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|
   #|         cell.addEventListener("click", () => {
   #|           state.selectedToken = i;
+  #|           state.brushMode = "tile";
+  #|           state.mapThumbTab = "tiles";
   #|           renderBrushSelect();
+  #|           applyBrushModeUi();
+  #|           applyMapAssetTabUi();
   #|           renderMapTileThumbnails();
+  #|           renderCanvas();
   #|         });
   #|         rowWrap.appendChild(cell);
   #|       }
   #|       mapThumbGrid.appendChild(rowWrap);
+  #|     }
+  #|   };
+  #|
+  #|   const renderMapSpriteThumbnails = () => {
+  #|     mapSpriteThumbGrid.innerHTML = "";
+  #|     const sprites = Array.isArray(state.sprites) ? state.sprites : [];
+  #|     if (sprites.length <= 0) {
+  #|       const empty = document.createElement("div");
+  #|       empty.textContent = "No sprites";
+  #|       empty.style.fontFamily = "monospace";
+  #|       empty.style.fontSize = "12px";
+  #|       empty.style.opacity = "0.8";
+  #|       mapSpriteThumbGrid.appendChild(empty);
+  #|       return;
+  #|     }
+  #|     const selectedName = activeSpriteBrushName();
+  #|     for (const sp of sprites) {
+  #|       const rowBtn = document.createElement("button");
+  #|       rowBtn.type = "button";
+  #|       rowBtn.style.display = "grid";
+  #|       rowBtn.style.gridTemplateColumns = "56px 1fr";
+  #|       rowBtn.style.gap = "10px";
+  #|       rowBtn.style.alignItems = "center";
+  #|       rowBtn.style.padding = "6px";
+  #|       rowBtn.style.background = "#0f1720";
+  #|       rowBtn.style.color = "#d9e2ec";
+  #|       rowBtn.style.border = String(sp.name) === selectedName ? "2px solid #4aa96c" : "1px solid #334e68";
+  #|       rowBtn.style.cursor = "pointer";
+  #|       rowBtn.style.textAlign = "left";
+  #|
+  #|       const preview = document.createElement("canvas");
+  #|       preview.width = 48;
+  #|       preview.height = 48;
+  #|       preview.style.width = "48px";
+  #|       preview.style.height = "48px";
+  #|       preview.style.imageRendering = "pixelated";
+  #|       preview.style.display = "block";
+  #|       const pctx = preview.getContext("2d");
+  #|       if (pctx) {
+  #|         pctx.imageSmoothingEnabled = false;
+  #|         pctx.fillStyle = "#1f2a37";
+  #|         pctx.fillRect(0, 0, 48, 48);
+  #|         pctx.fillStyle = "#334e68";
+  #|         pctx.fillRect(0, 0, 24, 24);
+  #|         pctx.fillRect(24, 24, 24, 24);
+  #|         const unit = Math.max(1, Math.floor(48 / Math.max(sp.width, sp.height)));
+  #|         const sw = sp.width * unit;
+  #|         const sh = sp.height * unit;
+  #|         const ox = Math.floor((48 - sw) / 2);
+  #|         const oy = Math.floor((48 - sh) / 2);
+  #|         drawSpritePreviewInMap(pctx, sp, ox, oy, unit);
+  #|       }
+  #|       rowBtn.appendChild(preview);
+  #|
+  #|       const meta = document.createElement("div");
+  #|       meta.style.display = "grid";
+  #|       meta.style.gap = "2px";
+  #|       const nm = document.createElement("div");
+  #|       nm.textContent = sp.name;
+  #|       nm.style.fontFamily = "monospace";
+  #|       nm.style.fontSize = "14px";
+  #|       nm.style.fontWeight = "600";
+  #|       const sz = document.createElement("div");
+  #|       sz.textContent = `${sp.width}x${sp.height}`;
+  #|       sz.style.fontFamily = "monospace";
+  #|       sz.style.fontSize = "12px";
+  #|       sz.style.opacity = "0.8";
+  #|       meta.appendChild(nm);
+  #|       meta.appendChild(sz);
+  #|       rowBtn.appendChild(meta);
+  #|
+  #|       rowBtn.addEventListener("click", () => {
+  #|         state.selectedSpriteName = String(sp.name || "");
+  #|         state.brushMode = "sprite";
+  #|         state.mapThumbTab = "sprites";
+  #|         applyBrushModeUi();
+  #|         applyMapAssetTabUi();
+  #|         renderMapSpriteThumbnails();
+  #|         renderCanvas();
+  #|       });
+  #|       mapSpriteThumbGrid.appendChild(rowBtn);
   #|     }
   #|   };
   #|
@@ -1962,7 +2300,8 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       info.textContent = "No tilemap found in DSL.";
   #|       return;
   #|     }
-  #|     info.textContent = `Editing tilemap ${map.name} (${map.width}x${map.height})`;
+  #|     const modeLabel = state.brushMode === "sprite" ? "sprite brush" : "tile brush";
+  #|     info.textContent = `Editing tilemap ${map.name} (${map.width}x${map.height}) [${modeLabel}]`;
   #|     mapWInput.value = String(map.width);
   #|     mapHInput.value = String(map.height);
   #|     state.cell = Math.max(8, Math.floor(520 / Math.max(map.width, map.height)));
@@ -1989,6 +2328,30 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|         ctx.strokeStyle = "#334e68";
   #|         ctx.lineWidth = 1;
   #|         ctx.strokeRect(px + 0.5, py + 0.5, state.cell - 1, state.cell - 1);
+  #|       }
+  #|     }
+  #|
+  #|     if (Array.isArray(state.placements) && state.placements.length > 0) {
+  #|       const unit = state.cell / 8;
+  #|       for (const p of state.placements) {
+  #|         const sp = findSpriteMetaByName(p.sprite);
+  #|         if (!sp) continue;
+  #|         const sx = Number(p.x) * unit;
+  #|         const sy = Number(p.y) * unit;
+  #|         const sw = Math.max(1, Number(sp.width || 8) * unit);
+  #|         const sh = Math.max(1, Number(sp.height || 8) * unit);
+  #|         if (sx + sw < 0 || sy + sh < 0 || sx >= canvas.width || sy >= canvas.height) continue;
+  #|         drawSpritePreviewInMap(ctx, sp, sx, sy, unit);
+  #|         if (state.brushMode === "sprite" && String(p.sprite) === String(activeSpriteBrushName())) {
+  #|           ctx.strokeStyle = "#4aa96c";
+  #|           ctx.lineWidth = 2;
+  #|           ctx.strokeRect(
+  #|             Math.floor(sx) + 1,
+  #|             Math.floor(sy) + 1,
+  #|             Math.max(1, Math.floor(sw) - 2),
+  #|             Math.max(1, Math.floor(sh) - 2),
+  #|           );
+  #|         }
   #|       }
   #|     }
   #|   };
@@ -2120,6 +2483,61 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     return out.concat(after);
   #|   };
   #|
+  #|   const encodePlacementLines = () => {
+  #|     const placements = Array.isArray(state.placements) ? state.placements.slice() : [];
+  #|     placements.sort((a, b) => {
+  #|       if ((a.y | 0) !== (b.y | 0)) return (a.y | 0) - (b.y | 0);
+  #|       if ((a.x | 0) !== (b.x | 0)) return (a.x | 0) - (b.x | 0);
+  #|       return String(a.name || "").localeCompare(String(b.name || ""));
+  #|     });
+  #|     const out = [];
+  #|     for (const p of placements) {
+  #|       const sprite = String(p.sprite || "").trim();
+  #|       if (!sprite) continue;
+  #|       const x = Number(p.x) | 0;
+  #|       const y = Number(p.y) | 0;
+  #|       let name = String(p.name || "").trim();
+  #|       if (!name) {
+  #|         name = nextPlacementName(sprite);
+  #|       }
+  #|       out.push(`place ${name} ${sprite} ${x} ${y}`);
+  #|     }
+  #|     return out;
+  #|   };
+  #|
+  #|   const replacePlacementLinesInLines = (lines) => {
+  #|     const rendered = encodePlacementLines();
+  #|     let firstPlace = -1;
+  #|     const kept = [];
+  #|     for (let i = 0; i < lines.length; i += 1) {
+  #|       const raw = lines[i].trim();
+  #|       if (/^place\s+/i.test(raw)) {
+  #|         if (firstPlace < 0) firstPlace = kept.length;
+  #|         continue;
+  #|       }
+  #|       kept.push(lines[i]);
+  #|     }
+  #|     if (firstPlace < 0) {
+  #|       if (rendered.length === 0) return kept;
+  #|       firstPlace = kept.length;
+  #|       for (let i = 0; i < kept.length; i += 1) {
+  #|         const raw = kept[i].trim();
+  #|         if (/^(sound|bgm)\s+/i.test(raw)) {
+  #|           firstPlace = i;
+  #|           break;
+  #|         }
+  #|       }
+  #|     }
+  #|     if (rendered.length === 0) return kept;
+  #|     const before = kept.slice(0, firstPlace);
+  #|     const after = kept.slice(firstPlace);
+  #|     const out = before.slice();
+  #|     if (out.length > 0 && out[out.length - 1].trim() !== "") out.push("");
+  #|     out.push(...rendered);
+  #|     if (after.length > 0 && after[0].trim() !== "") out.push("");
+  #|     return out.concat(after);
+  #|   };
+  #|
   #|   const writeTilemapToDsl = (andApply) => {
   #|     const map = activeMap();
   #|     if (!map) return;
@@ -2132,7 +2550,8 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     // Replace tilemap first: its stored line range is based on the original text.
   #|     // Replacing tile blocks first can shift line numbers and leave trailing `end`.
   #|     const withTilemaps = replaceTilemapBlocksInLines(lines);
-  #|     const merged = replaceTileBlocksInLines(withTilemaps);
+  #|     const withTiles = replaceTileBlocksInLines(withTilemaps);
+  #|     const merged = replacePlacementLinesInLines(withTiles);
   #|     const text = merged.join("\n");
   #|     textarea.value = text;
   #|     setDirty(false);
@@ -2147,12 +2566,22 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     const parsed = parseDsl(textarea.value);
   #|     state.lines = parsed.lines;
   #|     state.palette = parsed.palette;
+  #|     state.sprites = parsed.sprites || [];
   #|     state.tiles = parsed.tiles;
   #|     state.tileRange = parsed.tileRange;
   #|     state.tilemaps = parsed.tilemaps;
   #|     state.tilemapRange = parsed.tilemapRange;
+  #|     state.placements = parsed.placements || [];
+  #|     state.placementRange = parsed.placementRange || null;
   #|     state.errors = parsed.errors || [];
   #|     if (state.selectedMap >= state.tilemaps.length) state.selectedMap = 0;
+  #|     if (state.brushMode !== "tile" && state.brushMode !== "sprite") state.brushMode = "tile";
+  #|     if (brushModeSelect.value === "sprite" || brushModeSelect.value === "tile") {
+  #|       state.brushMode = brushModeSelect.value;
+  #|     }
+  #|     if (state.mapThumbTab !== "tiles" && state.mapThumbTab !== "sprites") {
+  #|       state.mapThumbTab = state.brushMode === "sprite" ? "sprites" : "tiles";
+  #|     }
   #|     const tileCount = parsed.tiles && Number.isInteger(parsed.tiles.tile_count) ? parsed.tiles.tile_count : 0;
   #|     if (tileCount <= 0) {
   #|       state.selectedTileId = -1;
@@ -2164,9 +2593,13 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|
   #|     renderTilePalette();
   #|     renderBrushSelect();
+  #|     renderSpriteBrushSelect();
+  #|     applyBrushModeUi();
+  #|     applyMapAssetTabUi();
   #|     refreshSolidUi();
   #|     renderTileThumbnails();
   #|     renderMapTileThumbnails();
+  #|     renderMapSpriteThumbnails();
   #|     renderCanvas();
   #|     setDirty(false);
   #|     if (state.errors.length > 0) {
@@ -2174,6 +2607,32 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       setFeedback(`Parse error at line ${e.line}: ${e.message}`, true);
   #|     } else {
   #|       setFeedback("Tilemap synced from DSL.");
+  #|     }
+  #|   };
+  #|
+  #|   const paintPlacementAt = (map, gridX, gridY, erase) => {
+  #|     const cellX = gridX * 8;
+  #|     const cellY = gridY * 8;
+  #|     if (!Array.isArray(state.placements)) state.placements = [];
+  #|     const beforeLen = state.placements.length;
+  #|     state.placements = state.placements.filter((p) => !((p.x | 0) === cellX && (p.y | 0) === cellY));
+  #|     if (!erase) {
+  #|       const spriteName = activeSpriteBrushName();
+  #|       if (!spriteName) {
+  #|         setFeedback("No sprite selected for sprite brush.", true);
+  #|         return;
+  #|       }
+  #|       state.placements.push({
+  #|         name: nextPlacementName(spriteName),
+  #|         sprite: spriteName,
+  #|         x: cellX,
+  #|         y: cellY,
+  #|       });
+  #|     }
+  #|     const changed = state.placements.length !== beforeLen || !erase;
+  #|     if (changed) {
+  #|       setDirty(true);
+  #|       renderCanvas();
   #|     }
   #|   };
   #|
@@ -2185,6 +2644,10 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     const y = Math.floor((evt.clientY - rect.top) / state.cell);
   #|     if (x < 0 || y < 0 || x >= map.width || y >= map.height) return;
   #|     const erase = ((evt.buttons & 2) !== 0) || !!evt.shiftKey;
+  #|     if (state.brushMode === "sprite") {
+  #|       paintPlacementAt(map, x, y, erase);
+  #|       return;
+  #|     }
   #|     map.tiles[y * map.width + x] = erase ? -1 : state.selectedToken;
   #|     setDirty(true);
   #|     renderCanvas();
@@ -2355,6 +2818,34 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     brushSelect.addEventListener("change", () => {
   #|       state.selectedToken = Number(brushSelect.value);
   #|       renderMapTileThumbnails();
+  #|     });
+  #|     brushModeSelect.addEventListener("change", () => {
+  #|       state.brushMode = brushModeSelect.value === "sprite" ? "sprite" : "tile";
+  #|       state.mapThumbTab = state.brushMode === "sprite" ? "sprites" : "tiles";
+  #|       applyBrushModeUi();
+  #|       applyMapAssetTabUi();
+  #|       renderMapSpriteThumbnails();
+  #|       renderCanvas();
+  #|     });
+  #|     spriteBrushSelect.addEventListener("change", () => {
+  #|       state.selectedSpriteName = String(spriteBrushSelect.value || "");
+  #|       renderMapSpriteThumbnails();
+  #|       renderCanvas();
+  #|     });
+  #|     mapTilesTabBtn.addEventListener("click", () => {
+  #|       state.mapThumbTab = "tiles";
+  #|       state.brushMode = "tile";
+  #|       applyBrushModeUi();
+  #|       applyMapAssetTabUi();
+  #|       renderCanvas();
+  #|     });
+  #|     mapSpritesTabBtn.addEventListener("click", () => {
+  #|       state.mapThumbTab = "sprites";
+  #|       state.brushMode = "sprite";
+  #|       applyBrushModeUi();
+  #|       applyMapAssetTabUi();
+  #|       renderMapSpriteThumbnails();
+  #|       renderCanvas();
   #|     });
   #|     tileNameInput.addEventListener("input", () => {
   #|       const ts = state.tiles;

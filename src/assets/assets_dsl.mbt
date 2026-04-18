@@ -14,6 +14,9 @@ type Tiles = @model.Tiles
 type Tilemap = @model.Tilemap
 
 ///|
+type Placement = @model.Placement
+
+///|
 type SoundDef = @model.SoundDef
 
 ///|
@@ -380,6 +383,27 @@ fn parse_tilemap_block(
 }
 
 ///|
+fn parse_placement_line(
+  header : Array[String],
+  line_no : Int,
+) -> Result[Placement, DslError] {
+  if header.length() != 5 {
+    return err(
+      line_no, "place directive must be: place <name> <sprite> <x> <y>",
+    )
+  }
+  let x = match parse_int_token(header[3], line_no, "placement x") {
+    Ok(v) => v
+    Err(e) => return Err(e)
+  }
+  let y = match parse_int_token(header[4], line_no, "placement y") {
+    Ok(v) => v
+    Err(e) => return Err(e)
+  }
+  Ok(Placement::{ name: header[1], sprite: header[2], x, y })
+}
+
+///|
 fn parse_double_token(
   token : String,
   line : Int,
@@ -618,6 +642,8 @@ pub fn parse_assets_dsl(input : String) -> Result[AssetBundle, DslError] {
   let sprites : Array[Sprite] = []
   let tilemaps : Array[Tilemap] = []
   let tilemap_header_lines : Array[Int] = []
+  let placements : Array[Placement] = []
+  let placement_lines : Array[Int] = []
   let sounds : Array[SoundDef] = []
   let bgms : Array[BgmDef] = []
   let tile_count = 256
@@ -690,6 +716,16 @@ pub fn parse_assets_dsl(input : String) -> Result[AssetBundle, DslError] {
         tilemap_header_lines.push(header_line)
         cursor = parsed.1
       }
+      "place" => {
+        let line_no = cursor + 1
+        let parsed = match parse_placement_line(tokens, line_no) {
+          Ok(v) => v
+          Err(e) => return Err(e)
+        }
+        placements.push(parsed)
+        placement_lines.push(line_no)
+        cursor += 1
+      }
       "sound" => {
         let parsed = match parse_sound_block(lines, tokens, cursor) {
           Ok(v) => v
@@ -727,6 +763,25 @@ pub fn parse_assets_dsl(input : String) -> Result[AssetBundle, DslError] {
     }
   }
 
+  // Validate placement sprite references.
+  for i in 0..<placements.length() {
+    let placement = placements[i]
+    let line_no = placement_lines[i]
+    let mut found = false
+    for sprite in sprites {
+      if sprite.name == placement.sprite {
+        found = true
+        break
+      }
+    }
+    if !found {
+      return err(
+        line_no,
+        "placement '\{placement.name}' references unknown sprite: \{placement.sprite}",
+      )
+    }
+  }
+
   Ok(AssetBundle::{
     palette: match palette {
       Some(p) => p
@@ -741,6 +796,7 @@ pub fn parse_assets_dsl(input : String) -> Result[AssetBundle, DslError] {
       pixels: tile_pixels,
     },
     tilemaps,
+    placements,
     sounds,
     bgms,
   })

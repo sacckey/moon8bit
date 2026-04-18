@@ -56,6 +56,17 @@ sprite player 8 8
 ........
 end
 
+sprite enemy 8 8
+........
+..444...
+.446644.
+.466664.
+.466664.
+..4444..
+..4..4..
+........
+end
+
 # tile IDs are explicit (0..255)
 tile 0 ground_top solid
 55555555
@@ -133,3 +144,7 @@ tilemap stage 48 18
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 end
+
+place enemy_1 enemy 112 120
+place enemy_2 enemy 216 120
+place enemy_3 enemy 272 120
