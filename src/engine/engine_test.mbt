@@ -444,6 +444,66 @@ test "tile_solid_any_in_rect checks overlapped tiles in map-space pixels" {
 }
 
 ///|
+test "tile_id_any_in_rect checks overlapped target tile ids" {
+  let tm = @model.Tilemap::{
+    name: "ids",
+    width: 2,
+    height: 2,
+    tiles: [0, 4, 2, 3],
+  }
+  assert_true(@engine.tile_id_any_in_rect(tm, 8, 0, 8, 8, 4))
+  assert_true(@engine.tile_id_any_in_rect(tm, 7, 0, 2, 8, 4))
+  assert_true(!@engine.tile_id_any_in_rect(tm, 0, 0, 8, 8, 4))
+  assert_true(!@engine.tile_id_any_in_rect(tm, -8, 0, 4, 4, 4))
+  assert_true(!@engine.tile_id_any_in_rect(tm, 0, 0, 0, 8, 4))
+}
+
+///|
+test "swept_move_x and swept_move_y stop at solid tiles" {
+  let solid_px : Array[Int] = []
+  for _ in 0..<64 {
+    solid_px.push(1)
+  }
+  let empty_px : Array[Int] = []
+  for _ in 0..<64 {
+    empty_px.push(2)
+  }
+  let ts = @model.Tiles::{
+    name: "main",
+    tile_count: 2,
+    tile_names: ["solid", "empty"],
+    tile_solid: [true, false],
+    pixels: solid_px + empty_px,
+  }
+
+  let tm_x = @model.Tilemap::{
+    name: "x",
+    width: 4,
+    height: 1,
+    tiles: [1, 1, 0, 1],
+  }
+  let (x1, blocked1) = @engine.swept_move_x(tm_x, ts, 0, 0, 8, 8, 8)
+  assert_eq(x1, 8)
+  assert_true(!blocked1)
+  let (x2, blocked2) = @engine.swept_move_x(tm_x, ts, 8, 0, 8, 8, 8)
+  assert_eq(x2, 8)
+  assert_true(blocked2)
+
+  let tm_y = @model.Tilemap::{
+    name: "y",
+    width: 1,
+    height: 4,
+    tiles: [1, 1, 0, 1],
+  }
+  let (y1, blocked3) = @engine.swept_move_y(tm_y, ts, 0, 0, 8, 8, 8)
+  assert_eq(y1, 8)
+  assert_true(!blocked3)
+  let (y2, blocked4) = @engine.swept_move_y(tm_y, ts, 0, 8, 8, 8, 8)
+  assert_eq(y2, 8)
+  assert_true(blocked4)
+}
+
+///|
 test "engine timeout command emits event once and can be consumed" {
   let cfg = @engine.config(4, 4)
   let initial = @engine.engine_init(TimeoutCommandGame::{ ticks: 0 }, cfg)

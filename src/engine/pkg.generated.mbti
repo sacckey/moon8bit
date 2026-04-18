@@ -96,7 +96,13 @@ pub fn spr_world(@model.Frame, @model.Sprite, Int, Int, @model.Camera) -> Unit
 
 pub fn[T : Game] step(EngineInstance[T], @model.InputState) -> (EngineInstance[T], @model.Frame)
 
+pub fn swept_move_x(@model.Tilemap, @model.Tiles, Int, Int, Int, Int, Int) -> (Int, Bool)
+
+pub fn swept_move_y(@model.Tilemap, @model.Tiles, Int, Int, Int, Int, Int) -> (Int, Bool)
+
 pub fn[T] take_events(EngineInstance[T]) -> (EngineInstance[T], Array[EngineEvent])
+
+pub fn tile_id_any_in_rect(@model.Tilemap, Int, Int, Int, Int, Int) -> Bool
 
 pub fn tile_id_at_px(@model.Tilemap, Int, Int) -> Int?
 

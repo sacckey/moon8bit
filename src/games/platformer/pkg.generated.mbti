@@ -16,6 +16,8 @@ pub fn step_game(@engine.EngineInstance[PlatformerGame], @model.InputState) -> (
 // Errors
 
 // Types and methods
+type EnemyActor derive(Eq, Show)
+
 pub struct PlatformerGame {
   bundle : @model.AssetBundle
   mut player_x : Int
@@ -23,6 +25,7 @@ pub struct PlatformerGame {
   mut vel_x : Int
   mut vel_y : Int
   mut on_ground : Bool
+  mut enemies : Array[EnemyActor]
   mut camera : @model.Camera
   mut is_over : Bool
   mut is_clear : Bool

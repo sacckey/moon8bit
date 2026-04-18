@@ -54,8 +54,11 @@ pub struct PlatformerGame {
 } derive(Eq, Show)
 
 ///|
-fn stage_tilemap(game : PlatformerGame) -> @model.Tilemap? {
-  @model.find_tilemap(game.bundle, "stage")
+fn stage_tilemap(game : PlatformerGame) -> @model.Tilemap {
+  match @model.find_tilemap(game.bundle, "stage") {
+    Some(tm) => tm
+    None => panic()
+  }
 }
 
 ///|
@@ -78,34 +81,24 @@ fn enemy_size(game : PlatformerGame) -> (Int, Int) {
 
 ///|
 fn map_width_px(game : PlatformerGame) -> Int {
-  match stage_tilemap(game) {
-    Some(tm) => tm.width * 8
-    None => screen_w
-  }
+  stage_tilemap(game).width * 8
 }
 
 ///|
 fn map_height_px(game : PlatformerGame) -> Int {
-  match stage_tilemap(game) {
-    Some(tm) => tm.height * 8
-    None => screen_h
-  }
+  stage_tilemap(game).height * 8
 }
 
 ///|
 fn player_hits_solid(game : PlatformerGame, x : Int, y : Int) -> Bool {
-  match stage_tilemap(game) {
-    Some(tm) =>
-      @engine.tile_solid_any_in_rect(
-        tm,
-        game.bundle.tiles,
-        x,
-        y,
-        player_w,
-        player_h,
-      )
-    None => y + player_h >= screen_h - 16
-  }
+  @engine.tile_solid_any_in_rect(
+    stage_tilemap(game),
+    game.bundle.tiles,
+    x,
+    y,
+    player_w,
+    player_h,
+  )
 }
 
 ///|
@@ -149,18 +142,14 @@ fn enemy_hits_solid(
   enemy_w : Int,
   enemy_h : Int,
 ) -> Bool {
-  match stage_tilemap(game) {
-    Some(tm) =>
-      @engine.tile_solid_any_in_rect(
-        tm,
-        game.bundle.tiles,
-        x,
-        y,
-        enemy_w,
-        enemy_h,
-      )
-    None => false
-  }
+  @engine.tile_solid_any_in_rect(
+    stage_tilemap(game),
+    game.bundle.tiles,
+    x,
+    y,
+    enemy_w,
+    enemy_h,
+  )
 }
 
 ///|
@@ -231,14 +220,18 @@ fn step_horizontal(game : PlatformerGame) -> Unit {
   if game.vel_x == 0 {
     return
   }
-  let step = if game.vel_x > 0 { 1 } else { -1 }
-  for _ in 0..<Int::abs(game.vel_x) {
-    let next_x = game.player_x + step
-    if player_hits_solid(game, next_x, game.player_y) {
-      game.vel_x = 0
-      break
-    }
-    game.player_x = next_x
+  let (next_x, blocked) = @engine.swept_move_x(
+    stage_tilemap(game),
+    game.bundle.tiles,
+    game.player_x,
+    game.player_y,
+    player_w,
+    player_h,
+    game.vel_x,
+  )
+  game.player_x = next_x
+  if blocked {
+    game.vel_x = 0
   }
   let max_x = map_width_px(game) - player_w
   game.player_x = @engine.clamp(game.player_x, 0, max_x)
@@ -251,17 +244,21 @@ fn step_vertical(game : PlatformerGame) -> Unit {
     return
   }
   game.on_ground = false
-  let step = if game.vel_y > 0 { 1 } else { -1 }
-  for _ in 0..<Int::abs(game.vel_y) {
-    let next_y = game.player_y + step
-    if player_hits_solid(game, game.player_x, next_y) {
-      if step > 0 {
-        game.on_ground = true
-      }
-      game.vel_y = 0
-      break
+  let (next_y, blocked) = @engine.swept_move_y(
+    stage_tilemap(game),
+    game.bundle.tiles,
+    game.player_x,
+    game.player_y,
+    player_w,
+    player_h,
+    game.vel_y,
+  )
+  game.player_y = next_y
+  if blocked {
+    if game.vel_y > 0 {
+      game.on_ground = true
     }
-    game.player_y = next_y
+    game.vel_y = 0
   }
 }
 
@@ -270,20 +267,17 @@ fn check_goal(game : PlatformerGame, ctx : @engine.UpdateContext) -> Unit {
   if game.is_clear {
     return
   }
-  match stage_tilemap(game) {
-    Some(tm) => {
-      let center_x = game.player_x + player_w / 2
-      let center_y = game.player_y + player_h / 2
-      match @engine.tile_id_at_px(tm, center_x, center_y) {
-        Some(tile_id) if tile_id == goal_tile_id => {
-          game.is_clear = true
-          ctx.sfx("goal")
-          ctx.bgm_stop()
-        }
-        _ => ()
-      }
-    }
-    None => ()
+  if @engine.tile_id_any_in_rect(
+      stage_tilemap(game),
+      game.player_x,
+      game.player_y,
+      player_w,
+      player_h,
+      goal_tile_id,
+    ) {
+    game.is_clear = true
+    ctx.sfx("goal")
+    ctx.bgm_stop()
   }
 }
 
@@ -345,7 +339,7 @@ fn apply_gameplay_input(
 
 ///|
 pub fn new_platformer_game(bundle : @model.AssetBundle) -> PlatformerGame {
-  reset_game(PlatformerGame::{
+  let game = reset_game(PlatformerGame::{
     bundle,
     player_x: 0,
     player_y: 0,
@@ -357,6 +351,8 @@ pub fn new_platformer_game(bundle : @model.AssetBundle) -> PlatformerGame {
     is_over: false,
     is_clear: false,
   })
+  ignore(stage_tilemap(game))
+  game
 }
 
 ///|
@@ -411,20 +407,16 @@ pub impl @engine.Game for PlatformerGame with update(self, ctx) {
 pub impl @engine.Game for PlatformerGame with draw(self, _ctx) {
   let frame = @model.Frame::new(screen_w, screen_h, fill=1)
 
-  match stage_tilemap(self) {
-    Some(tm) =>
-      @engine.draw_tilemap_world(
-        frame,
-        tm,
-        self.bundle.tiles,
-        0,
-        0,
-        screen_w,
-        screen_h,
-        self.camera,
-      )
-    None => frame.draw_rect(0, screen_h - 16, screen_w, 16, 0)
-  }
+  @engine.draw_tilemap_world(
+    frame,
+    stage_tilemap(self),
+    self.bundle.tiles,
+    0,
+    0,
+    screen_w,
+    screen_h,
+    self.camera,
+  )
 
   match @model.find_sprite(self.bundle, "player") {
     Some(player) =>

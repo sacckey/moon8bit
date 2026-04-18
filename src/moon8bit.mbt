@@ -137,6 +137,44 @@ pub fn tile_solid_any_in_rect(
 }
 
 ///|
+pub fn tile_id_any_in_rect(
+  tilemap : Tilemap,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+  target_tile_id : Int,
+) -> Bool {
+  @engine.tile_id_any_in_rect(tilemap, x, y, w, h, target_tile_id)
+}
+
+///|
+pub fn swept_move_x(
+  tilemap : Tilemap,
+  tiles : Tiles,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+  dx : Int,
+) -> (Int, Bool) {
+  @engine.swept_move_x(tilemap, tiles, x, y, w, h, dx)
+}
+
+///|
+pub fn swept_move_y(
+  tilemap : Tilemap,
+  tiles : Tiles,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+  dy : Int,
+) -> (Int, Bool) {
+  @engine.swept_move_y(tilemap, tiles, x, y, w, h, dy)
+}
+
+///|
 pub fn default_engine_config() -> EngineConfig {
   @model.default_engine_config()
 }

@@ -135,9 +135,15 @@ pub fn sprite_to_json(@model.Sprite) -> Json
 
 pub fn[T : @engine.Game] step(@engine.EngineInstance[T], @model.InputState) -> (@engine.EngineInstance[T], @model.Frame)
 
+pub fn swept_move_x(@model.Tilemap, @model.Tiles, Int, Int, Int, Int, Int) -> (Int, Bool)
+
+pub fn swept_move_y(@model.Tilemap, @model.Tiles, Int, Int, Int, Int, Int) -> (Int, Bool)
+
 pub fn[T] take_events(@engine.EngineInstance[T]) -> (@engine.EngineInstance[T], Array[@engine.EngineEvent])
 
 pub fn tile_at(@model.Tilemap, Int, Int) -> Int?
+
+pub fn tile_id_any_in_rect(@model.Tilemap, Int, Int, Int, Int, Int) -> Bool
 
 pub fn tile_id_at_px(@model.Tilemap, Int, Int) -> Int?
 

@@ -420,6 +420,91 @@ pub fn tile_solid_any_in_rect(
 }
 
 ///|
+/// Return true when any pixel inside the rectangle intersects `target_tile_id`.
+/// - Rect is expressed in map-space pixels.
+/// - Out-of-map area is treated as no tile.
+/// - Empty or negative-size rect returns false.
+pub fn tile_id_any_in_rect(
+  tilemap : @model.Tilemap,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+  target_tile_id : Int,
+) -> Bool {
+  if w <= 0 || h <= 0 {
+    return false
+  }
+  let left_tx = floor_div_tile(x)
+  let top_ty = floor_div_tile(y)
+  let right_tx = floor_div_tile(x + w - 1)
+  let bottom_ty = floor_div_tile(y + h - 1)
+  for ty in top_ty..<=bottom_ty {
+    for tx in left_tx..<=right_tx {
+      match @model.tile_at(tilemap, tx, ty) {
+        Some(tile_id) if tile_id == target_tile_id => return true
+        _ => ()
+      }
+    }
+  }
+  false
+}
+
+///|
+/// Move rect horizontally by `dx` with 1px swept collision against solid tiles.
+/// Returns `(resolved_x, blocked)`.
+pub fn swept_move_x(
+  tilemap : @model.Tilemap,
+  tiles : @model.Tiles,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+  dx : Int,
+) -> (Int, Bool) {
+  if dx == 0 {
+    return (x, false)
+  }
+  let step = if dx > 0 { 1 } else { -1 }
+  let mut next_x = x
+  for _ in 0..<Int::abs(dx) {
+    let candidate_x = next_x + step
+    if tile_solid_any_in_rect(tilemap, tiles, candidate_x, y, w, h) {
+      return (next_x, true)
+    }
+    next_x = candidate_x
+  }
+  (next_x, false)
+}
+
+///|
+/// Move rect vertically by `dy` with 1px swept collision against solid tiles.
+/// Returns `(resolved_y, blocked)`.
+pub fn swept_move_y(
+  tilemap : @model.Tilemap,
+  tiles : @model.Tiles,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+  dy : Int,
+) -> (Int, Bool) {
+  if dy == 0 {
+    return (y, false)
+  }
+  let step = if dy > 0 { 1 } else { -1 }
+  let mut next_y = y
+  for _ in 0..<Int::abs(dy) {
+    let candidate_y = next_y + step
+    if tile_solid_any_in_rect(tilemap, tiles, x, candidate_y, w, h) {
+      return (next_y, true)
+    }
+    next_y = candidate_y
+  }
+  (next_y, false)
+}
+
+///|
 /// Draw a region of a tilemap onto the frame using inline tile pixel data.
 ///
 /// - `dst_x/dst_y`: top-left corner in the frame where drawing starts
