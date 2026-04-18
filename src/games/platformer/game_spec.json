@@ -1,0 +1,6 @@
+{
+  "id": "platformer",
+  "title": "Platformer",
+  "status_text": "A/D or arrow keys to move. Space to jump.",
+  "export_filename": "platformer_assets.dsl"
+}
