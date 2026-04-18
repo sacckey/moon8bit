@@ -32,6 +32,15 @@ let goal_tile_id = 4
 let enemy_sprite_name = "enemy"
 
 ///|
+let player_sprite_name = "player"
+
+///|
+let default_player_spawn_x : Int = 16
+
+///|
+let default_player_spawn_y : Int = screen_h - 40
+
+///|
 struct EnemyActor {
   name : String
   x : Int
@@ -72,10 +81,28 @@ fn enemy_placements(game : PlatformerGame) -> Array[@model.Placement] {
 }
 
 ///|
+fn player_placements(game : PlatformerGame) -> Array[@model.Placement] {
+  @model.find_placements_by_sprite(game.bundle, player_sprite_name)
+}
+
+///|
 fn enemy_size(game : PlatformerGame) -> (Int, Int) {
   match enemy_sprite(game) {
     Some(sp) => (sp.width, sp.height)
     None => (8, 8)
+  }
+}
+
+///|
+fn initial_player_spawn(game : PlatformerGame) -> (Int, Int) {
+  let placements = player_placements(game)
+  if placements.length() == 1 {
+    let spawn = placements[0]
+    let max_x = map_width_px(game) - player_w
+    let max_y = map_height_px(game) - player_h
+    (@engine.clamp(spawn.x, 0, max_x), @engine.clamp(spawn.y, 0, max_y))
+  } else {
+    (default_player_spawn_x, default_player_spawn_y)
   }
 }
 
@@ -202,8 +229,9 @@ fn step_enemies(game : PlatformerGame) -> Unit {
 
 ///|
 fn reset_game(game : PlatformerGame) -> PlatformerGame {
-  game.player_x = 16
-  game.player_y = screen_h - 40
+  let (spawn_x, spawn_y) = initial_player_spawn(game)
+  game.player_x = spawn_x
+  game.player_y = spawn_y
   game.vel_x = 0
   game.vel_y = 0
   game.on_ground = false
