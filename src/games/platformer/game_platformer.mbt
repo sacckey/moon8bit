@@ -14,19 +14,34 @@ let player_w = 8
 let player_h = 8
 
 ///|
-let move_speed = 2
+let move_speed = 1
 
 ///|
-let jump_speed = -7
+let jump_speed = -6
 
 ///|
 let gravity = 1
 
 ///|
-let max_fall_speed = 7
+let max_fall_speed = 5
 
 ///|
 let goal_tile_id = 4
+
+///|
+let gravity_step_interval = 2
+
+///|
+let gravity_step_interval_fall = 1
+
+///|
+let coyote_frames = 6
+
+///|
+let jump_buffer_frames = 6
+
+///|
+let jump_cut_velocity = -2
 
 ///|
 let enemy_sprite_name = "enemy"
@@ -63,6 +78,8 @@ pub struct PlatformerGame {
   mut coins : Array[@model.Placement]
   mut coins_collected : Int
   mut camera : @model.Camera
+  mut coyote_timer : Int
+  mut jump_buffer_timer : Int
   mut is_over : Bool
   mut is_clear : Bool
 } derive(Eq, Show)
@@ -279,6 +296,8 @@ fn reset_game(game : PlatformerGame) -> PlatformerGame {
   game.coins = spawn_coins(game)
   game.coins_collected = 0
   game.camera = @engine.camera(0, 0)
+  game.coyote_timer = 0
+  game.jump_buffer_timer = 0
   game.is_over = false
   game.is_clear = false
   update_camera(game)
@@ -411,12 +430,28 @@ fn check_coin_hit(game : PlatformerGame) -> Unit {
 }
 
 ///|
-fn apply_gameplay_input(
+fn update_jump_timers(game : PlatformerGame, input : @model.InputState) -> Unit {
+  if game.on_ground {
+    game.coyote_timer = coyote_frames
+  } else if game.coyote_timer > 0 {
+    game.coyote_timer -= 1
+  }
+
+  let jump_pressed = @engine.key_pressed_any(input, ["Space", "ArrowUp", "KeyW"])
+  if jump_pressed {
+    game.jump_buffer_timer = jump_buffer_frames
+  } else if game.jump_buffer_timer > 0 {
+    game.jump_buffer_timer -= 1
+  }
+}
+
+///|
+fn apply_horizontal_input(
   game : PlatformerGame,
-  ctx : @engine.UpdateContext,
+  input : @model.InputState,
 ) -> Unit {
-  let left = @engine.key_down_any(ctx.input, ["ArrowLeft", "KeyA"])
-  let right = @engine.key_down_any(ctx.input, ["ArrowRight", "KeyD"])
+  let left = @engine.key_down_any(input, ["ArrowLeft", "KeyA"])
+  let right = @engine.key_down_any(input, ["ArrowRight", "KeyD"])
   game.vel_x = if left == right {
     0
   } else if left {
@@ -424,14 +459,55 @@ fn apply_gameplay_input(
   } else {
     move_speed
   }
+}
 
-  let jump_pressed = @engine.key_pressed_any(ctx.input, [
-    "Space", "ArrowUp", "KeyW",
-  ])
-  if jump_pressed && game.on_ground {
-    game.vel_y = jump_speed
-    game.on_ground = false
-    ctx.sfx("jump")
+///|
+fn try_start_jump(game : PlatformerGame, ctx : @engine.UpdateContext) -> Unit {
+  if game.jump_buffer_timer <= 0 {
+    return
+  }
+  if !game.on_ground && game.coyote_timer <= 0 {
+    return
+  }
+
+  game.vel_y = jump_speed
+  game.on_ground = false
+  game.coyote_timer = 0
+  game.jump_buffer_timer = 0
+  ctx.sfx("jump")
+}
+
+///|
+fn apply_jump_cut(game : PlatformerGame, input : @model.InputState) -> Unit {
+  if game.vel_y >= jump_cut_velocity {
+    return
+  }
+  let jump_held = @engine.key_down_any(input, ["Space", "ArrowUp", "KeyW"])
+  if !jump_held {
+    game.vel_y = jump_cut_velocity
+  }
+}
+
+///|
+fn apply_gameplay_input(
+  game : PlatformerGame,
+  ctx : @engine.UpdateContext,
+) -> Unit {
+  update_jump_timers(game, ctx.input)
+  apply_horizontal_input(game, ctx.input)
+  try_start_jump(game, ctx)
+  apply_jump_cut(game, ctx.input)
+}
+
+///|
+fn apply_gravity(game : PlatformerGame, tick : Int) -> Unit {
+  let gravity_interval = if game.vel_y < 0 {
+    gravity_step_interval
+  } else {
+    gravity_step_interval_fall
+  }
+  if game.vel_y < max_fall_speed && tick % gravity_interval == 0 {
+    game.vel_y += gravity
   }
 }
 
@@ -448,6 +524,8 @@ pub fn new_platformer_game(bundle : @model.AssetBundle) -> PlatformerGame {
     coins: [],
     coins_collected: 0,
     camera: @engine.camera(0, 0),
+    coyote_timer: 0,
+    jump_buffer_timer: 0,
     is_over: false,
     is_clear: false,
   })
@@ -479,10 +557,7 @@ pub impl @engine.Game for PlatformerGame with update(self, ctx) {
   }
 
   apply_gameplay_input(self, ctx)
-
-  if self.vel_y < max_fall_speed {
-    self.vel_y += gravity
-  }
+  apply_gravity(self, ctx.tick)
   step_horizontal(self)
   step_vertical(self)
   step_enemies(self)
