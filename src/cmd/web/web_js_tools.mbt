@@ -1257,50 +1257,6 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     row.appendChild(mapSelect);
   #|   }
   #|
-  #|   let brushSelect = document.getElementById("moon8bit-tilemap-brush");
-  #|   if (!brushSelect) {
-  #|     brushSelect = document.createElement("select");
-  #|     brushSelect.id = "moon8bit-tilemap-brush";
-  #|     brushSelect.style.background = "#0f1720";
-  #|     brushSelect.style.color = "#d9e2ec";
-  #|     brushSelect.style.border = "1px solid #486581";
-  #|   }
-  #|   if (brushSelect.parentElement !== row) {
-  #|     row.appendChild(brushSelect);
-  #|   }
-  #|
-  #|   let brushModeSelect = document.getElementById("moon8bit-tilemap-brush-mode");
-  #|   if (!brushModeSelect) {
-  #|     brushModeSelect = document.createElement("select");
-  #|     brushModeSelect.id = "moon8bit-tilemap-brush-mode";
-  #|     brushModeSelect.style.background = "#0f1720";
-  #|     brushModeSelect.style.color = "#d9e2ec";
-  #|     brushModeSelect.style.border = "1px solid #486581";
-  #|     const optTile = document.createElement("option");
-  #|     optTile.value = "tile";
-  #|     optTile.textContent = "Tile brush";
-  #|     brushModeSelect.appendChild(optTile);
-  #|     const optSprite = document.createElement("option");
-  #|     optSprite.value = "sprite";
-  #|     optSprite.textContent = "Sprite brush";
-  #|     brushModeSelect.appendChild(optSprite);
-  #|   }
-  #|   if (brushModeSelect.parentElement !== row) {
-  #|     row.appendChild(brushModeSelect);
-  #|   }
-  #|
-  #|   let spriteBrushSelect = document.getElementById("moon8bit-tilemap-sprite-brush");
-  #|   if (!spriteBrushSelect) {
-  #|     spriteBrushSelect = document.createElement("select");
-  #|     spriteBrushSelect.id = "moon8bit-tilemap-sprite-brush";
-  #|     spriteBrushSelect.style.background = "#0f1720";
-  #|     spriteBrushSelect.style.color = "#d9e2ec";
-  #|     spriteBrushSelect.style.border = "1px solid #486581";
-  #|   }
-  #|   if (spriteBrushSelect.parentElement !== row) {
-  #|     row.appendChild(spriteBrushSelect);
-  #|   }
-  #|
   #|   let mapWInput = document.getElementById("moon8bit-tilemap-width");
   #|   if (!mapWInput) {
   #|     mapWInput = document.createElement("input");
@@ -1732,9 +1688,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       placementRange: null,
   #|       errors: [],
   #|       selectedMap: 0,
-  #|       selectedToken: -1,
   #|       selectedSpriteName: "",
-  #|       brushMode: "tile",
   #|       mapThumbTab: "tiles",
   #|       selectedTileId: 0,
   #|       selectedTileColor: 0,
@@ -1755,7 +1709,6 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     state.placementRange = null;
   #|   }
   #|   if (typeof state.selectedSpriteName !== "string") state.selectedSpriteName = "";
-  #|   if (state.brushMode !== "tile" && state.brushMode !== "sprite") state.brushMode = "tile";
   #|   if (state.mapThumbTab !== "tiles" && state.mapThumbTab !== "sprites") state.mapThumbTab = "tiles";
   #|
   #|   function scheduleTilemapAutoWrite() {
@@ -2086,62 +2039,6 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     return state.tilemaps[idx];
   #|   };
   #|
-  #|   const renderBrushSelect = () => {
-  #|     brushSelect.innerHTML = "";
-  #|     const transparent = document.createElement("option");
-  #|     transparent.value = "-1";
-  #|     transparent.textContent = ". (transparent)";
-  #|     brushSelect.appendChild(transparent);
-  #|
-  #|     const ts = state.tiles;
-  #|     if (ts && ts.tile_count > 0) {
-  #|       for (let i = 0; i < ts.tile_count; i += 1) {
-  #|         const opt = document.createElement("option");
-  #|         const nm = ts.tile_names && ts.tile_names[i] ? ts.tile_names[i] : `tile_${i}`;
-  #|         const solid = ts.tile_solid && ts.tile_solid[i] ? " [solid]" : "";
-  #|         opt.value = String(i);
-  #|         opt.textContent = `${i}: ${nm}${solid}`;
-  #|         brushSelect.appendChild(opt);
-  #|       }
-  #|     }
-  #|     let candidate = Number.isInteger(state.selectedToken) ? state.selectedToken : -1;
-  #|     if (candidate < -1) candidate = -1;
-  #|     if (![...brushSelect.options].some((o) => o.value === String(candidate))) {
-  #|       candidate = -1;
-  #|     }
-  #|     state.selectedToken = candidate;
-  #|     brushSelect.value = String(candidate);
-  #|   };
-  #|
-  #|   const renderSpriteBrushSelect = () => {
-  #|     spriteBrushSelect.innerHTML = "";
-  #|     const sprites = Array.isArray(state.sprites) ? state.sprites : [];
-  #|     for (const sp of sprites) {
-  #|       const opt = document.createElement("option");
-  #|       opt.value = String(sp.name || "");
-  #|       opt.textContent = `${sp.name} (${sp.width}x${sp.height})`;
-  #|       spriteBrushSelect.appendChild(opt);
-  #|     }
-  #|     let name = String(state.selectedSpriteName || "");
-  #|     if (!sprites.some((sp) => String(sp.name) === name)) {
-  #|       name = sprites.length > 0 ? String(sprites[0].name || "") : "";
-  #|     }
-  #|     state.selectedSpriteName = name;
-  #|     if (name !== "") {
-  #|       spriteBrushSelect.value = name;
-  #|     }
-  #|   };
-  #|
-  #|   const applyBrushModeUi = () => {
-  #|     const mode = state.brushMode === "sprite" ? "sprite" : "tile";
-  #|     state.brushMode = mode;
-  #|     brushModeSelect.value = mode;
-  #|     brushSelect.disabled = mode !== "tile";
-  #|     spriteBrushSelect.disabled = mode !== "sprite";
-  #|     spriteBrushSelect.style.opacity = mode === "sprite" ? "1" : "0.6";
-  #|     brushSelect.style.opacity = mode === "tile" ? "1" : "0.6";
-  #|   };
-  #|
   #|   const applyMapAssetTabUi = () => {
   #|     const tab = state.mapThumbTab === "sprites" ? "sprites" : "tiles";
   #|     state.mapThumbTab = tab;
@@ -2444,11 +2341,10 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|
   #|         cell.addEventListener("click", () => {
   #|           state.selectedTileId = i;
-  #|           state.selectedToken = i;
-  #|           renderBrushSelect();
-  #|           brushSelect.value = String(i);
   #|           refreshSolidUi();
   #|           renderTileThumbnails();
+  #|           renderMapTileThumbnails();
+  #|           renderCanvas();
   #|         });
   #|         rowWrap.appendChild(cell);
   #|       }
@@ -2460,7 +2356,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     mapThumbGrid.innerHTML = "";
   #|     const ts = state.tiles;
   #|     if (!ts || ts.tile_count <= 0) return;
-  #|     const selectedId = Number.isInteger(state.selectedToken) && state.selectedToken >= 0 ? state.selectedToken : -1;
+  #|     const selectedId = activeTileId();
   #|
   #|     const cols = 10;
   #|     const thumbSize = 48;
@@ -2549,11 +2445,8 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|         cell.appendChild(preview);
   #|
   #|         cell.addEventListener("click", () => {
-  #|           state.selectedToken = i;
-  #|           state.brushMode = "tile";
+  #|           state.selectedTileId = i;
   #|           state.mapThumbTab = "tiles";
-  #|           renderBrushSelect();
-  #|           applyBrushModeUi();
   #|           applyMapAssetTabUi();
   #|           renderMapTileThumbnails();
   #|           renderCanvas();
@@ -2634,9 +2527,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|
   #|       rowBtn.addEventListener("click", () => {
   #|         state.selectedSpriteName = String(sp.name || "");
-  #|         state.brushMode = "sprite";
   #|         state.mapThumbTab = "sprites";
-  #|         applyBrushModeUi();
   #|         applyMapAssetTabUi();
   #|         renderMapSpriteThumbnails();
   #|         renderCanvas();
@@ -2654,7 +2545,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       info.textContent = "No tilemap found in DSL.";
   #|       return;
   #|     }
-  #|     const modeLabel = state.brushMode === "sprite" ? "sprite brush" : "tile brush";
+  #|     const modeLabel = state.mapThumbTab === "sprites" ? "sprite brush" : "tile brush";
   #|     info.textContent = `Editing tilemap ${map.name} (${map.width}x${map.height}) [${modeLabel}]`;
   #|     mapWInput.value = String(map.width);
   #|     mapHInput.value = String(map.height);
@@ -2697,7 +2588,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|         const sh = Math.max(1, Number(sp.height || 8) * unit);
   #|         if (sx + sw < 0 || sy + sh < 0 || sx >= canvas.width || sy >= canvas.height) continue;
   #|         drawSpritePreviewInMap(ctx, sp, sx, sy, unit);
-  #|         if (state.brushMode === "sprite" && String(p.sprite) === String(activeSpriteBrushName())) {
+  #|         if (state.mapThumbTab === "sprites" && String(p.sprite) === String(activeSpriteBrushName())) {
   #|           ctx.strokeStyle = "#4aa96c";
   #|           ctx.lineWidth = 2;
   #|           ctx.strokeRect(
@@ -2930,12 +2821,8 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     state.placementRange = parsed.placementRange || null;
   #|     state.errors = parsed.errors || [];
   #|     if (state.selectedMap >= state.tilemaps.length) state.selectedMap = 0;
-  #|     if (state.brushMode !== "tile" && state.brushMode !== "sprite") state.brushMode = "tile";
-  #|     if (brushModeSelect.value === "sprite" || brushModeSelect.value === "tile") {
-  #|       state.brushMode = brushModeSelect.value;
-  #|     }
   #|     if (state.mapThumbTab !== "tiles" && state.mapThumbTab !== "sprites") {
-  #|       state.mapThumbTab = state.brushMode === "sprite" ? "sprites" : "tiles";
+  #|       state.mapThumbTab = "tiles";
   #|     }
   #|     const tileCount = parsed.tiles && Number.isInteger(parsed.tiles.tile_count) ? parsed.tiles.tile_count : 0;
   #|     if (tileCount <= 0) {
@@ -2947,9 +2834,6 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     renderMapSelect(true);
   #|
   #|     renderTilePalette();
-  #|     renderBrushSelect();
-  #|     renderSpriteBrushSelect();
-  #|     applyBrushModeUi();
   #|     applyMapAssetTabUi();
   #|     refreshSolidUi();
   #|     renderTileThumbnails();
@@ -2999,11 +2883,13 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     const y = Math.floor((evt.clientY - rect.top) / state.cell);
   #|     if (x < 0 || y < 0 || x >= map.width || y >= map.height) return;
   #|     const erase = ((evt.buttons & 2) !== 0) || !!evt.shiftKey;
-  #|     if (state.brushMode === "sprite") {
+  #|     if (state.mapThumbTab === "sprites") {
   #|       paintPlacementAt(map, x, y, erase);
   #|       return;
   #|     }
-  #|     map.tiles[y * map.width + x] = erase ? -1 : state.selectedToken;
+  #|     const tileId = activeTileId();
+  #|     if (tileId < 0) return;
+  #|     map.tiles[y * map.width + x] = erase ? -1 : tileId;
   #|     setDirty(true);
   #|     renderCanvas();
   #|   };
@@ -3061,7 +2947,6 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     setDirty(true);
   #|     setFeedback(`Added tilemap ${name}.`);
   #|     renderMapSelect(true);
-  #|     renderBrushSelect();
   #|     refreshSolidUi();
   #|     renderCanvas();
   #|   };
@@ -3075,7 +2960,6 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     setDirty(true);
   #|     setFeedback(`Deleted tilemap ${removed}.`);
   #|     renderMapSelect();
-  #|     renderBrushSelect();
   #|     refreshSolidUi();
   #|     renderCanvas();
   #|   };
@@ -3112,7 +2996,6 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     setDirty(true);
   #|     setFeedback(`Cleared tile ${id}.`);
   #|     renderTilePalette();
-  #|     renderBrushSelect();
   #|     refreshSolidUi();
   #|     renderTileThumbnails();
   #|     renderMapTileThumbnails();
@@ -3170,34 +3053,13 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       state.selectedMap = Number(mapSelect.value) || 0;
   #|       renderCanvas();
   #|     });
-  #|     brushSelect.addEventListener("change", () => {
-  #|       state.selectedToken = Number(brushSelect.value);
-  #|       renderMapTileThumbnails();
-  #|     });
-  #|     brushModeSelect.addEventListener("change", () => {
-  #|       state.brushMode = brushModeSelect.value === "sprite" ? "sprite" : "tile";
-  #|       state.mapThumbTab = state.brushMode === "sprite" ? "sprites" : "tiles";
-  #|       applyBrushModeUi();
-  #|       applyMapAssetTabUi();
-  #|       renderMapSpriteThumbnails();
-  #|       renderCanvas();
-  #|     });
-  #|     spriteBrushSelect.addEventListener("change", () => {
-  #|       state.selectedSpriteName = String(spriteBrushSelect.value || "");
-  #|       renderMapSpriteThumbnails();
-  #|       renderCanvas();
-  #|     });
   #|     mapTilesTabBtn.addEventListener("click", () => {
   #|       state.mapThumbTab = "tiles";
-  #|       state.brushMode = "tile";
-  #|       applyBrushModeUi();
   #|       applyMapAssetTabUi();
   #|       renderCanvas();
   #|     });
   #|     mapSpritesTabBtn.addEventListener("click", () => {
   #|       state.mapThumbTab = "sprites";
-  #|       state.brushMode = "sprite";
-  #|       applyBrushModeUi();
   #|       applyMapAssetTabUi();
   #|       renderMapSpriteThumbnails();
   #|       renderCanvas();
@@ -3211,9 +3073,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       ts.tile_defined[id] = true;
   #|       setDirty(true);
   #|       setFeedback(`Tile ${id} name updated.`);
-  #|       renderBrushSelect();
-  #|       brushSelect.value = String(id);
-  #|       state.selectedToken = id;
+  #|       state.selectedTileId = id;
   #|       refreshSolidUi();
   #|       renderTileThumbnails();
   #|       renderMapTileThumbnails();
@@ -3227,9 +3087,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       ts.tile_defined[id] = true;
   #|       setDirty(true);
   #|       setFeedback(`Tile ${id} solid=${ts.tile_solid[id] ? "on" : "off"}.`);
-  #|       renderBrushSelect();
-  #|       brushSelect.value = String(id);
-  #|       state.selectedToken = id;
+  #|       state.selectedTileId = id;
   #|       refreshSolidUi();
   #|       renderTileThumbnails();
   #|       renderMapTileThumbnails();
