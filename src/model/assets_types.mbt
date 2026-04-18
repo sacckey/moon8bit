@@ -37,6 +37,14 @@ pub(all) struct Tilemap {
 } derive(Eq, Show)
 
 ///|
+pub(all) struct Placement {
+  name : String
+  sprite : String
+  x : Int
+  y : Int
+} derive(Eq, Show)
+
+///|
 pub(all) struct SoundDef {
   name : String
   wave : String
@@ -63,6 +71,7 @@ pub(all) struct AssetBundle {
   sprites : Array[Sprite]
   tiles : Tiles
   tilemaps : Array[Tilemap]
+  placements : Array[Placement]
   sounds : Array[SoundDef]
   bgms : Array[BgmDef]
 } derive(Eq, Show)
@@ -170,4 +179,18 @@ pub fn find_tilemap(bundle : AssetBundle, name : String) -> Tilemap? {
     }
   }
   None
+}
+
+///|
+pub fn find_placements_by_sprite(
+  bundle : AssetBundle,
+  sprite_name : String,
+) -> Array[Placement] {
+  let placements : Array[Placement] = []
+  for placement in bundle.placements {
+    if placement.sprite == sprite_name {
+      placements.push(placement)
+    }
+  }
+  placements
 }

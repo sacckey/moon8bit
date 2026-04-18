@@ -144,6 +144,7 @@ pub fn[G] run_web_game(
 
   let on_import = fn(dsl_text : String) -> Unit {
     web_set_editor_text(dsl_text)
+    web_palette_editor_refresh()
     web_sprite_editor_refresh()
     web_tile_editor_refresh()
     web_tilemap_editor_refresh()
@@ -157,6 +158,7 @@ pub fn[G] run_web_game(
   web_bind_apply(on_apply)
   web_bind_export(on_export)
   web_bind_import(on_import)
+  web_init_palette_editor()
   web_init_sprite_editor()
   web_init_tile_editor()
   web_init_tilemap_editor()
@@ -167,6 +169,7 @@ pub fn[G] run_web_game(
       export_filename_ref.val = export_filename
       refresh_status(true)
       web_set_editor_text(dsl_text)
+      web_palette_editor_refresh()
       web_sprite_editor_refresh()
       web_tile_editor_refresh()
       web_tilemap_editor_refresh()

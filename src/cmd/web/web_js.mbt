@@ -58,6 +58,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   const tabs = [
   #|     { key: "game", label: "Game" },
   #|     { key: "dsl", label: "DSL" },
+  #|     { key: "palette", label: "Palette" },
   #|     { key: "sprite", label: "Sprite" },
   #|     { key: "tile", label: "Tile" },
   #|     { key: "tilemap", label: "Tilemap" },

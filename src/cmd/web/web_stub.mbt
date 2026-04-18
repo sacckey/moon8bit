@@ -87,6 +87,16 @@ fn web_bind_import(cb : (String) -> Unit) -> Unit {
 }
 
 ///|
+fn web_init_palette_editor() -> Unit {
+
+}
+
+///|
+fn web_palette_editor_refresh() -> Unit {
+
+}
+
+///|
 fn web_download_text(filename : String, text : String) -> Unit {
   ignore(filename)
   ignore(text)

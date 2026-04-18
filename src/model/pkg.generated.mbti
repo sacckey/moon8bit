@@ -16,6 +16,8 @@ pub fn default_engine_config() -> EngineConfig
 
 pub fn find_bgm(AssetBundle, String) -> BgmDef?
 
+pub fn find_placements_by_sprite(AssetBundle, String) -> Array[Placement]
+
 pub fn find_sound(AssetBundle, String) -> SoundDef?
 
 pub fn find_sprite(AssetBundle, String) -> Sprite?
@@ -58,6 +60,7 @@ pub(all) struct AssetBundle {
   sprites : Array[Sprite]
   tiles : Tiles
   tilemaps : Array[Tilemap]
+  placements : Array[Placement]
   sounds : Array[SoundDef]
   bgms : Array[BgmDef]
 } derive(Eq, Show)
@@ -69,6 +72,11 @@ pub(all) struct BgmDef {
   step_sec : Double
   loop_ : Bool
   notes : Array[Int]
+} derive(Eq, Show)
+
+pub(all) struct Camera {
+  x : Int
+  y : Int
 } derive(Eq, Show)
 
 pub(all) struct Collider {
@@ -116,6 +124,13 @@ pub(all) struct InputState {
 pub(all) struct Palette {
   name : String
   colors : Array[String]
+} derive(Eq, Show)
+
+pub(all) struct Placement {
+  name : String
+  sprite : String
+  x : Int
+  y : Int
 } derive(Eq, Show)
 
 pub(all) struct Rect {

@@ -16,6 +16,8 @@ pub fn parse_assets_dsl(String) -> Result[@model.AssetBundle, @model.DslError]
 
 pub fn parse_assets_dsl_to_json_string(String) -> Result[String, @model.DslError]
 
+pub fn placement_to_json(@model.Placement) -> Json
+
 pub fn sprite_to_json(@model.Sprite) -> Json
 
 pub fn tilemap_to_json(@model.Tilemap) -> Json

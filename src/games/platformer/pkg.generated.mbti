@@ -1,0 +1,41 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "sacckey/moon8bit/games/platformer"
+
+import {
+  "sacckey/moon8bit/engine",
+  "sacckey/moon8bit/model",
+}
+
+// Values
+pub fn init_game(@model.AssetBundle, @model.EngineConfig) -> @engine.EngineInstance[PlatformerGame]
+
+pub fn new_platformer_game(@model.AssetBundle) -> PlatformerGame
+
+pub fn step_game(@engine.EngineInstance[PlatformerGame], @model.InputState) -> (@engine.EngineInstance[PlatformerGame], @model.Frame)
+
+// Errors
+
+// Types and methods
+type EnemyActor derive(Eq, Show)
+
+pub struct PlatformerGame {
+  bundle : @model.AssetBundle
+  mut player_x : Int
+  mut player_y : Int
+  mut vel_x : Int
+  mut vel_y : Int
+  mut on_ground : Bool
+  mut enemies : Array[EnemyActor]
+  mut coins : Array[@model.Placement]
+  mut coins_collected : Int
+  mut camera : @model.Camera
+  mut is_over : Bool
+  mut is_clear : Bool
+} derive(Eq, Show)
+pub impl @engine.Game for PlatformerGame
+
+// Type aliases
+pub type PlatformerRuntime = @engine.EngineInstance[PlatformerGame]
+
+// Traits
+

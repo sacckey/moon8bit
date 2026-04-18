@@ -28,6 +28,7 @@ fn test_bundle() -> @model.AssetBundle {
       pixels: tile_pixels,
     },
     tilemaps: [],
+    placements: [],
     sounds: [],
     bgms: [],
   }

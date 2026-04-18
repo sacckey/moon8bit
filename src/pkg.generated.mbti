@@ -25,6 +25,12 @@ pub fn btn(Array[String], keys_pressed? : Array[String], keys_released? : Array[
 
 pub fn btnp(Bool, Bool) -> Bool
 
+pub fn camera(Int, Int) -> @model.Camera
+
+pub fn camera_clamp(@model.Camera, Int, Int, Int, Int) -> @model.Camera
+
+pub fn camera_follow(Int, Int, Int, Int, Int, Int) -> @model.Camera
+
 pub fn clear_timers_cmd() -> @engine.EngineCommand
 
 pub fn cls(@model.Frame, Int) -> Unit
@@ -45,6 +51,8 @@ pub fn default_engine_config() -> @model.EngineConfig
 
 pub fn draw_tilemap(@model.Frame, @model.Tilemap, @model.Tiles, Int, Int, Int, Int, Int, Int) -> Unit
 
+pub fn draw_tilemap_world(@model.Frame, @model.Tilemap, @model.Tiles, Int, Int, Int, Int, @model.Camera) -> Unit
+
 pub fn emit(@engine.EngineEvent) -> @engine.EngineCommand
 
 pub fn[T] engine_events(@engine.EngineInstance[T]) -> Array[@engine.EngineEvent]
@@ -62,6 +70,8 @@ pub fn[T] engine_with_game(@engine.EngineInstance[T], T) -> @engine.EngineInstan
 pub fn[T] events(@engine.EngineInstance[T]) -> Array[@engine.EngineEvent]
 
 pub fn every(Int, Int) -> Bool
+
+pub fn find_placements_by_sprite(@model.AssetBundle, String) -> Array[@model.Placement]
 
 pub fn find_sprite(@model.AssetBundle, String) -> @model.Sprite?
 
@@ -99,9 +109,15 @@ pub fn rect(@model.Frame, Int, Int, Int, Int, Int) -> Unit
 
 pub fn rect_intersects(@model.Rect, @model.Rect) -> Bool
 
+pub fn rect_world(@model.Frame, Int, Int, Int, Int, Int, @model.Camera) -> Unit
+
 pub fn[T : @engine.Game] run(T, @model.EngineConfig, Array[@model.InputState]) -> (@engine.EngineInstance[T], Array[@model.Frame])
 
 pub fn[T : @engine.Game] run_fixed_frames(T, @model.EngineConfig, Array[@model.InputState]) -> (@engine.EngineInstance[T], Array[@model.Frame])
+
+pub fn screen_to_world_x(Int, @model.Camera) -> Int
+
+pub fn screen_to_world_y(Int, @model.Camera) -> Int
 
 pub fn set_interval_cmd(Int, @engine.EngineEvent) -> @engine.EngineCommand
 
@@ -111,15 +127,23 @@ pub fn sfx(String) -> @engine.EngineCommand
 
 pub fn spr(@model.Frame, @model.Sprite, Int, Int) -> Unit
 
+pub fn spr_world(@model.Frame, @model.Sprite, Int, Int, @model.Camera) -> Unit
+
 pub fn sprite_pixel(@model.Sprite, Int, Int) -> Int?
 
 pub fn sprite_to_json(@model.Sprite) -> Json
 
 pub fn[T : @engine.Game] step(@engine.EngineInstance[T], @model.InputState) -> (@engine.EngineInstance[T], @model.Frame)
 
+pub fn swept_move_x(@model.Tilemap, @model.Tiles, Int, Int, Int, Int, Int) -> (Int, Bool)
+
+pub fn swept_move_y(@model.Tilemap, @model.Tiles, Int, Int, Int, Int, Int) -> (Int, Bool)
+
 pub fn[T] take_events(@engine.EngineInstance[T]) -> (@engine.EngineInstance[T], Array[@engine.EngineEvent])
 
 pub fn tile_at(@model.Tilemap, Int, Int) -> Int?
+
+pub fn tile_id_any_in_rect(@model.Tilemap, Int, Int, Int, Int, Int) -> Bool
 
 pub fn tile_id_at_px(@model.Tilemap, Int, Int) -> Int?
 
@@ -147,6 +171,10 @@ pub fn version_tag() -> String
 
 pub fn[T] with_game(@engine.EngineInstance[T], T) -> @engine.EngineInstance[T]
 
+pub fn world_to_screen_x(Int, @model.Camera) -> Int
+
+pub fn world_to_screen_y(Int, @model.Camera) -> Int
+
 // Errors
 
 // Types and methods
@@ -155,6 +183,8 @@ pub fn[T] with_game(@engine.EngineInstance[T], T) -> @engine.EngineInstance[T]
 pub using @model {type AssetBundle}
 
 pub using @model {type BgmDef}
+
+pub using @model {type Camera}
 
 pub using @model {type Collider}
 
@@ -175,6 +205,8 @@ pub using @model {type Frame}
 pub using @model {type InputState}
 
 pub using @model {type Palette}
+
+pub using @model {type Placement}
 
 pub using @model {type Rect}
 

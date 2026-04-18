@@ -1,4 +1,354 @@
 ///|
+extern "js" fn web_init_palette_editor() -> Unit =
+  #| () => {
+  #|   const editor = document.getElementById("moon8bit-tab-panel-palette") || document.getElementById("moon8bit-editor");
+  #|   const textarea = document.getElementById("moon8bit-dsl-input");
+  #|   if (!editor || !textarea) return;
+  #|
+  #|   const fallbackPalette = [
+  #|     "#101820", "#1f4068", "#2e8b57", "#f2aa4c",
+  #|     "#e94f37", "#8f6f4f", "#f6f7eb", "#7f5af0",
+  #|     "#264653", "#2a9d8f", "#e9c46a", "#f4a261",
+  #|     "#e76f51", "#577590", "#90be6d", "#ffffff",
+  #|   ];
+  #|
+  #|   const normalizeHex = (raw, fallback) => {
+  #|     const v = String(raw || "").trim();
+  #|     if (v === "") return fallback;
+  #|     const s = v.startsWith("#") ? v.slice(1) : v;
+  #|     if (/^[0-9a-fA-F]{6}$/.test(s)) return `#${s.toLowerCase()}`;
+  #|     if (/^[0-9a-fA-F]{3}$/.test(s)) {
+  #|       const [r, g, b] = s.toLowerCase().split("");
+  #|       return `#${r}${r}${g}${g}${b}${b}`;
+  #|     }
+  #|     return fallback;
+  #|   };
+  #|
+  #|   let panel = document.getElementById("moon8bit-palette-panel");
+  #|   if (!panel) {
+  #|     panel = document.createElement("div");
+  #|     panel.id = "moon8bit-palette-panel";
+  #|     panel.style.display = "grid";
+  #|     panel.style.gap = "10px";
+  #|     panel.style.padding = "8px";
+  #|     panel.style.border = "1px solid #334e68";
+  #|     panel.style.background = "#111827";
+  #|     editor.appendChild(panel);
+  #|   }
+  #|   if (panel.parentElement !== editor) editor.appendChild(panel);
+  #|
+  #|   let title = document.getElementById("moon8bit-palette-title");
+  #|   if (!title) {
+  #|     title = document.createElement("div");
+  #|     title.id = "moon8bit-palette-title";
+  #|     title.textContent = "Palette Editor (0-15)";
+  #|     title.style.fontWeight = "600";
+  #|     title.style.fontFamily = "monospace";
+  #|     title.style.fontSize = "18px";
+  #|     panel.appendChild(title);
+  #|   }
+  #|
+  #|   let hint = document.getElementById("moon8bit-palette-hint");
+  #|   if (!hint) {
+  #|     hint = document.createElement("div");
+  #|     hint.id = "moon8bit-palette-hint";
+  #|     hint.textContent = "Click a swatch, then use color picker or HEX.";
+  #|     hint.style.fontFamily = "monospace";
+  #|     hint.style.fontSize = "13px";
+  #|     hint.style.color = "#9fb3c8";
+  #|     panel.appendChild(hint);
+  #|   }
+  #|
+  #|   let layout = document.getElementById("moon8bit-palette-layout");
+  #|   if (!layout) {
+  #|     layout = document.createElement("div");
+  #|     layout.id = "moon8bit-palette-layout";
+  #|     layout.style.display = "flex";
+  #|     layout.style.gap = "16px";
+  #|     layout.style.alignItems = "flex-start";
+  #|     layout.style.flexWrap = "nowrap";
+  #|     panel.appendChild(layout);
+  #|   }
+  #|
+  #|   let swatchPane = document.getElementById("moon8bit-palette-swatch-pane");
+  #|   if (!swatchPane) {
+  #|     swatchPane = document.createElement("div");
+  #|     swatchPane.id = "moon8bit-palette-swatch-pane";
+  #|     swatchPane.style.display = "grid";
+  #|     swatchPane.style.gridTemplateColumns = "repeat(4, 72px)";
+  #|     swatchPane.style.gap = "8px";
+  #|     swatchPane.style.alignContent = "start";
+  #|     layout.appendChild(swatchPane);
+  #|   }
+  #|
+  #|   let rightPane = document.getElementById("moon8bit-palette-right-pane");
+  #|   if (!rightPane) {
+  #|     rightPane = document.createElement("div");
+  #|     rightPane.id = "moon8bit-palette-right-pane";
+  #|     rightPane.style.display = "grid";
+  #|     rightPane.style.gap = "10px";
+  #|     rightPane.style.minWidth = "280px";
+  #|     rightPane.style.alignContent = "start";
+  #|     layout.appendChild(rightPane);
+  #|   }
+  #|
+  #|   let indexLabel = document.getElementById("moon8bit-palette-index");
+  #|   if (!indexLabel) {
+  #|     indexLabel = document.createElement("div");
+  #|     indexLabel.id = "moon8bit-palette-index";
+  #|     indexLabel.style.fontFamily = "monospace";
+  #|     indexLabel.style.fontSize = "14px";
+  #|     indexLabel.style.fontWeight = "600";
+  #|     rightPane.appendChild(indexLabel);
+  #|   }
+  #|
+  #|   let preview = document.getElementById("moon8bit-palette-preview");
+  #|   if (!preview) {
+  #|     preview = document.createElement("div");
+  #|     preview.id = "moon8bit-palette-preview";
+  #|     preview.style.width = "140px";
+  #|     preview.style.height = "96px";
+  #|     preview.style.border = "1px solid #486581";
+  #|     preview.style.boxShadow = "inset 0 0 0 1px rgba(255,255,255,0.08)";
+  #|     preview.style.cursor = "pointer";
+  #|     preview.title = "Click to open color picker";
+  #|     rightPane.appendChild(preview);
+  #|   }
+  #|
+  #|   let picker = document.getElementById("moon8bit-palette-hidden-picker");
+  #|   if (!picker) {
+  #|     picker = document.createElement("input");
+  #|     picker.id = "moon8bit-palette-hidden-picker";
+  #|     picker.type = "color";
+  #|     picker.style.position = "absolute";
+  #|     picker.style.opacity = "0";
+  #|     picker.style.pointerEvents = "none";
+  #|     picker.style.width = "1px";
+  #|     picker.style.height = "1px";
+  #|     panel.appendChild(picker);
+  #|   }
+  #|
+  #|   let hexLabel = document.getElementById("moon8bit-palette-hex-label");
+  #|   if (!hexLabel) {
+  #|     hexLabel = document.createElement("label");
+  #|     hexLabel.id = "moon8bit-palette-hex-label";
+  #|     hexLabel.textContent = "HEX (#RRGGBB)";
+  #|     hexLabel.style.fontFamily = "monospace";
+  #|     hexLabel.style.fontSize = "12px";
+  #|     hexLabel.style.opacity = "0.9";
+  #|     rightPane.appendChild(hexLabel);
+  #|   }
+  #|
+  #|   let hexInput = document.getElementById("moon8bit-palette-hex");
+  #|   if (!hexInput) {
+  #|     hexInput = document.createElement("input");
+  #|     hexInput.id = "moon8bit-palette-hex";
+  #|     hexInput.type = "text";
+  #|     hexInput.placeholder = "#2f2a3a";
+  #|     hexInput.style.width = "200px";
+  #|     hexInput.style.background = "#0f1720";
+  #|     hexInput.style.color = "#d9e2ec";
+  #|     hexInput.style.border = "1px solid #486581";
+  #|     hexInput.style.padding = "6px 8px";
+  #|     hexInput.style.fontFamily = "ui-monospace, SFMono-Regular, Menlo, monospace";
+  #|     rightPane.appendChild(hexInput);
+  #|   }
+  #|
+  #|   if (!globalThis.__moon8bit_palette_state) {
+  #|     globalThis.__moon8bit_palette_state = {
+  #|       lines: [],
+  #|       colors: fallbackPalette.slice(0, 16),
+  #|       selected: 0,
+  #|       paletteHeader: "palette default",
+  #|       paletteRange: null,
+  #|     };
+  #|   }
+  #|   const state = globalThis.__moon8bit_palette_state;
+  #|   let writeTimer = null;
+  #|
+  #|   const setFeedback = (text, isError = false) => {
+  #|     const fb = document.getElementById("moon8bit-editor-feedback");
+  #|     if (!fb) return;
+  #|     fb.textContent = text;
+  #|     fb.style.color = isError ? "#ef6f6c" : "#7bd389";
+  #|   };
+  #|
+  #|   const parsePaletteFromText = () => {
+  #|     const lines = textarea.value.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+  #|     const colors = fallbackPalette.slice(0, 16);
+  #|     let header = "palette default";
+  #|     let start = -1;
+  #|     let end = -1;
+  #|
+  #|     for (let i = 0; i < lines.length; i += 1) {
+  #|       const trimmed = lines[i].trim();
+  #|       if (start < 0 && /^palette\s+\S+$/i.test(trimmed)) {
+  #|         start = i;
+  #|         header = trimmed;
+  #|         continue;
+  #|       }
+  #|       if (start >= 0) {
+  #|         if (trimmed === "end") {
+  #|           end = i;
+  #|           break;
+  #|         }
+  #|         const m = trimmed.match(/^color\s+(\d+)\s+(\S+)$/i);
+  #|         if (m) {
+  #|           const idx = Number(m[1]);
+  #|           if (Number.isFinite(idx) && idx >= 0 && idx < 16) {
+  #|             colors[idx] = normalizeHex(m[2], colors[idx]);
+  #|           }
+  #|         }
+  #|       }
+  #|     }
+  #|
+  #|     state.lines = lines;
+  #|     state.colors = colors;
+  #|     state.paletteHeader = header;
+  #|     state.paletteRange = start >= 0 && end >= start ? { start, end } : null;
+  #|     state.selected = Math.max(0, Math.min(15, Number(state.selected) || 0));
+  #|   };
+  #|
+  #|   const renderControls = () => {
+  #|     const idx = state.selected;
+  #|     const color = normalizeHex(state.colors[idx], fallbackPalette[idx]);
+  #|     state.colors[idx] = color;
+  #|     indexLabel.textContent = `Selected color ${idx}`;
+  #|     preview.style.background = color;
+  #|     picker.value = color;
+  #|     hexInput.value = color;
+  #|   };
+  #|
+  #|   const renderSwatches = () => {
+  #|     swatchPane.innerHTML = "";
+  #|     for (let i = 0; i < 16; i += 1) {
+  #|       const cell = document.createElement("div");
+  #|       cell.style.display = "grid";
+  #|       cell.style.gap = "4px";
+  #|       cell.style.justifyItems = "center";
+  #|
+  #|       const label = document.createElement("div");
+  #|       label.textContent = String(i);
+  #|       label.style.fontFamily = "monospace";
+  #|       label.style.fontSize = "12px";
+  #|       label.style.color = "#e5e7eb";
+  #|       label.style.lineHeight = "1";
+  #|       cell.appendChild(label);
+  #|
+  #|       const btn = document.createElement("button");
+  #|       btn.type = "button";
+  #|       btn.style.width = "72px";
+  #|       btn.style.height = "72px";
+  #|       btn.style.padding = "0";
+  #|       btn.style.cursor = "pointer";
+  #|       btn.style.border = i === state.selected ? "3px solid #4aa96c" : "1px solid #486581";
+  #|       btn.style.background = normalizeHex(state.colors[i], fallbackPalette[i]);
+  #|       btn.title = `color ${i}`;
+  #|       btn.addEventListener("click", () => {
+  #|         state.selected = i;
+  #|         renderSwatches();
+  #|         renderControls();
+  #|       });
+  #|       cell.appendChild(btn);
+  #|       swatchPane.appendChild(cell);
+  #|     }
+  #|   };
+  #|
+  #|   const writePaletteToDsl = () => {
+  #|     const block = [state.paletteHeader];
+  #|     for (let i = 0; i < 16; i += 1) {
+  #|       block.push(`color ${i} ${normalizeHex(state.colors[i], fallbackPalette[i])}`);
+  #|     }
+  #|     block.push("end");
+  #|
+  #|     const lines = state.lines.slice();
+  #|     if (state.paletteRange && Number.isInteger(state.paletteRange.start) && Number.isInteger(state.paletteRange.end)) {
+  #|       const count = state.paletteRange.end - state.paletteRange.start + 1;
+  #|       lines.splice(state.paletteRange.start, count, ...block);
+  #|       state.paletteRange = {
+  #|         start: state.paletteRange.start,
+  #|         end: state.paletteRange.start + block.length - 1,
+  #|       };
+  #|     } else {
+  #|       const prefix = block.concat([""]);
+  #|       lines.splice(0, 0, ...prefix);
+  #|       state.paletteRange = { start: 0, end: block.length - 1 };
+  #|     }
+  #|
+  #|     textarea.value = lines.join("\n");
+  #|     state.lines = lines;
+  #|     if (globalThis.__moon8bit_sprite_refresh) globalThis.__moon8bit_sprite_refresh();
+  #|     if (globalThis.__moon8bit_tilemap_refresh) globalThis.__moon8bit_tilemap_refresh();
+  #|     setFeedback("Palette updated in DSL.");
+  #|   };
+  #|
+  #|   const scheduleWrite = () => {
+  #|     if (writeTimer !== null) clearTimeout(writeTimer);
+  #|     writeTimer = setTimeout(() => {
+  #|       writeTimer = null;
+  #|       writePaletteToDsl();
+  #|     }, 60);
+  #|   };
+  #|
+  #|   const refreshFromText = () => {
+  #|     parsePaletteFromText();
+  #|     renderSwatches();
+  #|     renderControls();
+  #|   };
+  #|
+  #|   if (!globalThis.__moon8bit_palette_bound) {
+  #|     preview.addEventListener("click", () => {
+  #|       try {
+  #|         if (typeof picker.showPicker === "function") {
+  #|           picker.showPicker();
+  #|         } else {
+  #|           picker.click();
+  #|         }
+  #|       } catch (_) {
+  #|         picker.click();
+  #|       }
+  #|     });
+  #|     picker.addEventListener("input", () => {
+  #|       const idx = state.selected;
+  #|       state.colors[idx] = normalizeHex(picker.value, state.colors[idx] || fallbackPalette[idx]);
+  #|       renderSwatches();
+  #|       renderControls();
+  #|       scheduleWrite();
+  #|     });
+  #|     hexInput.addEventListener("input", () => {
+  #|       const raw = String(hexInput.value || "").trim();
+  #|       if (!/^#?[0-9a-fA-F]{3}$/.test(raw) && !/^#?[0-9a-fA-F]{6}$/.test(raw)) return;
+  #|       const idx = state.selected;
+  #|       state.colors[idx] = normalizeHex(raw, state.colors[idx] || fallbackPalette[idx]);
+  #|       renderSwatches();
+  #|       renderControls();
+  #|       scheduleWrite();
+  #|     });
+  #|     hexInput.addEventListener("change", () => {
+  #|       const idx = state.selected;
+  #|       const normalized = normalizeHex(hexInput.value, state.colors[idx] || fallbackPalette[idx]);
+  #|       state.colors[idx] = normalized;
+  #|       renderSwatches();
+  #|       renderControls();
+  #|       scheduleWrite();
+  #|     });
+  #|     textarea.addEventListener("input", refreshFromText);
+  #|     globalThis.__moon8bit_palette_bound = true;
+  #|   }
+  #|
+  #|   globalThis.__moon8bit_palette_refresh = refreshFromText;
+  #|   refreshFromText();
+  #| }
+
+///|
+extern "js" fn web_palette_editor_refresh() -> Unit =
+  #| () => {
+  #|   if (globalThis.__moon8bit_palette_refresh) {
+  #|     globalThis.__moon8bit_palette_refresh();
+  #|   }
+  #| }
+
+///|
 extern "js" fn web_init_sprite_editor() -> Unit =
   #| () => {
   #|   const editor = document.getElementById("moon8bit-tab-panel-sprite") || document.getElementById("moon8bit-editor");
@@ -859,7 +1209,11 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     mapMainPane.style.minWidth = "0";
   #|     mapMainPane.style.padding = "10px";
   #|     mapMainPane.style.background = "#0f1720";
+  #|     mapMainPane.style.maxHeight = "70vh";
+  #|     mapMainPane.style.overflow = "auto";
   #|   }
+  #|   mapMainPane.style.maxHeight = "70vh";
+  #|   mapMainPane.style.overflow = "auto";
   #|   if (mapMainPane.parentElement !== mapLayout) {
   #|     mapLayout.appendChild(mapMainPane);
   #|   }
@@ -903,18 +1257,6 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     row.appendChild(mapSelect);
   #|   }
   #|
-  #|   let brushSelect = document.getElementById("moon8bit-tilemap-brush");
-  #|   if (!brushSelect) {
-  #|     brushSelect = document.createElement("select");
-  #|     brushSelect.id = "moon8bit-tilemap-brush";
-  #|     brushSelect.style.background = "#0f1720";
-  #|     brushSelect.style.color = "#d9e2ec";
-  #|     brushSelect.style.border = "1px solid #486581";
-  #|   }
-  #|   if (brushSelect.parentElement !== row) {
-  #|     row.appendChild(brushSelect);
-  #|   }
-  #|
   #|   let mapWInput = document.getElementById("moon8bit-tilemap-width");
   #|   if (!mapWInput) {
   #|     mapWInput = document.createElement("input");
@@ -948,6 +1290,31 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   }
   #|   if (mapHInput.parentElement !== row) {
   #|     row.appendChild(mapHInput);
+  #|   }
+  #|
+  #|   let viewportWrap = document.getElementById("moon8bit-tilemap-viewport-wrap");
+  #|   if (!viewportWrap) {
+  #|     viewportWrap = document.createElement("label");
+  #|     viewportWrap.id = "moon8bit-tilemap-viewport-wrap";
+  #|     viewportWrap.style.display = "inline-flex";
+  #|     viewportWrap.style.alignItems = "center";
+  #|     viewportWrap.style.gap = "6px";
+  #|     viewportWrap.style.fontFamily = "monospace";
+  #|     viewportWrap.style.fontSize = "13px";
+  #|     viewportWrap.style.color = "#d9e2ec";
+  #|   }
+  #|   if (viewportWrap.parentElement !== row) {
+  #|     row.appendChild(viewportWrap);
+  #|   }
+  #|   let viewportInput = document.getElementById("moon8bit-tilemap-viewport");
+  #|   if (!viewportInput) {
+  #|     viewportInput = document.createElement("input");
+  #|     viewportInput.id = "moon8bit-tilemap-viewport";
+  #|     viewportInput.type = "checkbox";
+  #|     viewportWrap.appendChild(viewportInput);
+  #|     const viewportText = document.createElement("span");
+  #|     viewportText.textContent = "Viewport Grid";
+  #|     viewportWrap.appendChild(viewportText);
   #|   }
   #|
   #|   const ensureBtn = (id, label, bg, border) => {
@@ -991,7 +1358,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   if (!mapThumbTitle) {
   #|     mapThumbTitle = document.createElement("div");
   #|     mapThumbTitle.id = "moon8bit-tilemap-thumb-title";
-  #|     mapThumbTitle.textContent = "All Tiles";
+  #|     mapThumbTitle.textContent = "Brush Assets";
   #|     mapThumbTitle.style.fontWeight = "600";
   #|     mapThumbTitle.style.fontFamily = "monospace";
   #|   }
@@ -999,6 +1366,38 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   if (mapThumbTitle.parentElement !== mapThumbPane) {
   #|     mapThumbPane.appendChild(mapThumbTitle);
   #|   }
+  #|
+  #|   let mapThumbTabRow = document.getElementById("moon8bit-tilemap-thumb-tab-row");
+  #|   if (!mapThumbTabRow) {
+  #|     mapThumbTabRow = document.createElement("div");
+  #|     mapThumbTabRow.id = "moon8bit-tilemap-thumb-tab-row";
+  #|     mapThumbTabRow.style.display = "flex";
+  #|     mapThumbTabRow.style.gap = "8px";
+  #|     mapThumbTabRow.style.alignItems = "center";
+  #|   }
+  #|   if (mapThumbTabRow.parentElement !== mapThumbPane) {
+  #|     mapThumbPane.appendChild(mapThumbTabRow);
+  #|   }
+  #|
+  #|   const ensureMapAssetTabBtn = (id, label) => {
+  #|     let btn = document.getElementById(id);
+  #|     if (!btn) {
+  #|       btn = document.createElement("button");
+  #|       btn.id = id;
+  #|       btn.type = "button";
+  #|       btn.textContent = label;
+  #|       btn.style.padding = "6px 10px";
+  #|       btn.style.cursor = "pointer";
+  #|       btn.style.fontFamily = "monospace";
+  #|       btn.style.fontSize = "13px";
+  #|     }
+  #|     if (btn.parentElement !== mapThumbTabRow) {
+  #|       mapThumbTabRow.appendChild(btn);
+  #|     }
+  #|     return btn;
+  #|   };
+  #|   const mapTilesTabBtn = ensureMapAssetTabBtn("moon8bit-tilemap-assets-tab-tiles", "Tiles");
+  #|   const mapSpritesTabBtn = ensureMapAssetTabBtn("moon8bit-tilemap-assets-tab-sprites", "Sprites");
   #|
   #|   let mapThumbGrid = document.getElementById("moon8bit-tilemap-thumb-grid");
   #|   if (!mapThumbGrid) {
@@ -1009,6 +1408,17 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   }
   #|   if (mapThumbGrid.parentElement !== mapThumbPane) {
   #|     mapThumbPane.appendChild(mapThumbGrid);
+  #|   }
+  #|
+  #|   let mapSpriteThumbGrid = document.getElementById("moon8bit-tilemap-sprite-thumb-grid");
+  #|   if (!mapSpriteThumbGrid) {
+  #|     mapSpriteThumbGrid = document.createElement("div");
+  #|     mapSpriteThumbGrid.id = "moon8bit-tilemap-sprite-thumb-grid";
+  #|     mapSpriteThumbGrid.style.display = "grid";
+  #|     mapSpriteThumbGrid.style.gap = "8px";
+  #|   }
+  #|   if (mapSpriteThumbGrid.parentElement !== mapThumbPane) {
+  #|     mapThumbPane.appendChild(mapSpriteThumbGrid);
   #|   }
   #|
   #|   let tilePanel = document.getElementById("moon8bit-tile-panel");
@@ -1298,11 +1708,16 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       tileRange: null,
   #|       tilemaps: [],
   #|       tilemapRange: null,
+  #|       sprites: [],
+  #|       placements: [],
+  #|       placementRange: null,
   #|       errors: [],
   #|       selectedMap: 0,
-  #|       selectedToken: -1,
+  #|       selectedSpriteName: "",
+  #|       mapThumbTab: "tiles",
   #|       selectedTileId: 0,
   #|       selectedTileColor: 0,
+  #|       showViewportGrid: true,
   #|       dirty: false,
   #|       cell: 16,
   #|       tileCell: 20,
@@ -1314,6 +1729,14 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   if (!("tileClipboard" in state)) {
   #|     state.tileClipboard = null;
   #|   }
+  #|   if (!Array.isArray(state.sprites)) state.sprites = [];
+  #|   if (!Array.isArray(state.placements)) state.placements = [];
+  #|   if (!state.placementRange || !Number.isInteger(state.placementRange.first) || !Number.isInteger(state.placementRange.last)) {
+  #|     state.placementRange = null;
+  #|   }
+  #|   if (typeof state.selectedSpriteName !== "string") state.selectedSpriteName = "";
+  #|   if (state.mapThumbTab !== "tiles" && state.mapThumbTab !== "sprites") state.mapThumbTab = "tiles";
+  #|   if (typeof state.showViewportGrid !== "boolean") state.showViewportGrid = true;
   #|
   #|   function scheduleTilemapAutoWrite() {
   #|     if (tilemapAutoWriteTimer !== null) {
@@ -1360,6 +1783,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   const parseDsl = (text) => {
   #|     const lines = String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
   #|     const palette = fallbackPalette.slice();
+  #|     const sprites = [];
   #|     const tiles = {
   #|       tile_count: 256,
   #|       tile_names: Array.from({ length: 256 }, (_, i) => `tile_${i}`),
@@ -1368,10 +1792,13 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       pixels: Array(256 * 64).fill(-1),
   #|     };
   #|     const tilemaps = [];
+  #|     const placements = [];
   #|     let tileFirstHeader = -1;
   #|     let tileLastEnd = -1;
   #|     let tilemapFirstHeader = -1;
   #|     let tilemapLastEnd = -1;
+  #|     let placementFirstLine = -1;
+  #|     let placementLastLine = -1;
   #|     const errors = [];
   #|     const pushErr = (line, message) => {
   #|       errors.push({ line, message });
@@ -1394,6 +1821,55 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|
   #|       if (/^tileset\s+/i.test(t)) {
   #|         pushErr(i + 1, "tileset directive was removed; use top-level `tile <id> ... end` blocks");
+  #|         continue;
+  #|       }
+  #|
+  #|       const sm = t.match(/^sprite\s+([^\s]+)\s+(\d+)\s+(\d+)$/i);
+  #|       if (sm) {
+  #|         const name = sm[1];
+  #|         const width = Math.max(1, parseIntStrict(sm[2]) | 0);
+  #|         const height = Math.max(1, parseIntStrict(sm[3]) | 0);
+  #|         const pixels = Array(width * height).fill(-1);
+  #|         let j = i + 1;
+  #|         let row = 0;
+  #|         let endLine = -1;
+  #|         while (j < lines.length) {
+  #|           const raw = lines[j].trim();
+  #|           if (isIgnorable(raw)) {
+  #|             j += 1;
+  #|             continue;
+  #|           }
+  #|           if (raw === "end") {
+  #|             endLine = j;
+  #|             break;
+  #|           }
+  #|           if (row >= height) {
+  #|             pushErr(j + 1, `sprite ${name} has too many rows`);
+  #|             j += 1;
+  #|             continue;
+  #|           }
+  #|           if (raw.length !== width) {
+  #|             pushErr(j + 1, `sprite row width mismatch: expected ${width}, got ${raw.length}`);
+  #|           }
+  #|           for (let x = 0; x < width; x += 1) {
+  #|             const ch = x < raw.length ? raw[x] : ".";
+  #|             if (!/[0-9a-fA-F.]/.test(ch)) {
+  #|               pushErr(j + 1, `unsupported sprite symbol: ${ch}`);
+  #|             }
+  #|             pixels[row * width + x] = decodeSym(ch);
+  #|           }
+  #|           row += 1;
+  #|           j += 1;
+  #|         }
+  #|         if (endLine < 0) {
+  #|           pushErr(i + 1, `sprite ${name} block is missing end`);
+  #|         } else {
+  #|           i = endLine;
+  #|         }
+  #|         if (row !== height) {
+  #|           pushErr((endLine >= 0 ? endLine + 1 : i + 1), `sprite ${name} expects ${height} rows, got ${row}`);
+  #|         }
+  #|         sprites.push({ name, width, height, pixels });
   #|         continue;
   #|       }
   #|
@@ -1537,6 +2013,22 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|         if (realEnd > tilemapLastEnd) tilemapLastEnd = realEnd;
   #|         continue;
   #|       }
+  #|
+  #|       const pm = t.match(/^place\s+([^\s]+)\s+([^\s]+)\s+(-?\d+)\s+(-?\d+)$/i);
+  #|       if (pm) {
+  #|         const name = pm[1];
+  #|         const sprite = pm[2];
+  #|         const x = parseIntStrict(pm[3]);
+  #|         const y = parseIntStrict(pm[4]);
+  #|         if (!Number.isFinite(x) || !Number.isFinite(y)) {
+  #|           pushErr(i + 1, "place directive x/y must be integers");
+  #|         } else {
+  #|           placements.push({ name, sprite, x: x | 0, y: y | 0, line: i });
+  #|           if (placementFirstLine < 0 || i < placementFirstLine) placementFirstLine = i;
+  #|           if (i > placementLastLine) placementLastLine = i;
+  #|         }
+  #|         continue;
+  #|       }
   #|     }
   #|
   #|     for (const tm of tilemaps) {
@@ -1549,6 +2041,11 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|         }
   #|       }
   #|     }
+  #|     for (const p of placements) {
+  #|       if (!sprites.some((s) => s.name === p.sprite)) {
+  #|         pushErr((Number.isInteger(p.line) ? p.line : 0) + 1, `placement '${p.name}' references unknown sprite: ${p.sprite}`);
+  #|       }
+  #|     }
   #|
   #|     const tileRange = (tileFirstHeader >= 0 && tileLastEnd >= tileFirstHeader)
   #|       ? { first: tileFirstHeader, last: tileLastEnd }
@@ -1556,7 +2053,10 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     const tilemapRange = (tilemapFirstHeader >= 0 && tilemapLastEnd >= tilemapFirstHeader)
   #|       ? { first: tilemapFirstHeader, last: tilemapLastEnd }
   #|       : null;
-  #|     return { lines, palette, tiles, tileRange, tilemaps, tilemapRange, errors };
+  #|     const placementRange = (placementFirstLine >= 0 && placementLastLine >= placementFirstLine)
+  #|       ? { first: placementFirstLine, last: placementLastLine }
+  #|       : null;
+  #|     return { lines, palette, sprites, tiles, tileRange, tilemaps, tilemapRange, placements, placementRange, errors };
   #|   };
   #|
   #|   const activeMap = () => {
@@ -1566,31 +2066,19 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     return state.tilemaps[idx];
   #|   };
   #|
-  #|   const renderBrushSelect = () => {
-  #|     brushSelect.innerHTML = "";
-  #|     const transparent = document.createElement("option");
-  #|     transparent.value = "-1";
-  #|     transparent.textContent = ". (transparent)";
-  #|     brushSelect.appendChild(transparent);
-  #|
-  #|     const ts = state.tiles;
-  #|     if (ts && ts.tile_count > 0) {
-  #|       for (let i = 0; i < ts.tile_count; i += 1) {
-  #|         const opt = document.createElement("option");
-  #|         const nm = ts.tile_names && ts.tile_names[i] ? ts.tile_names[i] : `tile_${i}`;
-  #|         const solid = ts.tile_solid && ts.tile_solid[i] ? " [solid]" : "";
-  #|         opt.value = String(i);
-  #|         opt.textContent = `${i}: ${nm}${solid}`;
-  #|         brushSelect.appendChild(opt);
-  #|       }
-  #|     }
-  #|     let candidate = Number.isInteger(state.selectedToken) ? state.selectedToken : -1;
-  #|     if (candidate < -1) candidate = -1;
-  #|     if (![...brushSelect.options].some((o) => o.value === String(candidate))) {
-  #|       candidate = -1;
-  #|     }
-  #|     state.selectedToken = candidate;
-  #|     brushSelect.value = String(candidate);
+  #|   const applyMapAssetTabUi = () => {
+  #|     const tab = state.mapThumbTab === "sprites" ? "sprites" : "tiles";
+  #|     state.mapThumbTab = tab;
+  #|     const tabBtnStyle = (btn, active) => {
+  #|       btn.style.background = active ? "#274060" : "#0f1720";
+  #|       btn.style.color = active ? "#f6f7eb" : "#9fb3c8";
+  #|       btn.style.border = active ? "1px solid #4aa96c" : "1px solid #486581";
+  #|     };
+  #|     tabBtnStyle(mapTilesTabBtn, tab === "tiles");
+  #|     tabBtnStyle(mapSpritesTabBtn, tab === "sprites");
+  #|     mapThumbTitle.textContent = tab === "tiles" ? "All Tiles" : "All Sprites";
+  #|     mapThumbGrid.style.display = tab === "tiles" ? "grid" : "none";
+  #|     mapSpriteThumbGrid.style.display = tab === "sprites" ? "grid" : "none";
   #|   };
   #|
   #|   const renderMapSelect = (preferCurrent = false) => {
@@ -1743,6 +2231,48 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     }
   #|   };
   #|
+  #|   const drawSpritePreviewInMap = (ctx, sprite, px, py, unit) => {
+  #|     if (!sprite || !Array.isArray(sprite.pixels)) return;
+  #|     for (let y = 0; y < sprite.height; y += 1) {
+  #|       for (let x = 0; x < sprite.width; x += 1) {
+  #|         const ci = sprite.pixels[y * sprite.width + x];
+  #|         if (ci < 0) continue;
+  #|         ctx.fillStyle = colorFor(ci) || "#ffffff";
+  #|         const dx = Math.floor(px + x * unit);
+  #|         const dy = Math.floor(py + y * unit);
+  #|         const dw = Math.max(1, Math.ceil(unit));
+  #|         const dh = Math.max(1, Math.ceil(unit));
+  #|         ctx.fillRect(dx, dy, dw, dh);
+  #|       }
+  #|     }
+  #|   };
+  #|
+  #|   const activeSpriteBrushName = () => {
+  #|     const sprites = Array.isArray(state.sprites) ? state.sprites : [];
+  #|     let name = String(state.selectedSpriteName || "");
+  #|     if (!sprites.some((sp) => String(sp.name) === name)) {
+  #|       name = sprites.length > 0 ? String(sprites[0].name || "") : "";
+  #|     }
+  #|     state.selectedSpriteName = name;
+  #|     return name;
+  #|   };
+  #|
+  #|   const findSpriteMetaByName = (name) => {
+  #|     const sprites = Array.isArray(state.sprites) ? state.sprites : [];
+  #|     for (const sp of sprites) {
+  #|       if (String(sp.name) === String(name)) return sp;
+  #|     }
+  #|     return null;
+  #|   };
+  #|
+  #|   const nextPlacementName = (spriteName) => {
+  #|     const base = String(spriteName || "spawn");
+  #|     const used = new Set((state.placements || []).map((p) => String(p.name || "")));
+  #|     let i = 1;
+  #|     while (used.has(`${base}_${i}`)) i += 1;
+  #|     return `${base}_${i}`;
+  #|   };
+  #|
   #|   const renderTileThumbnails = () => {
   #|     tileThumbGrid.innerHTML = "";
   #|     const ts = state.tiles;
@@ -1838,11 +2368,10 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|
   #|         cell.addEventListener("click", () => {
   #|           state.selectedTileId = i;
-  #|           state.selectedToken = i;
-  #|           renderBrushSelect();
-  #|           brushSelect.value = String(i);
   #|           refreshSolidUi();
   #|           renderTileThumbnails();
+  #|           renderMapTileThumbnails();
+  #|           renderCanvas();
   #|         });
   #|         rowWrap.appendChild(cell);
   #|       }
@@ -1854,7 +2383,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     mapThumbGrid.innerHTML = "";
   #|     const ts = state.tiles;
   #|     if (!ts || ts.tile_count <= 0) return;
-  #|     const selectedId = Number.isInteger(state.selectedToken) && state.selectedToken >= 0 ? state.selectedToken : -1;
+  #|     const selectedId = activeTileId();
   #|
   #|     const cols = 10;
   #|     const thumbSize = 48;
@@ -1943,13 +2472,94 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|         cell.appendChild(preview);
   #|
   #|         cell.addEventListener("click", () => {
-  #|           state.selectedToken = i;
-  #|           renderBrushSelect();
+  #|           state.selectedTileId = i;
+  #|           state.mapThumbTab = "tiles";
+  #|           applyMapAssetTabUi();
   #|           renderMapTileThumbnails();
+  #|           renderCanvas();
   #|         });
   #|         rowWrap.appendChild(cell);
   #|       }
   #|       mapThumbGrid.appendChild(rowWrap);
+  #|     }
+  #|   };
+  #|
+  #|   const renderMapSpriteThumbnails = () => {
+  #|     mapSpriteThumbGrid.innerHTML = "";
+  #|     const sprites = Array.isArray(state.sprites) ? state.sprites : [];
+  #|     if (sprites.length <= 0) {
+  #|       const empty = document.createElement("div");
+  #|       empty.textContent = "No sprites";
+  #|       empty.style.fontFamily = "monospace";
+  #|       empty.style.fontSize = "12px";
+  #|       empty.style.opacity = "0.8";
+  #|       mapSpriteThumbGrid.appendChild(empty);
+  #|       return;
+  #|     }
+  #|     const selectedName = activeSpriteBrushName();
+  #|     for (const sp of sprites) {
+  #|       const rowBtn = document.createElement("button");
+  #|       rowBtn.type = "button";
+  #|       rowBtn.style.display = "grid";
+  #|       rowBtn.style.gridTemplateColumns = "56px 1fr";
+  #|       rowBtn.style.gap = "10px";
+  #|       rowBtn.style.alignItems = "center";
+  #|       rowBtn.style.padding = "6px";
+  #|       rowBtn.style.background = "#0f1720";
+  #|       rowBtn.style.color = "#d9e2ec";
+  #|       rowBtn.style.border = String(sp.name) === selectedName ? "2px solid #4aa96c" : "1px solid #334e68";
+  #|       rowBtn.style.cursor = "pointer";
+  #|       rowBtn.style.textAlign = "left";
+  #|
+  #|       const preview = document.createElement("canvas");
+  #|       preview.width = 48;
+  #|       preview.height = 48;
+  #|       preview.style.width = "48px";
+  #|       preview.style.height = "48px";
+  #|       preview.style.imageRendering = "pixelated";
+  #|       preview.style.display = "block";
+  #|       const pctx = preview.getContext("2d");
+  #|       if (pctx) {
+  #|         pctx.imageSmoothingEnabled = false;
+  #|         pctx.fillStyle = "#1f2a37";
+  #|         pctx.fillRect(0, 0, 48, 48);
+  #|         pctx.fillStyle = "#334e68";
+  #|         pctx.fillRect(0, 0, 24, 24);
+  #|         pctx.fillRect(24, 24, 24, 24);
+  #|         const unit = Math.max(1, Math.floor(48 / Math.max(sp.width, sp.height)));
+  #|         const sw = sp.width * unit;
+  #|         const sh = sp.height * unit;
+  #|         const ox = Math.floor((48 - sw) / 2);
+  #|         const oy = Math.floor((48 - sh) / 2);
+  #|         drawSpritePreviewInMap(pctx, sp, ox, oy, unit);
+  #|       }
+  #|       rowBtn.appendChild(preview);
+  #|
+  #|       const meta = document.createElement("div");
+  #|       meta.style.display = "grid";
+  #|       meta.style.gap = "2px";
+  #|       const nm = document.createElement("div");
+  #|       nm.textContent = sp.name;
+  #|       nm.style.fontFamily = "monospace";
+  #|       nm.style.fontSize = "14px";
+  #|       nm.style.fontWeight = "600";
+  #|       const sz = document.createElement("div");
+  #|       sz.textContent = `${sp.width}x${sp.height}`;
+  #|       sz.style.fontFamily = "monospace";
+  #|       sz.style.fontSize = "12px";
+  #|       sz.style.opacity = "0.8";
+  #|       meta.appendChild(nm);
+  #|       meta.appendChild(sz);
+  #|       rowBtn.appendChild(meta);
+  #|
+  #|       rowBtn.addEventListener("click", () => {
+  #|         state.selectedSpriteName = String(sp.name || "");
+  #|         state.mapThumbTab = "sprites";
+  #|         applyMapAssetTabUi();
+  #|         renderMapSpriteThumbnails();
+  #|         renderCanvas();
+  #|       });
+  #|       mapSpriteThumbGrid.appendChild(rowBtn);
   #|     }
   #|   };
   #|
@@ -1962,10 +2572,12 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       info.textContent = "No tilemap found in DSL.";
   #|       return;
   #|     }
-  #|     info.textContent = `Editing tilemap ${map.name} (${map.width}x${map.height})`;
+  #|     const modeLabel = state.mapThumbTab === "sprites" ? "sprite brush" : "tile brush";
+  #|     info.textContent = `Editing tilemap ${map.name} (${map.width}x${map.height}) [${modeLabel}]`;
   #|     mapWInput.value = String(map.width);
   #|     mapHInput.value = String(map.height);
-  #|     state.cell = Math.max(8, Math.floor(520 / Math.max(map.width, map.height)));
+  #|     const fitCell = Math.floor(1024 / Math.max(map.width, map.height));
+  #|     state.cell = Math.max(8, Math.min(24, fitCell));
   #|     canvas.width = map.width * state.cell;
   #|     canvas.height = map.height * state.cell;
   #|     ctx.imageSmoothingEnabled = false;
@@ -1990,6 +2602,56 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|         ctx.lineWidth = 1;
   #|         ctx.strokeRect(px + 0.5, py + 0.5, state.cell - 1, state.cell - 1);
   #|       }
+  #|     }
+  #|
+  #|     if (Array.isArray(state.placements) && state.placements.length > 0) {
+  #|       const unit = state.cell / 8;
+  #|       for (const p of state.placements) {
+  #|         const sp = findSpriteMetaByName(p.sprite);
+  #|         if (!sp) continue;
+  #|         const sx = Number(p.x) * unit;
+  #|         const sy = Number(p.y) * unit;
+  #|         const sw = Math.max(1, Number(sp.width || 8) * unit);
+  #|         const sh = Math.max(1, Number(sp.height || 8) * unit);
+  #|         if (sx + sw < 0 || sy + sh < 0 || sx >= canvas.width || sy >= canvas.height) continue;
+  #|         drawSpritePreviewInMap(ctx, sp, sx, sy, unit);
+  #|         if (state.mapThumbTab === "sprites" && String(p.sprite) === String(activeSpriteBrushName())) {
+  #|           ctx.strokeStyle = "#4aa96c";
+  #|           ctx.lineWidth = 2;
+  #|           ctx.strokeRect(
+  #|             Math.floor(sx) + 1,
+  #|             Math.floor(sy) + 1,
+  #|             Math.max(1, Math.floor(sw) - 2),
+  #|             Math.max(1, Math.floor(sh) - 2),
+  #|           );
+  #|         }
+  #|       }
+  #|     }
+  #|
+  #|     if (state.showViewportGrid) {
+  #|       const logicalW = Math.max(8, Number(globalThis.__moon8bit_logical_width) || 128);
+  #|       const logicalH = Math.max(8, Number(globalThis.__moon8bit_logical_height) || 128);
+  #|       const vpTilesW = Math.max(1, Math.floor(logicalW / 8));
+  #|       const vpTilesH = Math.max(1, Math.floor(logicalH / 8));
+  #|
+  #|       ctx.save();
+  #|       ctx.strokeStyle = "rgba(74, 169, 108, 0.9)";
+  #|       ctx.lineWidth = 2;
+  #|       for (let gx = vpTilesW; gx < map.width; gx += vpTilesW) {
+  #|         const px = Math.floor(gx * state.cell) + 0.5;
+  #|         ctx.beginPath();
+  #|         ctx.moveTo(px, 0);
+  #|         ctx.lineTo(px, canvas.height);
+  #|         ctx.stroke();
+  #|       }
+  #|       for (let gy = vpTilesH; gy < map.height; gy += vpTilesH) {
+  #|         const py = Math.floor(gy * state.cell) + 0.5;
+  #|         ctx.beginPath();
+  #|         ctx.moveTo(0, py);
+  #|         ctx.lineTo(canvas.width, py);
+  #|         ctx.stroke();
+  #|       }
+  #|       ctx.restore();
   #|     }
   #|   };
   #|
@@ -2120,6 +2782,61 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     return out.concat(after);
   #|   };
   #|
+  #|   const encodePlacementLines = () => {
+  #|     const placements = Array.isArray(state.placements) ? state.placements.slice() : [];
+  #|     placements.sort((a, b) => {
+  #|       if ((a.y | 0) !== (b.y | 0)) return (a.y | 0) - (b.y | 0);
+  #|       if ((a.x | 0) !== (b.x | 0)) return (a.x | 0) - (b.x | 0);
+  #|       return String(a.name || "").localeCompare(String(b.name || ""));
+  #|     });
+  #|     const out = [];
+  #|     for (const p of placements) {
+  #|       const sprite = String(p.sprite || "").trim();
+  #|       if (!sprite) continue;
+  #|       const x = Number(p.x) | 0;
+  #|       const y = Number(p.y) | 0;
+  #|       let name = String(p.name || "").trim();
+  #|       if (!name) {
+  #|         name = nextPlacementName(sprite);
+  #|       }
+  #|       out.push(`place ${name} ${sprite} ${x} ${y}`);
+  #|     }
+  #|     return out;
+  #|   };
+  #|
+  #|   const replacePlacementLinesInLines = (lines) => {
+  #|     const rendered = encodePlacementLines();
+  #|     let firstPlace = -1;
+  #|     const kept = [];
+  #|     for (let i = 0; i < lines.length; i += 1) {
+  #|       const raw = lines[i].trim();
+  #|       if (/^place\s+/i.test(raw)) {
+  #|         if (firstPlace < 0) firstPlace = kept.length;
+  #|         continue;
+  #|       }
+  #|       kept.push(lines[i]);
+  #|     }
+  #|     if (firstPlace < 0) {
+  #|       if (rendered.length === 0) return kept;
+  #|       firstPlace = kept.length;
+  #|       for (let i = 0; i < kept.length; i += 1) {
+  #|         const raw = kept[i].trim();
+  #|         if (/^(sound|bgm)\s+/i.test(raw)) {
+  #|           firstPlace = i;
+  #|           break;
+  #|         }
+  #|       }
+  #|     }
+  #|     if (rendered.length === 0) return kept;
+  #|     const before = kept.slice(0, firstPlace);
+  #|     const after = kept.slice(firstPlace);
+  #|     const out = before.slice();
+  #|     if (out.length > 0 && out[out.length - 1].trim() !== "") out.push("");
+  #|     out.push(...rendered);
+  #|     if (after.length > 0 && after[0].trim() !== "") out.push("");
+  #|     return out.concat(after);
+  #|   };
+  #|
   #|   const writeTilemapToDsl = (andApply) => {
   #|     const map = activeMap();
   #|     if (!map) return;
@@ -2132,7 +2849,8 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     // Replace tilemap first: its stored line range is based on the original text.
   #|     // Replacing tile blocks first can shift line numbers and leave trailing `end`.
   #|     const withTilemaps = replaceTilemapBlocksInLines(lines);
-  #|     const merged = replaceTileBlocksInLines(withTilemaps);
+  #|     const withTiles = replaceTileBlocksInLines(withTilemaps);
+  #|     const merged = replacePlacementLinesInLines(withTiles);
   #|     const text = merged.join("\n");
   #|     textarea.value = text;
   #|     setDirty(false);
@@ -2147,12 +2865,19 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     const parsed = parseDsl(textarea.value);
   #|     state.lines = parsed.lines;
   #|     state.palette = parsed.palette;
+  #|     state.sprites = parsed.sprites || [];
   #|     state.tiles = parsed.tiles;
   #|     state.tileRange = parsed.tileRange;
   #|     state.tilemaps = parsed.tilemaps;
   #|     state.tilemapRange = parsed.tilemapRange;
+  #|     state.placements = parsed.placements || [];
+  #|     state.placementRange = parsed.placementRange || null;
   #|     state.errors = parsed.errors || [];
+  #|     viewportInput.checked = !!state.showViewportGrid;
   #|     if (state.selectedMap >= state.tilemaps.length) state.selectedMap = 0;
+  #|     if (state.mapThumbTab !== "tiles" && state.mapThumbTab !== "sprites") {
+  #|       state.mapThumbTab = "tiles";
+  #|     }
   #|     const tileCount = parsed.tiles && Number.isInteger(parsed.tiles.tile_count) ? parsed.tiles.tile_count : 0;
   #|     if (tileCount <= 0) {
   #|       state.selectedTileId = -1;
@@ -2163,10 +2888,11 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     renderMapSelect(true);
   #|
   #|     renderTilePalette();
-  #|     renderBrushSelect();
+  #|     applyMapAssetTabUi();
   #|     refreshSolidUi();
   #|     renderTileThumbnails();
   #|     renderMapTileThumbnails();
+  #|     renderMapSpriteThumbnails();
   #|     renderCanvas();
   #|     setDirty(false);
   #|     if (state.errors.length > 0) {
@@ -2174,6 +2900,32 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       setFeedback(`Parse error at line ${e.line}: ${e.message}`, true);
   #|     } else {
   #|       setFeedback("Tilemap synced from DSL.");
+  #|     }
+  #|   };
+  #|
+  #|   const paintPlacementAt = (map, gridX, gridY, erase) => {
+  #|     const cellX = gridX * 8;
+  #|     const cellY = gridY * 8;
+  #|     if (!Array.isArray(state.placements)) state.placements = [];
+  #|     const beforeLen = state.placements.length;
+  #|     state.placements = state.placements.filter((p) => !((p.x | 0) === cellX && (p.y | 0) === cellY));
+  #|     if (!erase) {
+  #|       const spriteName = activeSpriteBrushName();
+  #|       if (!spriteName) {
+  #|         setFeedback("No sprite selected for sprite brush.", true);
+  #|         return;
+  #|       }
+  #|       state.placements.push({
+  #|         name: nextPlacementName(spriteName),
+  #|         sprite: spriteName,
+  #|         x: cellX,
+  #|         y: cellY,
+  #|       });
+  #|     }
+  #|     const changed = state.placements.length !== beforeLen || !erase;
+  #|     if (changed) {
+  #|       setDirty(true);
+  #|       renderCanvas();
   #|     }
   #|   };
   #|
@@ -2185,7 +2937,13 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     const y = Math.floor((evt.clientY - rect.top) / state.cell);
   #|     if (x < 0 || y < 0 || x >= map.width || y >= map.height) return;
   #|     const erase = ((evt.buttons & 2) !== 0) || !!evt.shiftKey;
-  #|     map.tiles[y * map.width + x] = erase ? -1 : state.selectedToken;
+  #|     if (state.mapThumbTab === "sprites") {
+  #|       paintPlacementAt(map, x, y, erase);
+  #|       return;
+  #|     }
+  #|     const tileId = activeTileId();
+  #|     if (tileId < 0) return;
+  #|     map.tiles[y * map.width + x] = erase ? -1 : tileId;
   #|     setDirty(true);
   #|     renderCanvas();
   #|   };
@@ -2243,7 +3001,6 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     setDirty(true);
   #|     setFeedback(`Added tilemap ${name}.`);
   #|     renderMapSelect(true);
-  #|     renderBrushSelect();
   #|     refreshSolidUi();
   #|     renderCanvas();
   #|   };
@@ -2257,7 +3014,6 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     setDirty(true);
   #|     setFeedback(`Deleted tilemap ${removed}.`);
   #|     renderMapSelect();
-  #|     renderBrushSelect();
   #|     refreshSolidUi();
   #|     renderCanvas();
   #|   };
@@ -2294,7 +3050,6 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     setDirty(true);
   #|     setFeedback(`Cleared tile ${id}.`);
   #|     renderTilePalette();
-  #|     renderBrushSelect();
   #|     refreshSolidUi();
   #|     renderTileThumbnails();
   #|     renderMapTileThumbnails();
@@ -2352,9 +3107,20 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       state.selectedMap = Number(mapSelect.value) || 0;
   #|       renderCanvas();
   #|     });
-  #|     brushSelect.addEventListener("change", () => {
-  #|       state.selectedToken = Number(brushSelect.value);
-  #|       renderMapTileThumbnails();
+  #|     viewportInput.addEventListener("change", () => {
+  #|       state.showViewportGrid = !!viewportInput.checked;
+  #|       renderCanvas();
+  #|     });
+  #|     mapTilesTabBtn.addEventListener("click", () => {
+  #|       state.mapThumbTab = "tiles";
+  #|       applyMapAssetTabUi();
+  #|       renderCanvas();
+  #|     });
+  #|     mapSpritesTabBtn.addEventListener("click", () => {
+  #|       state.mapThumbTab = "sprites";
+  #|       applyMapAssetTabUi();
+  #|       renderMapSpriteThumbnails();
+  #|       renderCanvas();
   #|     });
   #|     tileNameInput.addEventListener("input", () => {
   #|       const ts = state.tiles;
@@ -2365,9 +3131,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       ts.tile_defined[id] = true;
   #|       setDirty(true);
   #|       setFeedback(`Tile ${id} name updated.`);
-  #|       renderBrushSelect();
-  #|       brushSelect.value = String(id);
-  #|       state.selectedToken = id;
+  #|       state.selectedTileId = id;
   #|       refreshSolidUi();
   #|       renderTileThumbnails();
   #|       renderMapTileThumbnails();
@@ -2381,9 +3145,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       ts.tile_defined[id] = true;
   #|       setDirty(true);
   #|       setFeedback(`Tile ${id} solid=${ts.tile_solid[id] ? "on" : "off"}.`);
-  #|       renderBrushSelect();
-  #|       brushSelect.value = String(id);
-  #|       state.selectedToken = id;
+  #|       state.selectedTileId = id;
   #|       refreshSolidUi();
   #|       renderTileThumbnails();
   #|       renderMapTileThumbnails();

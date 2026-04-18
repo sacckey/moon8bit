@@ -56,12 +56,25 @@ pub fn tilemap_to_json(tilemap : Tilemap) -> Json {
 }
 
 ///|
+pub fn placement_to_json(placement : Placement) -> Json {
+  let obj : Map[String, Json] = {
+    "kind": Json::string("placement"),
+    "name": Json::string(placement.name),
+    "sprite": Json::string(placement.sprite),
+    "x": int_json(placement.x),
+    "y": int_json(placement.y),
+  }
+  Json::object(obj)
+}
+
+///|
 pub fn asset_bundle_to_json(bundle : AssetBundle) -> Json {
   let obj : Map[String, Json] = {
     "palette": palette_to_json(bundle.palette),
     "sprites": Json::array(bundle.sprites.map(sprite_to_json)),
     "tiles": tiles_to_json(bundle.tiles),
     "tilemaps": Json::array(bundle.tilemaps.map(tilemap_to_json)),
+    "placements": Json::array(bundle.placements.map(placement_to_json)),
   }
   Json::object(obj)
 }

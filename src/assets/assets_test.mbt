@@ -449,6 +449,36 @@ test "parse tilemap block: tile IDs" {
 }
 
 ///|
+test "parse place directives into placements" {
+  let dsl = [
+    "sprite enemy 8 8", "........", "........", "........", "........", "........",
+    "........", "........", "........", "end", "place enemy_1 enemy 24 80", "place enemy_2 enemy 120 80",
+  ].join("\n")
+  let bundle = match @assets.parse_assets_dsl(dsl) {
+    Ok(v) => v
+    Err(e) => {
+      println(e.message)
+      panic()
+    }
+  }
+  assert_eq(bundle.placements.length(), 2)
+  assert_eq(bundle.placements[0].name, "enemy_1")
+  assert_eq(bundle.placements[0].sprite, "enemy")
+  assert_eq(bundle.placements[0].x, 24)
+  assert_eq(bundle.placements[1].y, 80)
+}
+
+///|
+test "place directive rejects unknown sprite references" {
+  let dsl = ["place enemy_1 missing_sprite 24 80"].join("\n")
+  let e = match @assets.parse_assets_dsl(dsl) {
+    Ok(_) => panic()
+    Err(e) => e
+  }
+  assert_true(e.message.find("references unknown sprite") is Some(_))
+}
+
+///|
 test "tilemap transparent cell must use dot token" {
   let tile_row = "00000000"
   let tile_rows = [

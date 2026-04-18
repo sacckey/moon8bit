@@ -251,6 +251,109 @@ pub fn spr(frame : Frame, sprite : @model.Sprite, x : Int, y : Int) -> Unit {
 }
 
 ///|
+pub fn camera(x : Int, y : Int) -> @model.Camera {
+  @model.Camera::{ x, y }
+}
+
+///|
+pub fn world_to_screen_x(world_x : Int, camera : @model.Camera) -> Int {
+  world_x - camera.x
+}
+
+///|
+pub fn world_to_screen_y(world_y : Int, camera : @model.Camera) -> Int {
+  world_y - camera.y
+}
+
+///|
+pub fn screen_to_world_x(screen_x : Int, camera : @model.Camera) -> Int {
+  screen_x + camera.x
+}
+
+///|
+pub fn screen_to_world_y(screen_y : Int, camera : @model.Camera) -> Int {
+  screen_y + camera.y
+}
+
+///|
+fn clamp_camera_axis(pos : Int, map_size : Int, view_size : Int) -> Int {
+  let max_pos = map_size - view_size
+  if max_pos <= 0 {
+    0
+  } else {
+    clamp(pos, 0, max_pos)
+  }
+}
+
+///|
+pub fn camera_clamp(
+  camera : @model.Camera,
+  map_width_px : Int,
+  map_height_px : Int,
+  view_width_px : Int,
+  view_height_px : Int,
+) -> @model.Camera {
+  @model.Camera::{
+    x: clamp_camera_axis(camera.x, map_width_px, view_width_px),
+    y: clamp_camera_axis(camera.y, map_height_px, view_height_px),
+  }
+}
+
+///|
+pub fn camera_follow(
+  target_x : Int,
+  target_y : Int,
+  view_width_px : Int,
+  view_height_px : Int,
+  map_width_px : Int,
+  map_height_px : Int,
+) -> @model.Camera {
+  let centered = @model.Camera::{
+    x: target_x - view_width_px / 2,
+    y: target_y - view_height_px / 2,
+  }
+  camera_clamp(
+    centered, map_width_px, map_height_px, view_width_px, view_height_px,
+  )
+}
+
+///|
+pub fn rect_world(
+  frame : Frame,
+  world_x : Int,
+  world_y : Int,
+  w : Int,
+  h : Int,
+  color : Int,
+  camera : @model.Camera,
+) -> Unit {
+  rect(
+    frame,
+    world_to_screen_x(world_x, camera),
+    world_to_screen_y(world_y, camera),
+    w,
+    h,
+    color,
+  )
+}
+
+///|
+pub fn spr_world(
+  frame : Frame,
+  sprite : @model.Sprite,
+  world_x : Int,
+  world_y : Int,
+  camera : @model.Camera,
+) -> Unit {
+  spr(
+    frame,
+    sprite,
+    world_to_screen_x(world_x, camera),
+    world_to_screen_y(world_y, camera),
+  )
+}
+
+///|
 /// Return the tile ID at pixel position (`px`,`py`) in map space.
 /// Returns `None` when out of map bounds.
 pub fn tile_id_at_px(tilemap : @model.Tilemap, px : Int, py : Int) -> Int? {
@@ -317,6 +420,91 @@ pub fn tile_solid_any_in_rect(
 }
 
 ///|
+/// Return true when any pixel inside the rectangle intersects `target_tile_id`.
+/// - Rect is expressed in map-space pixels.
+/// - Out-of-map area is treated as no tile.
+/// - Empty or negative-size rect returns false.
+pub fn tile_id_any_in_rect(
+  tilemap : @model.Tilemap,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+  target_tile_id : Int,
+) -> Bool {
+  if w <= 0 || h <= 0 {
+    return false
+  }
+  let left_tx = floor_div_tile(x)
+  let top_ty = floor_div_tile(y)
+  let right_tx = floor_div_tile(x + w - 1)
+  let bottom_ty = floor_div_tile(y + h - 1)
+  for ty in top_ty..<=bottom_ty {
+    for tx in left_tx..<=right_tx {
+      match @model.tile_at(tilemap, tx, ty) {
+        Some(tile_id) if tile_id == target_tile_id => return true
+        _ => ()
+      }
+    }
+  }
+  false
+}
+
+///|
+/// Move rect horizontally by `dx` with 1px swept collision against solid tiles.
+/// Returns `(resolved_x, blocked)`.
+pub fn swept_move_x(
+  tilemap : @model.Tilemap,
+  tiles : @model.Tiles,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+  dx : Int,
+) -> (Int, Bool) {
+  if dx == 0 {
+    return (x, false)
+  }
+  let step = if dx > 0 { 1 } else { -1 }
+  let mut next_x = x
+  for _ in 0..<Int::abs(dx) {
+    let candidate_x = next_x + step
+    if tile_solid_any_in_rect(tilemap, tiles, candidate_x, y, w, h) {
+      return (next_x, true)
+    }
+    next_x = candidate_x
+  }
+  (next_x, false)
+}
+
+///|
+/// Move rect vertically by `dy` with 1px swept collision against solid tiles.
+/// Returns `(resolved_y, blocked)`.
+pub fn swept_move_y(
+  tilemap : @model.Tilemap,
+  tiles : @model.Tiles,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+  dy : Int,
+) -> (Int, Bool) {
+  if dy == 0 {
+    return (y, false)
+  }
+  let step = if dy > 0 { 1 } else { -1 }
+  let mut next_y = y
+  for _ in 0..<Int::abs(dy) {
+    let candidate_y = next_y + step
+    if tile_solid_any_in_rect(tilemap, tiles, x, candidate_y, w, h) {
+      return (next_y, true)
+    }
+    next_y = candidate_y
+  }
+  (next_y, false)
+}
+
+///|
 /// Draw a region of a tilemap onto the frame using inline tile pixel data.
 ///
 /// - `dst_x/dst_y`: top-left corner in the frame where drawing starts
@@ -373,4 +561,28 @@ pub fn draw_tilemap(
       }
     }
   }
+}
+
+///|
+pub fn draw_tilemap_world(
+  frame : Frame,
+  tilemap : @model.Tilemap,
+  tiles : @model.Tiles,
+  dst_x : Int,
+  dst_y : Int,
+  dst_w : Int,
+  dst_h : Int,
+  camera : @model.Camera,
+) -> Unit {
+  draw_tilemap(
+    frame,
+    tilemap,
+    tiles,
+    dst_x,
+    dst_y,
+    dst_w,
+    dst_h,
+    camera.x,
+    camera.y,
+  )
 }

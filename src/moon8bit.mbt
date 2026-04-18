@@ -11,6 +11,9 @@ pub type Tiles = @model.Tiles
 pub type Tilemap = @model.Tilemap
 
 ///|
+pub type Placement = @model.Placement
+
+///|
 pub type AssetBundle = @model.AssetBundle
 
 ///|
@@ -45,6 +48,9 @@ pub type Rect = @model.Rect
 
 ///|
 pub type Collider = @model.Collider
+
+///|
+pub type Camera = @model.Camera
 
 ///|
 pub type Frame = @model.Frame
@@ -91,6 +97,14 @@ pub fn find_tilemap(bundle : AssetBundle, name : String) -> Tilemap? {
 }
 
 ///|
+pub fn find_placements_by_sprite(
+  bundle : AssetBundle,
+  sprite_name : String,
+) -> Array[Placement] {
+  @model.find_placements_by_sprite(bundle, sprite_name)
+}
+
+///|
 pub fn tile_pixel(tiles : Tiles, tile_id : Int, x : Int, y : Int) -> Int? {
   @model.tile_pixel(tiles, tile_id, x, y)
 }
@@ -120,6 +134,44 @@ pub fn tile_solid_any_in_rect(
   h : Int,
 ) -> Bool {
   @engine.tile_solid_any_in_rect(tilemap, tiles, x, y, w, h)
+}
+
+///|
+pub fn tile_id_any_in_rect(
+  tilemap : Tilemap,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+  target_tile_id : Int,
+) -> Bool {
+  @engine.tile_id_any_in_rect(tilemap, x, y, w, h, target_tile_id)
+}
+
+///|
+pub fn swept_move_x(
+  tilemap : Tilemap,
+  tiles : Tiles,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+  dx : Int,
+) -> (Int, Bool) {
+  @engine.swept_move_x(tilemap, tiles, x, y, w, h, dx)
+}
+
+///|
+pub fn swept_move_y(
+  tilemap : Tilemap,
+  tiles : Tiles,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+  dy : Int,
+) -> (Int, Bool) {
+  @engine.swept_move_y(tilemap, tiles, x, y, w, h, dy)
 }
 
 ///|
@@ -512,8 +564,84 @@ pub fn rect(
 }
 
 ///|
+pub fn camera(x : Int, y : Int) -> Camera {
+  @engine.camera(x, y)
+}
+
+///|
+pub fn world_to_screen_x(world_x : Int, camera : Camera) -> Int {
+  @engine.world_to_screen_x(world_x, camera)
+}
+
+///|
+pub fn world_to_screen_y(world_y : Int, camera : Camera) -> Int {
+  @engine.world_to_screen_y(world_y, camera)
+}
+
+///|
+pub fn screen_to_world_x(screen_x : Int, camera : Camera) -> Int {
+  @engine.screen_to_world_x(screen_x, camera)
+}
+
+///|
+pub fn screen_to_world_y(screen_y : Int, camera : Camera) -> Int {
+  @engine.screen_to_world_y(screen_y, camera)
+}
+
+///|
+pub fn camera_clamp(
+  camera : Camera,
+  map_width_px : Int,
+  map_height_px : Int,
+  view_width_px : Int,
+  view_height_px : Int,
+) -> Camera {
+  @engine.camera_clamp(
+    camera, map_width_px, map_height_px, view_width_px, view_height_px,
+  )
+}
+
+///|
+pub fn camera_follow(
+  target_x : Int,
+  target_y : Int,
+  view_width_px : Int,
+  view_height_px : Int,
+  map_width_px : Int,
+  map_height_px : Int,
+) -> Camera {
+  @engine.camera_follow(
+    target_x, target_y, view_width_px, view_height_px, map_width_px, map_height_px,
+  )
+}
+
+///|
 pub fn spr(frame : Frame, sprite : Sprite, x : Int, y : Int) -> Unit {
   @engine.spr(frame, sprite, x, y)
+}
+
+///|
+pub fn rect_world(
+  frame : Frame,
+  world_x : Int,
+  world_y : Int,
+  w : Int,
+  h : Int,
+  color : Int,
+  camera : Camera,
+) -> Unit {
+  @engine.rect_world(frame, world_x, world_y, w, h, color, camera)
+}
+
+///|
+pub fn spr_world(
+  frame : Frame,
+  sprite : Sprite,
+  world_x : Int,
+  world_y : Int,
+  camera : Camera,
+) -> Unit {
+  @engine.spr_world(frame, sprite, world_x, world_y, camera)
 }
 
 ///|
@@ -530,6 +658,22 @@ pub fn draw_tilemap(
 ) -> Unit {
   @engine.draw_tilemap(
     frame, tilemap, tiles, dst_x, dst_y, dst_w, dst_h, cam_x, cam_y,
+  )
+}
+
+///|
+pub fn draw_tilemap_world(
+  frame : Frame,
+  tilemap : Tilemap,
+  tiles : Tiles,
+  dst_x : Int,
+  dst_y : Int,
+  dst_w : Int,
+  dst_h : Int,
+  camera : Camera,
+) -> Unit {
+  @engine.draw_tilemap_world(
+    frame, tilemap, tiles, dst_x, dst_y, dst_w, dst_h, camera,
   )
 }
 
