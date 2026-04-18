@@ -20,6 +20,12 @@ pub(all) struct InputState {
 } derive(Eq, Show)
 
 ///|
+pub(all) struct Camera {
+  x : Int
+  y : Int
+} derive(Eq, Show)
+
+///|
 pub let input_none : InputState = InputState::{
   keys_down: [],
   keys_pressed: [],

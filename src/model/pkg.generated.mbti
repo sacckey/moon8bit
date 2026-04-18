@@ -71,6 +71,11 @@ pub(all) struct BgmDef {
   notes : Array[Int]
 } derive(Eq, Show)
 
+pub(all) struct Camera {
+  x : Int
+  y : Int
+} derive(Eq, Show)
+
 pub(all) struct Collider {
   tag : String
   rect : Rect

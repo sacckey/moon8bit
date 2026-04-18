@@ -25,6 +25,12 @@ pub fn btn(Array[String], keys_pressed? : Array[String], keys_released? : Array[
 
 pub fn btnp(Bool, Bool) -> Bool
 
+pub fn camera(Int, Int) -> @model.Camera
+
+pub fn camera_clamp(@model.Camera, Int, Int, Int, Int) -> @model.Camera
+
+pub fn camera_follow(Int, Int, Int, Int, Int, Int) -> @model.Camera
+
 pub fn clear_timers_cmd() -> @engine.EngineCommand
 
 pub fn cls(@model.Frame, Int) -> Unit
@@ -44,6 +50,8 @@ pub fn config(Int, Int, fps? : Int, scale? : Int, palette? : @model.Palette) -> 
 pub fn default_engine_config() -> @model.EngineConfig
 
 pub fn draw_tilemap(@model.Frame, @model.Tilemap, @model.Tiles, Int, Int, Int, Int, Int, Int) -> Unit
+
+pub fn draw_tilemap_world(@model.Frame, @model.Tilemap, @model.Tiles, Int, Int, Int, Int, @model.Camera) -> Unit
 
 pub fn emit(@engine.EngineEvent) -> @engine.EngineCommand
 
@@ -99,9 +107,15 @@ pub fn rect(@model.Frame, Int, Int, Int, Int, Int) -> Unit
 
 pub fn rect_intersects(@model.Rect, @model.Rect) -> Bool
 
+pub fn rect_world(@model.Frame, Int, Int, Int, Int, Int, @model.Camera) -> Unit
+
 pub fn[T : @engine.Game] run(T, @model.EngineConfig, Array[@model.InputState]) -> (@engine.EngineInstance[T], Array[@model.Frame])
 
 pub fn[T : @engine.Game] run_fixed_frames(T, @model.EngineConfig, Array[@model.InputState]) -> (@engine.EngineInstance[T], Array[@model.Frame])
+
+pub fn screen_to_world_x(Int, @model.Camera) -> Int
+
+pub fn screen_to_world_y(Int, @model.Camera) -> Int
 
 pub fn set_interval_cmd(Int, @engine.EngineEvent) -> @engine.EngineCommand
 
@@ -110,6 +124,8 @@ pub fn set_timeout_cmd(Int, @engine.EngineEvent) -> @engine.EngineCommand
 pub fn sfx(String) -> @engine.EngineCommand
 
 pub fn spr(@model.Frame, @model.Sprite, Int, Int) -> Unit
+
+pub fn spr_world(@model.Frame, @model.Sprite, Int, Int, @model.Camera) -> Unit
 
 pub fn sprite_pixel(@model.Sprite, Int, Int) -> Int?
 
@@ -147,6 +163,10 @@ pub fn version_tag() -> String
 
 pub fn[T] with_game(@engine.EngineInstance[T], T) -> @engine.EngineInstance[T]
 
+pub fn world_to_screen_x(Int, @model.Camera) -> Int
+
+pub fn world_to_screen_y(Int, @model.Camera) -> Int
+
 // Errors
 
 // Types and methods
@@ -155,6 +175,8 @@ pub fn[T] with_game(@engine.EngineInstance[T], T) -> @engine.EngineInstance[T]
 pub using @model {type AssetBundle}
 
 pub using @model {type BgmDef}
+
+pub using @model {type Camera}
 
 pub using @model {type Collider}
 

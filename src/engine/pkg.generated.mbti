@@ -18,6 +18,12 @@ pub fn btn(Array[String], keys_pressed? : Array[String], keys_released? : Array[
 
 pub fn btnp(Bool, Bool) -> Bool
 
+pub fn camera(Int, Int) -> @model.Camera
+
+pub fn camera_clamp(@model.Camera, Int, Int, Int, Int) -> @model.Camera
+
+pub fn camera_follow(Int, Int, Int, Int, Int, Int) -> @model.Camera
+
 pub fn clamp(Int, Int, Int) -> Int
 
 pub fn clear_timers_cmd() -> EngineCommand
@@ -27,6 +33,8 @@ pub fn cls(@model.Frame, Int) -> Unit
 pub fn config(Int, Int, fps? : Int, scale? : Int, palette? : @model.Palette) -> @model.EngineConfig
 
 pub fn draw_tilemap(@model.Frame, @model.Tilemap, @model.Tiles, Int, Int, Int, Int, Int, Int) -> Unit
+
+pub fn draw_tilemap_world(@model.Frame, @model.Tilemap, @model.Tiles, Int, Int, Int, Int, @model.Camera) -> Unit
 
 pub fn emit(EngineEvent) -> EngineCommand
 
@@ -66,9 +74,15 @@ pub fn rand(Int, Int, Int) -> Int
 
 pub fn rect(@model.Frame, Int, Int, Int, Int, Int) -> Unit
 
+pub fn rect_world(@model.Frame, Int, Int, Int, Int, Int, @model.Camera) -> Unit
+
 pub fn[T : Game] run(T, @model.EngineConfig, Array[@model.InputState]) -> (EngineInstance[T], Array[@model.Frame])
 
 pub fn[T : Game] run_fixed_frames(T, @model.EngineConfig, Array[@model.InputState]) -> (EngineInstance[T], Array[@model.Frame])
+
+pub fn screen_to_world_x(Int, @model.Camera) -> Int
+
+pub fn screen_to_world_y(Int, @model.Camera) -> Int
 
 pub fn set_interval_cmd(Int, EngineEvent) -> EngineCommand
 
@@ -77,6 +91,8 @@ pub fn set_timeout_cmd(Int, EngineEvent) -> EngineCommand
 pub fn sfx(String) -> EngineCommand
 
 pub fn spr(@model.Frame, @model.Sprite, Int, Int) -> Unit
+
+pub fn spr_world(@model.Frame, @model.Sprite, Int, Int, @model.Camera) -> Unit
 
 pub fn[T : Game] step(EngineInstance[T], @model.InputState) -> (EngineInstance[T], @model.Frame)
 
@@ -99,6 +115,10 @@ pub fn ui_text(@model.Frame, Int, Int, String, Int, scale? : Int) -> Unit
 pub fn ui_text_width(String, scale? : Int) -> Int
 
 pub fn[T] with_game(EngineInstance[T], T) -> EngineInstance[T]
+
+pub fn world_to_screen_x(Int, @model.Camera) -> Int
+
+pub fn world_to_screen_y(Int, @model.Camera) -> Int
 
 // Errors
 

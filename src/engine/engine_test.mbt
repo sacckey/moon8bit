@@ -349,6 +349,76 @@ test "draw_tilemap expanded clip boundaries (negative dst and partial viewport)"
 }
 
 ///|
+test "camera helpers convert coordinates and clamp/follow map bounds" {
+  let cam = @engine.camera(10, 20)
+  assert_eq(@engine.world_to_screen_x(13, cam), 3)
+  assert_eq(@engine.world_to_screen_y(27, cam), 7)
+  assert_eq(@engine.screen_to_world_x(3, cam), 13)
+  assert_eq(@engine.screen_to_world_y(7, cam), 27)
+
+  assert_eq(
+    @engine.camera_clamp(@engine.camera(-5, 120), 100, 100, 32, 32),
+    @engine.camera(0, 68),
+  )
+  assert_eq(
+    @engine.camera_clamp(@engine.camera(10, 10), 24, 24, 32, 32),
+    @engine.camera(0, 0),
+  )
+
+  assert_eq(
+    @engine.camera_follow(16, 16, 32, 32, 100, 100),
+    @engine.camera(0, 0),
+  )
+  assert_eq(
+    @engine.camera_follow(99, 99, 32, 32, 100, 100),
+    @engine.camera(68, 68),
+  )
+}
+
+///|
+test "world draw wrappers apply camera offset consistently" {
+  let sprite = @model.Sprite::{
+    name: "dot",
+    width: 2,
+    height: 2,
+    pixels: [7, 7, 7, 7],
+  }
+  let cam = @engine.camera(8, 0)
+  let frame = @model.Frame::new(8, 8, fill=-1)
+  @engine.spr_world(frame, sprite, 8, 1, cam)
+  @engine.rect_world(frame, 10, 4, 2, 1, 3, cam)
+  assert_eq(frame.get_pixel(0, 1), Some(7))
+  assert_eq(frame.get_pixel(1, 2), Some(7))
+  assert_eq(frame.get_pixel(2, 4), Some(3))
+  assert_eq(frame.get_pixel(3, 4), Some(3))
+}
+
+///|
+test "draw_tilemap_world is equivalent to draw_tilemap with camera offsets" {
+  let pixels : Array[Int] = []
+  for _ in 0..<64 {
+    pixels.push(4)
+  }
+  let ts = @model.Tiles::{
+    name: "main",
+    tile_count: 1,
+    tile_names: ["solid"],
+    tile_solid: [false],
+    pixels,
+  }
+  let tm = @model.Tilemap::{ name: "m", width: 1, height: 1, tiles: [0] }
+  let cam = @engine.camera(0, 0)
+
+  let via_world = @model.Frame::new(8, 8, fill=-1)
+  @engine.draw_tilemap_world(via_world, tm, ts, 0, 0, 8, 8, cam)
+
+  let via_legacy = @model.Frame::new(8, 8, fill=-1)
+  @engine.draw_tilemap(via_legacy, tm, ts, 0, 0, 8, 8, cam.x, cam.y)
+
+  assert_eq(via_world, via_legacy)
+}
+
+///|
 test "tile_solid_any_in_rect checks overlapped tiles in map-space pixels" {
   let solid_px : Array[Int] = []
   for _ in 0..<64 {
