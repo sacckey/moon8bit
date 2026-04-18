@@ -67,6 +67,17 @@ sprite enemy 8 8
 ........
 end
 
+sprite coin 8 8
+...33...
+..3663..
+.366663.
+.366663.
+.366663.
+.366663.
+..3663..
+...33...
+end
+
 # tile IDs are explicit (0..255)
 tile 0 ground_top solid
 55555555
@@ -138,3 +149,8 @@ place enemy_1 enemy 80 120
 place enemy_2 enemy 184 120
 place enemy_3 enemy 248 120
 place enemy_4 enemy 328 120
+place coin_1 coin 96 104
+place coin_2 coin 144 80
+place coin_3 coin 216 104
+place coin_4 coin 272 56
+place coin_5 coin 360 104

@@ -35,6 +35,9 @@ let enemy_sprite_name = "enemy"
 let player_sprite_name = "player"
 
 ///|
+let coin_sprite_name = "coin"
+
+///|
 let default_player_spawn_x : Int = 16
 
 ///|
@@ -57,6 +60,8 @@ pub struct PlatformerGame {
   mut vel_y : Int
   mut on_ground : Bool
   mut enemies : Array[EnemyActor]
+  mut coins : Array[@model.Placement]
+  mut coins_collected : Int
   mut camera : @model.Camera
   mut is_over : Bool
   mut is_clear : Bool
@@ -81,6 +86,11 @@ fn enemy_placements(game : PlatformerGame) -> Array[@model.Placement] {
 }
 
 ///|
+fn coin_placements(game : PlatformerGame) -> Array[@model.Placement] {
+  @model.find_placements_by_sprite(game.bundle, coin_sprite_name)
+}
+
+///|
 fn player_placements(game : PlatformerGame) -> Array[@model.Placement] {
   @model.find_placements_by_sprite(game.bundle, player_sprite_name)
 }
@@ -88,6 +98,19 @@ fn player_placements(game : PlatformerGame) -> Array[@model.Placement] {
 ///|
 fn enemy_size(game : PlatformerGame) -> (Int, Int) {
   match enemy_sprite(game) {
+    Some(sp) => (sp.width, sp.height)
+    None => (8, 8)
+  }
+}
+
+///|
+fn coin_sprite(game : PlatformerGame) -> @model.Sprite? {
+  @model.find_sprite(game.bundle, coin_sprite_name)
+}
+
+///|
+fn coin_size(game : PlatformerGame) -> (Int, Int) {
+  match coin_sprite(game) {
     Some(sp) => (sp.width, sp.height)
     None => (8, 8)
   }
@@ -159,6 +182,23 @@ fn spawn_enemies(game : PlatformerGame) -> Array[EnemyActor] {
     idx += 1
   }
   actors
+}
+
+///|
+fn spawn_coins(game : PlatformerGame) -> Array[@model.Placement] {
+  let coins : Array[@model.Placement] = []
+  let (coin_w, coin_h) = coin_size(game)
+  let max_x = map_width_px(game) - coin_w
+  let max_y = map_height_px(game) - coin_h
+  for placement in coin_placements(game) {
+    coins.push(@model.Placement::{
+      name: placement.name,
+      sprite: placement.sprite,
+      x: @engine.clamp(placement.x, 0, max_x),
+      y: @engine.clamp(placement.y, 0, max_y),
+    })
+  }
+  coins
 }
 
 ///|
@@ -236,6 +276,8 @@ fn reset_game(game : PlatformerGame) -> PlatformerGame {
   game.vel_y = 0
   game.on_ground = false
   game.enemies = spawn_enemies(game)
+  game.coins = spawn_coins(game)
+  game.coins_collected = 0
   game.camera = @engine.camera(0, 0)
   game.is_over = false
   game.is_clear = false
@@ -341,6 +383,34 @@ fn check_enemy_hit(game : PlatformerGame, ctx : @engine.UpdateContext) -> Unit {
 }
 
 ///|
+fn check_coin_hit(game : PlatformerGame) -> Unit {
+  if game.is_over || game.is_clear || game.coins.length() == 0 {
+    return
+  }
+  let (coin_w, coin_h) = coin_size(game)
+  let player_rect = @model.Rect::{
+    x: game.player_x,
+    y: game.player_y,
+    w: player_w,
+    h: player_h,
+  }
+  let remaining : Array[@model.Placement] = []
+  let mut gained = 0
+  for coin in game.coins {
+    let coin_rect = @model.Rect::{ x: coin.x, y: coin.y, w: coin_w, h: coin_h }
+    if @model.rect_intersects(player_rect, coin_rect) {
+      gained += 1
+    } else {
+      remaining.push(coin)
+    }
+  }
+  if gained > 0 {
+    game.coins_collected += gained
+    game.coins = remaining
+  }
+}
+
+///|
 fn apply_gameplay_input(
   game : PlatformerGame,
   ctx : @engine.UpdateContext,
@@ -375,6 +445,8 @@ pub fn new_platformer_game(bundle : @model.AssetBundle) -> PlatformerGame {
     vel_y: 0,
     on_ground: false,
     enemies: [],
+    coins: [],
+    coins_collected: 0,
     camera: @engine.camera(0, 0),
     is_over: false,
     is_clear: false,
@@ -415,6 +487,7 @@ pub impl @engine.Game for PlatformerGame with update(self, ctx) {
   step_vertical(self)
   step_enemies(self)
   check_enemy_hit(self, ctx)
+  check_coin_hit(self)
 
   if self.is_over {
     return self
@@ -481,6 +554,26 @@ pub impl @engine.Game for PlatformerGame with draw(self, _ctx) {
     None => ()
   }
 
+  let (coin_w, coin_h) = coin_size(self)
+  match coin_sprite(self) {
+    Some(coin_sprite) =>
+      for coin in self.coins {
+        @engine.spr_world(frame, coin_sprite, coin.x, coin.y, self.camera)
+      }
+    None =>
+      for coin in self.coins {
+        @engine.rect_world(
+          frame,
+          coin.x,
+          coin.y,
+          coin_w,
+          coin_h,
+          3,
+          self.camera,
+        )
+      }
+  }
+
   frame.draw_rect(0, 0, screen_w, 9, 0)
   let status = if self.is_clear {
     "CLEAR R/SPACE"
@@ -490,6 +583,15 @@ pub impl @engine.Game for PlatformerGame with draw(self, _ctx) {
     "A/D move SPACE jump"
   }
   @engine.ui_text(frame, 1, 1, status, 6)
+  let total_coins = self.coins_collected + self.coins.length()
+  let coin_text = "COIN \{self.coins_collected}/\{total_coins}"
+  @engine.ui_text(
+    frame,
+    screen_w - @engine.ui_text_width(coin_text) - 1,
+    1,
+    coin_text,
+    3,
+  )
 
   frame
 }

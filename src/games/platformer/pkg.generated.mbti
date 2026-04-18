@@ -26,6 +26,8 @@ pub struct PlatformerGame {
   mut vel_y : Int
   mut on_ground : Bool
   mut enemies : Array[EnemyActor]
+  mut coins : Array[@model.Placement]
+  mut coins_collected : Int
   mut camera : @model.Camera
   mut is_over : Bool
   mut is_clear : Bool
