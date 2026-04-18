@@ -859,7 +859,11 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     mapMainPane.style.minWidth = "0";
   #|     mapMainPane.style.padding = "10px";
   #|     mapMainPane.style.background = "#0f1720";
+  #|     mapMainPane.style.maxHeight = "70vh";
+  #|     mapMainPane.style.overflow = "auto";
   #|   }
+  #|   mapMainPane.style.maxHeight = "70vh";
+  #|   mapMainPane.style.overflow = "auto";
   #|   if (mapMainPane.parentElement !== mapLayout) {
   #|     mapLayout.appendChild(mapMainPane);
   #|   }
@@ -2304,7 +2308,8 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     info.textContent = `Editing tilemap ${map.name} (${map.width}x${map.height}) [${modeLabel}]`;
   #|     mapWInput.value = String(map.width);
   #|     mapHInput.value = String(map.height);
-  #|     state.cell = Math.max(8, Math.floor(520 / Math.max(map.width, map.height)));
+  #|     const fitCell = Math.floor(1024 / Math.max(map.width, map.height));
+  #|     state.cell = Math.max(8, Math.min(24, fitCell));
   #|     canvas.width = map.width * state.cell;
   #|     canvas.height = map.height * state.cell;
   #|     ctx.imageSmoothingEnabled = false;
