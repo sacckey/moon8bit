@@ -1292,6 +1292,31 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     row.appendChild(mapHInput);
   #|   }
   #|
+  #|   let viewportWrap = document.getElementById("moon8bit-tilemap-viewport-wrap");
+  #|   if (!viewportWrap) {
+  #|     viewportWrap = document.createElement("label");
+  #|     viewportWrap.id = "moon8bit-tilemap-viewport-wrap";
+  #|     viewportWrap.style.display = "inline-flex";
+  #|     viewportWrap.style.alignItems = "center";
+  #|     viewportWrap.style.gap = "6px";
+  #|     viewportWrap.style.fontFamily = "monospace";
+  #|     viewportWrap.style.fontSize = "13px";
+  #|     viewportWrap.style.color = "#d9e2ec";
+  #|   }
+  #|   if (viewportWrap.parentElement !== row) {
+  #|     row.appendChild(viewportWrap);
+  #|   }
+  #|   let viewportInput = document.getElementById("moon8bit-tilemap-viewport");
+  #|   if (!viewportInput) {
+  #|     viewportInput = document.createElement("input");
+  #|     viewportInput.id = "moon8bit-tilemap-viewport";
+  #|     viewportInput.type = "checkbox";
+  #|     viewportWrap.appendChild(viewportInput);
+  #|     const viewportText = document.createElement("span");
+  #|     viewportText.textContent = "Viewport Grid";
+  #|     viewportWrap.appendChild(viewportText);
+  #|   }
+  #|
   #|   const ensureBtn = (id, label, bg, border) => {
   #|     let btn = document.getElementById(id);
   #|     if (!btn) {
@@ -1692,6 +1717,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|       mapThumbTab: "tiles",
   #|       selectedTileId: 0,
   #|       selectedTileColor: 0,
+  #|       showViewportGrid: true,
   #|       dirty: false,
   #|       cell: 16,
   #|       tileCell: 20,
@@ -1710,6 +1736,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   }
   #|   if (typeof state.selectedSpriteName !== "string") state.selectedSpriteName = "";
   #|   if (state.mapThumbTab !== "tiles" && state.mapThumbTab !== "sprites") state.mapThumbTab = "tiles";
+  #|   if (typeof state.showViewportGrid !== "boolean") state.showViewportGrid = true;
   #|
   #|   function scheduleTilemapAutoWrite() {
   #|     if (tilemapAutoWriteTimer !== null) {
@@ -2600,6 +2627,32 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|         }
   #|       }
   #|     }
+  #|
+  #|     if (state.showViewportGrid) {
+  #|       const logicalW = Math.max(8, Number(globalThis.__moon8bit_logical_width) || 128);
+  #|       const logicalH = Math.max(8, Number(globalThis.__moon8bit_logical_height) || 128);
+  #|       const vpTilesW = Math.max(1, Math.floor(logicalW / 8));
+  #|       const vpTilesH = Math.max(1, Math.floor(logicalH / 8));
+  #|
+  #|       ctx.save();
+  #|       ctx.strokeStyle = "rgba(74, 169, 108, 0.9)";
+  #|       ctx.lineWidth = 2;
+  #|       for (let gx = vpTilesW; gx < map.width; gx += vpTilesW) {
+  #|         const px = Math.floor(gx * state.cell) + 0.5;
+  #|         ctx.beginPath();
+  #|         ctx.moveTo(px, 0);
+  #|         ctx.lineTo(px, canvas.height);
+  #|         ctx.stroke();
+  #|       }
+  #|       for (let gy = vpTilesH; gy < map.height; gy += vpTilesH) {
+  #|         const py = Math.floor(gy * state.cell) + 0.5;
+  #|         ctx.beginPath();
+  #|         ctx.moveTo(0, py);
+  #|         ctx.lineTo(canvas.width, py);
+  #|         ctx.stroke();
+  #|       }
+  #|       ctx.restore();
+  #|     }
   #|   };
   #|
   #|   const encodeTileBlocks = () => {
@@ -2820,6 +2873,7 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|     state.placements = parsed.placements || [];
   #|     state.placementRange = parsed.placementRange || null;
   #|     state.errors = parsed.errors || [];
+  #|     viewportInput.checked = !!state.showViewportGrid;
   #|     if (state.selectedMap >= state.tilemaps.length) state.selectedMap = 0;
   #|     if (state.mapThumbTab !== "tiles" && state.mapThumbTab !== "sprites") {
   #|       state.mapThumbTab = "tiles";
@@ -3051,6 +3105,10 @@ extern "js" fn web_init_tilemap_editor() -> Unit =
   #|   if (!globalThis.__moon8bit_tilemap_bound) {
   #|     mapSelect.addEventListener("change", () => {
   #|       state.selectedMap = Number(mapSelect.value) || 0;
+  #|       renderCanvas();
+  #|     });
+  #|     viewportInput.addEventListener("change", () => {
+  #|       state.showViewportGrid = !!viewportInput.checked;
   #|       renderCanvas();
   #|     });
   #|     mapTilesTabBtn.addEventListener("click", () => {
