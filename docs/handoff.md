@@ -1,5 +1,46 @@
 # Handoff
 
+## 2026-04-18 Current State
+
+- Build/Test status: pass (`moon check`, `moon test`, 92 tests)
+- Sample games: driftbird, breakout, snake, shooting, platformer
+- Renderer: WebGPU + Canvas2D fallback, runtime status visible (`renderer=webgpu|2d`)
+- Audio: DSL-managed SFX/BGM, editor split into `SFX` and `BGM` tabs
+- Editor tabs: `Game / DSL / Palette / Sprite / Tile / Tilemap / SFX / BGM`
+
+### Architecture status
+
+- `EngineInstance` owns tick/event-queue/timers; command-driven runtime path is stable.
+- Shared `cmd/web` runtime remains game-neutral; per-game web entry under `src/games/<id>/web`.
+- Asset flow is text-first (`assets.dsl`) with GUI round-trip editors.
+- Tilemap workflow includes tile edit, sprite placement, map resize, and viewport-grid overlay.
+
+### Known limitations
+
+- No browser-to-local overwrite (import/export workflow only).
+- WebGPU still uses per-frame map/upload path; can be optimized with `writeTexture`.
+- Final submission artifacts/docs freeze are not yet complete.
+
+### Reproducible local commands
+
+```bash
+moon check
+moon test
+./scripts/update_demo_bundle.sh
+python3 -m http.server 8000 --directory site
+```
+
+URLs: `/` top, `/g/` game list, `/g/<game_id>/` playable editor page.
+
+### Remaining implementation work before freeze
+
+1. Stabilize platformer feel with explicit regression tests.
+2. Final editor UX polish for larger maps and feedback consistency.
+3. WebGPU upload path hardening/perf (`writeTexture` migration).
+4. Final submission artifacts (demo video/GIF, application text freeze).
+
+---
+
 ## 2026-04-09 Current State
 
 - Build/Test status: pass (`moon check`, `moon test`, 42 tests)

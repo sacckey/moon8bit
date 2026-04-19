@@ -4,7 +4,29 @@
 
 - Submission target: MoonBit SCC 2026
 - Deadline: 2026-04-21
-- Last updated: 2026-04-11
+- Last updated: 2026-04-19
+
+## Final Submission Essentials (Official Summary)
+
+Based on:
+- SCC Regulations (`https://www.moonbitlang.com/2026-scc`, especially Evaluation + Open Source Requirements)
+- Suggested materials guidance:
+  - public GitHub repo with commit history
+  - README (goals/scope/usage/environment)
+  - reproducible build/run path
+  - tests/validation for core and edge cases
+  - optional: demo video/screenshots/deployment links
+
+- [x] Public GitHub repository is confirmed public and commit history preserved
+- [x] README covers goals, scope, usage, and environment requirements
+- [x] Reproducible build/run path for core workflow is documented
+- [x] Tests/validation materials for key paths and edge cases are present
+- [x] OSI-approved license is present (`LICENSE`: Apache-2.0)
+- [x] Supporting artifacts/scripts are open-sourced in repository
+- [x] Development retrospective materials are present (`docs/decision-log.md`, `docs/ai-usage-log.md`)
+- [ ] Demo video/GIF is finalized and shareable
+- [ ] Screenshots are finalized and shareable
+- [x] Deployment links are documented (`README.mbt.md` GitHub Pages section)
 
 ## Stage 1 Gates
 
@@ -21,21 +43,27 @@
 ## Core Implementation (Capability Track)
 
 - [x] Engine core: `init/update/draw` fixed-step runtime
-- [x] DSL v1: `palette`, `sprite`, `tilemap` with line-numbered diagnostics
-- [x] Tilemap v1 frozen spec documented (`docs/tilemap-spec.md`)
+- [x] DSL v1: `palette`, `sprite`, `tile`, `tilemap`, `place` with line-numbered diagnostics
+- [x] Tile DSL: `tile <id> <name> [solid]` with inline 8×8 pixel data; named solid flags
+- [x] Placement DSL: `place <name> <sprite> <x> <y>` for actor spawn data; `find_placements_by_sprite`
 - [x] CLI flow: DSL conversion and validation
 - [x] Web Canvas2D rendering path
 - [x] WebGPU rendering path with Canvas2D fallback
 - [x] Renderer status display (`renderer=webgpu` / `renderer=2d`)
 - [x] Audio: BGM + SFX via Web Audio API
-- [x] Input: raw key/pointer state + edge transitions
-- [x] Collision: `Rect`, `Collider`, AABB with hit tags
-- [x] Scheduler: `set_timeout`, `set_interval`, `clear_timers` via `EngineCommand`
-- [x] Imperative game API: `ctx.sfx()`, `ctx.bgm_stop()`, `ctx.set_timeout()` etc.
-- [x] Utility: `rand(seed, min, max)`, `clamp(value, min, max)`
-- [x] Browser editor: DSL apply/import/export loop
+- [x] Input: raw key/pointer state + edge transitions (`key_down`, `key_pressed`, `key_released`, `key_down_any`, etc.)
+- [x] Collision: `Rect`, `Collider`, AABB with hit tags; `rect_intersects`, `tile_solid_any_in_rect`, `tile_id_any_in_rect`
+- [x] Swept collision helpers: `swept_move_x / swept_move_y`
+- [x] Camera: `camera_follow`, `camera_clamp`, `world_to_screen_*`, `spr_world`, `rect_world`, `draw_tilemap_world`
+- [x] Tilemap rendering: `draw_tilemap` (camera offset, transparent tiles), `draw_tilemap_world`
+- [x] Scheduler: `set_timeout`, `set_interval`, `clear_timers` via `EngineCommand`; `ctx.bgm_start()`
+- [x] Imperative game API: `ctx.sfx()`, `ctx.bgm_start()`, `ctx.bgm_stop()`, `ctx.set_timeout()` etc.
+- [x] Utility: `rand(seed, min, max)`, `clamp(value, min, max)`, `every(tick, interval)`
+- [x] UI primitives: `ui_text`, `ui_panel`, `ui_text_width`, `ui_center_x/y`
+- [x] Browser editor: DSL apply/import/export loop; fullscreen layout, dynamic canvas scaling
 - [x] Sprite editor GUI tab
-- [x] Tilemap editor GUI tab: tilemap paint/erase, `+ Map`/`Del Map`/`Resize`, tile `name`/`solid`, tile 8x8 pixel edit, dirty/feedback
+- [x] Tile editor GUI tab: 8×8 pixel editor, tile name/solid metadata
+- [x] Tilemap editor GUI tab: tilemap paint/erase, `+ Map`/`Del Map`/`Resize`, tile `name`/`solid`, tile 8×8 pixel edit, dirty/feedback
 - [x] Sound editor GUI tab: SFX cards (wave/f0/f1/ATK/DEC/VOL + Test/Dup/Del), `+ SFX`, multi-BGM selector, `+ BGM`/`Dup`/`Del`, dirty indicator
 - [x] Per-game web pages under `site/g/<game_id>/`
 
@@ -45,17 +73,20 @@
 - [x] breakout (ball physics: subframe collision / entry-axis detection)
 - [x] snake (grid game: wrap / food spawn / growth)
 - [x] shooting (shooter: star parallax / enemy / sprites)
+- [x] platformer (camera / swept collision / placement spawn / coyote time / jump buffer)
 
 ## Engineering Quality
 
-- [x] 62 tests passing (`moon test`)
+- [x] 92 tests passing (`moon test`)
 - [x] Deterministic runtime: same inputs → same frames
 - [x] Collision regression tests (pipe hit / ground hit / score increment)
 - [x] Timer/event ordering tests
 - [x] Parser error tests (line-numbered diagnostics)
 - [x] Sound DSL tests (sound/bgm block parse, note name to MIDI, error cases)
-- [ ] Test coverage for breakout / snake / shooting
-- [ ] E2E replay coverage per game
+- [x] Tile/tilemap DSL tests (parse, validation, pixel lookup, round-trip)
+- [x] Placement DSL tests (parse, unknown sprite reference error)
+- [x] Test coverage for breakout / snake / shooting / platformer
+- [x] E2E replay coverage per game
 
 ## Required Artifacts
 
@@ -100,8 +131,11 @@ Expected:
 - [ ] DSL `Import` loads local file and applies
 - [ ] DSL `Export` downloads current editor text
 - [ ] Sprite tab can edit sprite pixels and write back to DSL
+- [ ] Palette tab can edit 16 colors (picker + HEX) and write back to DSL
+- [ ] Tile tab can edit 8x8 pixels and write back to DSL
 - [ ] Tilemap tab can edit map/tile and write back to DSL
-- [ ] Sound tab can preview/tune BGM/SFX
+- [ ] SFX tab can preview/tune SFX
+- [ ] BGM tab can preview/tune BGM
 
 ## Final Submission Pass
 
@@ -111,9 +145,8 @@ Expected:
 - [ ] Ensure commit history is clean/readable
 - [ ] Submit final application text + demo link
 
-## Remaining Priorities (2026-04-11)
+## Remaining Priorities (2026-04-19)
 
-1. Add tests for breakout / snake / shooting.
-2. Record demo video/GIF.
-3. Final docs sync (README updated 2026-04-11).
-4. Freeze and submit.
+1. Demo video/GIF recording (playable games: driftbird, platformer, shooting recommended).
+2. Final application text freeze (`docs/application-draft.md`).
+3. Final reproducibility pass (build → run → edit loop on clean env).
