@@ -6,6 +6,28 @@
 - Deadline: 2026-04-21
 - Last updated: 2026-04-19
 
+## Final Submission Essentials (Official Summary)
+
+Based on:
+- SCC Regulations (`https://www.moonbitlang.com/2026-scc`, especially Evaluation + Open Source Requirements)
+- Suggested materials guidance:
+  - public GitHub repo with commit history
+  - README (goals/scope/usage/environment)
+  - reproducible build/run path
+  - tests/validation for core and edge cases
+  - optional: demo video/screenshots/deployment links
+
+- [x] Public GitHub repository is confirmed public and commit history preserved
+- [x] README covers goals, scope, usage, and environment requirements
+- [x] Reproducible build/run path for core workflow is documented
+- [x] Tests/validation materials for key paths and edge cases are present
+- [x] OSI-approved license is present (`LICENSE`: Apache-2.0)
+- [x] Supporting artifacts/scripts are open-sourced in repository
+- [x] Development retrospective materials are present (`docs/decision-log.md`, `docs/ai-usage-log.md`)
+- [ ] Demo video/GIF is finalized and shareable
+- [ ] Screenshots are finalized and shareable
+- [x] Deployment links are documented (`README.mbt.md` GitHub Pages section)
+
 ## Stage 1 Gates
 
 - [x] Google Form submitted (2026-04-01)
