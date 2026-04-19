@@ -7,3 +7,4 @@ web.js.map
 site/**
 !site/.nojekyll
 !site/index.html
+!site/favicon.png
