@@ -29,6 +29,8 @@ pub struct PlatformerGame {
   mut coins : Array[@model.Placement]
   mut coins_collected : Int
   mut camera : @model.Camera
+  mut coyote_timer : Int
+  mut jump_buffer_timer : Int
   mut is_over : Bool
   mut is_clear : Bool
 } derive(Eq, Show)
