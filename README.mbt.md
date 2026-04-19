@@ -11,6 +11,8 @@ The core idea is simple:
 - Keep gameplay deterministic (fixed-step update).
 - Keep output portable (MoonBit + Web/Wasm-ready runtime model).
 
+**[Try the demo in your browser!](https://sacckey.github.io/moon8bit/g/)**
+
 ## SCC Scope Snapshot
 
 - Engineering Goal: make AI-assisted retro game iteration practical in MoonBit.
