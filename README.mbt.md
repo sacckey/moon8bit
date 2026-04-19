@@ -1,4 +1,8 @@
-# moon8bit
+<br>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sacckey/moon8bit/refs/heads/main/resource/logo/moon8bit-logo.png" width="480px">
+</p>
+<br>
 
 `moon8bit` is a compact retro 2D game engine prototype for MoonBit, designed to be **AI-friendly**.
 
