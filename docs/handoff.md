@@ -2,7 +2,7 @@
 
 ## 2026-04-18 Current State
 
-- Build/Test status: pass (`moon check`, `moon test`, 72 tests)
+- Build/Test status: pass (`moon check`, `moon test`, 92 tests)
 - Sample games: driftbird, breakout, snake, shooting, platformer
 - Renderer: WebGPU + Canvas2D fallback, runtime status visible (`renderer=webgpu|2d`)
 - Audio: DSL-managed SFX/BGM, editor split into `SFX` and `BGM` tabs
@@ -19,7 +19,7 @@
 
 - No browser-to-local overwrite (import/export workflow only).
 - WebGPU still uses per-frame map/upload path; can be optimized with `writeTexture`.
-- Non-driftbird games still lack automated tests and deterministic replay coverage.
+- Final submission artifacts/docs freeze are not yet complete.
 
 ### Reproducible local commands
 
@@ -34,11 +34,10 @@ URLs: `/` top, `/g/` game list, `/g/<game_id>/` playable editor page.
 
 ### Remaining implementation work before freeze
 
-1. Add tests for breakout / snake / shooting / platformer.
-2. Add deterministic replay/E2E checks per game.
-3. Stabilize platformer feel with explicit regression tests.
-4. Final editor UX polish for larger maps and feedback consistency.
-5. WebGPU upload path hardening/perf (`writeTexture` migration).
+1. Stabilize platformer feel with explicit regression tests.
+2. Final editor UX polish for larger maps and feedback consistency.
+3. WebGPU upload path hardening/perf (`writeTexture` migration).
+4. Final submission artifacts (demo video/GIF, application text freeze).
 
 ---
 

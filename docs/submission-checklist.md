@@ -55,7 +55,7 @@
 
 ## Engineering Quality
 
-- [x] 72 tests passing (`moon test`)
+- [x] 92 tests passing (`moon test`)
 - [x] Deterministic runtime: same inputs → same frames
 - [x] Collision regression tests (pipe hit / ground hit / score increment)
 - [x] Timer/event ordering tests
@@ -63,8 +63,8 @@
 - [x] Sound DSL tests (sound/bgm block parse, note name to MIDI, error cases)
 - [x] Tile/tilemap DSL tests (parse, validation, pixel lookup, round-trip)
 - [x] Placement DSL tests (parse, unknown sprite reference error)
-- [ ] Test coverage for breakout / snake / shooting / platformer
-- [ ] E2E replay coverage per game
+- [x] Test coverage for breakout / snake / shooting / platformer
+- [x] E2E replay coverage per game
 
 ## Required Artifacts
 
@@ -125,8 +125,6 @@ Expected:
 
 ## Remaining Priorities (2026-04-19)
 
-1. Add game tests for breakout / snake / shooting / platformer (runtime + gameplay regressions).
-2. Add replay-oriented deterministic E2E tests per game (input script → expected end state).
-3. Demo video/GIF recording (playable games: driftbird, platformer, shooting recommended).
-4. Final application text freeze (`docs/application-draft.md`).
-5. Final reproducibility pass (build → run → edit loop on clean env).
+1. Demo video/GIF recording (playable games: driftbird, platformer, shooting recommended).
+2. Final application text freeze (`docs/application-draft.md`).
+3. Final reproducibility pass (build → run → edit loop on clean env).
