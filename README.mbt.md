@@ -6,75 +6,36 @@
 
 `moon8bit` is a compact retro 2D game engine prototype for MoonBit, designed to be **AI-friendly**.
 
-The core idea is simple:
-- Keep assets text-first (DSL), not binary-first.
-- Keep gameplay deterministic (fixed-step update).
-- Keep output portable (MoonBit + Web/Wasm-ready runtime model).
+Core ideas:
+- Text-first assets (`assets.dsl`), not binary-first workflows
+- Deterministic fixed-step runtime for reproducible behavior/tests
+- Portable runtime model (MoonBit + Web/Wasm)
 
-**[Try the demo in your browser!](https://sacckey.github.io/moon8bit/g/)**
+**[Try the demo in your browser](https://sacckey.github.io/moon8bit/g/)**
 
-## SCC Scope Snapshot
+## Current Snapshot
 
-- Engineering Goal: make AI-assisted retro game iteration practical in MoonBit.
-- Target Users: solo developers/small teams building pixel-style prototypes and learners exploring MoonBit systems code.
-- Architecture: `DSL parser -> runtime model -> renderer -> per-game web entry`, with CLI and tests wired to the same core package.
-- Feasibility: four playable game demos, reproducible commands, parser/error tests, deterministic runtime tests, WebGPU rendering.
+- Goal: make AI-assisted retro game iteration practical in MoonBit
+- Architecture: `assets DSL parser -> runtime model -> renderer -> shared web runtime`
+- Renderer: WebGPU path + Canvas2D fallback (`renderer=webgpu|2d` status)
+- Sample games: `driftbird`, `breakout`, `snake`, `shooting`, `platformer`
+- Browser editor tabs: `Game / DSL / Palette / Sprite / Tile / Tilemap / SFX / BGM`
 
-## Environment Requirements
+## Repository Layout
 
-- OS: macOS/Linux (current local verification environment: macOS/Darwin)
-- MoonBit toolchain: `moon 0.1.20260209`
-- Python: `Python 3.9.6` (for `python3 -m http.server --directory site`)
-- Browser: Chrome 113+ / Edge 113+ recommended (WebGPU); Canvas2D fallback works in any modern browser
+- `src/model` — core data types (`AssetBundle`, `Frame`, `InputState`, tile/collision types)
+- `src/assets` — DSL parser and JSON conversion helpers
+- `src/engine` — deterministic runtime loop, update/draw contexts, events/timers, drawing helpers
+- `src/cmd/main` — CLI (`assets`, `assets-file`)
+- `src/cmd/web` — shared browser runtime/editor shell and renderer/audio glue
+- `src/games/<game_id>` — per-game logic, tests, `assets.dsl`, `game_spec.json`, and `web` entry package
+- `scripts/update_demo_bundle.sh` — builds per-game web bundles and regenerates `site/g/*`
 
-## Current Implementation
+## Requirements
 
-Implemented in this repository:
-
-- **Engine core**
-  - `Game` trait with `init/update/draw` phases
-  - Fixed-step deterministic runtime (`EngineInstance`)
-  - Imperative `UpdateContext` API: `ctx.sfx()`, `ctx.bgm_stop()`, `ctx.set_timeout()`, etc.
-  - `EngineCommand` event/timer pipeline with ordering guarantees
-  - Utility: `rand(seed, min, max)`, `clamp(value, min, max)`
-
-- **Asset DSL**
-  - `palette`, `sprite`, `tilemap`, `sound`, `bgm` blocks with `end`
-  - Line-numbered parse errors
-  - Sound: `wave`, `attack`, `decay`, `volume`, `f0`, `f1`
-  - BGM: `wave`, `volume`, `step_sec`, `loop`, `notes` (white keys C–B + R for rest; MIDI internally)
-  - DSL → JSON conversion helper
-
-- **Rendering**
-  - WebGPU path: full-screen triangle pipeline, nearest-neighbor sampler, palette RGBA cache, `device.lost` fallback
-  - Canvas2D fallback: automatic when WebGPU unavailable
-  - Renderer status displayed in page header (`renderer=webgpu` / `renderer=2d`)
-
-- **Audio**
-  - BGM: step sequencer from DSL `notes` array (MIDI → Hz at runtime)
-  - SFX: envelope synthesis (`attack/decay/volume`, frequency sweep `f0→f1`)
-
-- **Browser editor**
-  - DSL tab: apply / import / export `assets.dsl`
-  - Sprite tab: pixel editor synced with DSL sprites
-  - Sound tab: full SFX/BGM editor with:
-    - SFX cards: wave selector, F0/F1/ATK/DEC/VOL number inputs, Test / Dup / Del
-    - `+ SFX` button to create new SFX entries from the UI
-    - BGM selector dropdown for multiple BGM blocks, `+ BGM` / `Dup` / `Del`
-    - BGM controls: wave, step_sec, loop, notes inputs
-    - Dirty state indicator (`Modified` / `Saved`)
-    - `Sync from DSL` / `Write to DSL` / `Write + Apply` round-trip
-    - Safe write-back: aborts with error feedback on malformed unterminated sound/bgm blocks
-
-- **Sample games**
-  - `driftbird` — side-scroller: input, scrolling, collision, audio
-  - `breakout` — ball physics: subframe collision, entry-axis bounce detection
-  - `snake` — grid movement: wrap, food spawn via `rand`
-  - `shooting` — shooter: parallax stars, sprite-based enemies
-
-- **CLI**
-  - `assets` — DSL text → JSON string
-  - `assets-file` — DSL file → JSON file
+- MoonBit toolchain (`moon`)
+- Python 3 (`python3 -m http.server` for local preview)
+- Modern browser (WebGPU-capable browser recommended; Canvas2D fallback is automatic)
 
 ## Quick Start
 
@@ -83,62 +44,17 @@ moon check
 moon test
 ```
 
-## Evaluator Quickstart (3-5 min)
+## Run Local Web Demo
 
 ```bash
-moon check
-moon test
 ./scripts/update_demo_bundle.sh
 python3 -m http.server 8000 --directory site
 ```
 
 Open:
-- `http://localhost:8000/`
-- `http://localhost:8000/g/`
-- `http://localhost:8000/g/driftbird/`
-
-Then in browser:
-1. Press `Space` to start and flap. Status bar shows `renderer=webgpu` or `renderer=2d`.
-2. Edit DSL and click `Apply DSL` — scene updates immediately.
-3. Open `Sprite` tab — edit pixels and click `Write + Apply`.
-4. Open `Sound` tab — adjust SFX/BGM, use `Test`, then `Write to DSL` or `Write + Apply`.
-
-## GitHub Pages
-
-Publish artifacts are generated under `site/`:
-
-```bash
-./scripts/update_demo_bundle.sh
-```
-
-Entry paths:
-- `/` top page
-- `/g/` game list
-- `/g/<game_id>/` per-game runtime/editor page (driftbird, breakout, snake, shooting)
-
-## Controls and Editor
-
-Default game controls (driftbird):
-- `Space` / `ArrowUp`: start, restart, flap
-- `R`: reset
-
-Editor tabs:
-- `Game`: playable runtime
-- `DSL`: edit/apply/import/export `assets.dsl`
-- `Sprite`: pixel editor synced with DSL sprites
-- `Tilemap`: map + tile editor
-  - Map editor: brush paint/erase on tilemap canvas (`Shift` or right-drag = erase)
-  - Map management: `+ Map` / `Del Map` / `Resize` (`width` / `height` inputs)
-  - Tile metadata: selected tile `name` and `solid` checkbox
-  - Tile pixel editor: edit selected tile's 8x8 pixels with palette brush
-  - `Sync from DSL` / `Write to DSL` / `Write + Apply` round-trip
-  - Parse errors show line-numbered feedback in Tilemap tab
-- `Sound`: SFX/BGM editor
-  - Per-SFX cards: wave select, frequency, envelope, volume — Test / Dup / Del per card
-  - `+ SFX` button creates new SFX entries from the GUI (no DSL edit needed)
-  - BGM selector for multiple BGM blocks; `+ BGM` / `Dup` / `Del` to manage them
-  - `Sync from DSL` imports DSL state into editor; `Write to DSL` / `Write + Apply` write back
-  - `Modified` / `Saved` indicator shows unsaved editor changes
+- `http://localhost:8000/` (top)
+- `http://localhost:8000/g/` (game list)
+- `http://localhost:8000/g/<game_id>/` (per-game page)
 
 ## CLI Usage
 
@@ -148,11 +64,22 @@ Convert DSL text to JSON:
 moon run src/cmd/main -- assets "sprite hero 8 8\n1.......\n........\n........\n........\n........\n........\n........\n........\nend"
 ```
 
-Convert DSL file to JSON file (`--target js`):
+Convert DSL file to JSON file:
 
 ```bash
 moon run src/cmd/main --target js -- assets-file assets.dsl assets.json
 ```
+
+## Browser Editor
+
+- `Game`: playable runtime view
+- `DSL`: edit/apply/import/export `assets.dsl`
+- `Palette`: 0-15 palette color editor with DSL write-back
+- `Sprite`: sprite list + pixel editor (add/dup/delete, rename, resize 8/16/32)
+- `Tile`: tile (8x8) editor, tile metadata (`name`, `solid`)
+- `Tilemap`: map paint/erase, map add/delete/resize, DSL write-back
+- `SFX`: per-sound synthesis editor (`wave`, `f0/f1`, `attack`, `decay`, `volume`)
+- `BGM`: multi-BGM editor (`wave`, `volume`, `step_sec`, `loop`, `notes`) + piano-roll-like editing
 
 ## Asset DSL Reference
 
@@ -165,6 +92,10 @@ color 1 #274060
 end
 ```
 
+Notes:
+- Parser accepts sequential `color <index> <hex>` rows
+- `index` must start at 0 and increase by 1
+
 ### Sprite
 
 ```text
@@ -173,21 +104,62 @@ sprite bird 8 8
 ..3334..
 .333334.
 333663..
+........
+........
+........
+........
 end
 ```
 
-- `.` means transparent (`-1`)
-- `0-9`, `a-f`, `A-F` are palette indices
-- Width/height must each be 8, 16, or 32
+Notes:
+- `.` = transparent (`-1`)
+- `0-9`, `a-f`, `A-F` = palette indices
+- Width/height must each be `8`, `16`, or `32`
+
+### Tile
+
+```text
+tile 1 grass solid
+22222222
+23333332
+23333332
+23333332
+23333332
+23333332
+23333332
+22222222
+end
+```
+
+Notes:
+- Header: `tile <id> [name] [solid]`
+- `id` must be in `0..255`
+- Each tile is fixed 8x8
 
 ### Tilemap
 
 ```text
-tilemap ground 8 2
-5 5 5 5 5 5 5 5
-3 3 3 3 3 3 3 3
+tilemap field 8 4
+1 1 1 1 1 1 1 1
+1 . . . . . . 1
+1 . . . . . . 1
+1 1 1 1 1 1 1 1
 end
 ```
+
+Notes:
+- Header: `tilemap <name> <width> <height>`
+- Use `.` for transparent cells
+
+### Placement
+
+```text
+place player_spawn hero 16 32
+```
+
+Notes:
+- Directive: `place <name> <sprite> <x> <y>`
+- Parser validates referenced sprite names
 
 ### Sound (SFX)
 
@@ -202,8 +174,6 @@ f1 360
 end
 ```
 
-Triggered in game code via `ctx.sfx("flap")`.
-
 ### BGM
 
 ```text
@@ -216,71 +186,37 @@ notes C4 E4 G4 E4 R
 end
 ```
 
-- Notes: `C D E F G A B` + optional `#`/`b` + octave (e.g. `C4`, `C#4`, `Db4`)
-- `R` = rest (silence for one step)
-- Controlled via `ctx.bgm_start()` / `ctx.bgm_stop()`
+Notes:
+- Notes support `C D E F G A B`, optional `#`/`b`, octave (e.g. `C#4`, `Db4`), and `R` (rest)
+- Internally converted to MIDI numbers
 
 ## Engine Model
 
-- `init`: create/reset game state.
-- `update(self, ctx) -> Self`: fixed-step state transition. Use `ctx` for events and timers.
-- `draw(self, ctx) -> Frame`: pure frame generation from current state.
+- `init(self, config) -> Self`: initialize/reset state
+- `update(self, ctx) -> Self`: deterministic fixed-step state transition
+- `draw(self, ctx) -> Frame`: pure frame generation
 
-```mbt
-pub impl @engine.Game for MyGame with update(self, ctx) {
-  if @engine.key_pressed(ctx.input, "Space") {
-    ctx.sfx("flap")
-  }
-  self
-}
-```
-
-## Collision Model
-
-- Engine provides reusable primitives: `Rect` + `Collider`.
-- Games build tagged colliders and choose collision responses in game logic.
-- Hit tags (e.g. `ground`, `pipe_top`) are stored in game state for explainable game-over behavior.
+Runtime event flow:
+- Game emits commands/events (SFX, BGM start/stop, timers)
+- Engine queues and dispatches events in deterministic order
+- Web runtime consumes events for audio playback
 
 ## Why AI-Friendly
 
-- Text DSL is easy to prompt, diff, review, and regenerate.
-- Line-numbered parser errors are easy to feed back into iterative AI loops.
-- Deterministic game loop makes AI-generated tests stable.
-- Compact module boundaries (`model/assets/engine/games/web`) are easy to inspect.
+- Text DSL is easy to prompt/diff/review/regenerate
+- Parser errors include line numbers for quick repair loops
+- Deterministic loop keeps behavior and tests stable
+- Compact package boundaries (`model/assets/engine/games/web`) make code inspection practical
 
-## Baseline and Differentiation
+## Publish to GitHub Pages
 
-- Baseline capabilities:
-  - WebGPU rendering path (Canvas2D fallback)
-  - Practical audio path (BGM step sequencer + SFX synthesis)
-  - Minimal GUI authoring path (sprite pixel editor + sound parameter editor)
-- moon8bit-specific value:
-  - Text-first asset workflow for AI iteration
-  - Deterministic runtime and reproducible validation
-  - Compact MoonBit codebase that remains easy to inspect
-
-## Validation
-
-52 tests covering:
-- DSL success/error cases (palette, sprite, tilemap, sound, bgm, note names)
-- Deterministic runtime replay
-- Collision behavior (pipe hit, ground hit, score increment, timer ordering)
-- Integration paths for driftbird game loops
+`site/` contents are generated from current game packages:
 
 ```bash
-moon test
+./scripts/update_demo_bundle.sh
 ```
 
-## Context Harness (Anti-Drift)
-
-- `docs/north-star.md`
-- `docs/session-brief.md`
-- `docs/decision-log.md`
-- `docs/handoff.md`
-- `docs/ai-usage-log.md`
-
-## Submission Prep
-
-- `docs/submission-checklist.md`
-- `docs/demo-script.md`
-- `docs/application-draft.md`
+Generated paths:
+- `/` top page
+- `/g/` game list
+- `/g/<game_id>/` per-game playable/editor page
