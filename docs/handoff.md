@@ -3,7 +3,7 @@
 ## 2026-04-18 Current State
 
 - Build/Test status: pass (`moon check`, `moon test`, 92 tests)
-- Sample games: driftbird, breakout, snake, shooting, platformer
+- Sample games: flappy, breakout, snake, shooting, platformer
 - Renderer: WebGPU + Canvas2D fallback, runtime status visible (`renderer=webgpu|2d`)
 - Audio: DSL-managed SFX/BGM, editor split into `SFX` and `BGM` tabs
 - Editor tabs: `Game / DSL / Palette / Sprite / Tile / Tilemap / SFX / BGM`
@@ -45,7 +45,7 @@ URLs: `/` top, `/g/` game list, `/g/<game_id>/` playable editor page.
 
 - Build/Test status: pass (`moon check`, `moon test`, 42 tests)
 - MoonBit source: ~6,634 lines
-- Sample games: driftbird, breakout, snake, shooting
+- Sample games: flappy, breakout, snake, shooting
 - Renderer: WebGPU (with Canvas2D fallback), status shown in page header
 - Audio: BGM + SFX via Web Audio API
 - Editor: DSL apply/import/export, sprite editor, sound editor
@@ -74,7 +74,7 @@ moon test
 python3 -m http.server 8000 --directory site
 ```
 
-URLs: `/` top, `/g/` game list, `/g/driftbird/` playable editor page.
+URLs: `/` top, `/g/` game list, `/g/flappy/` playable editor page.
 
 ### Remaining work before 2026-04-21
 

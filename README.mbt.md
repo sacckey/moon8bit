@@ -18,7 +18,7 @@ Core ideas:
 - Goal: make AI-assisted retro game iteration practical in MoonBit
 - Architecture: `assets DSL parser -> runtime model -> renderer -> shared web runtime`
 - Renderer: WebGPU path + Canvas2D fallback (`renderer=webgpu|2d` status)
-- Sample games: `driftbird`, `breakout`, `snake`, `shooting`, `platformer`
+- Sample games: `flappy`, `breakout`, `snake`, `shooting`, `platformer`
 - Browser editor tabs: `Game / DSL / Palette / Sprite / Tile / Tilemap / SFX / BGM`
 
 ## Repository Layout

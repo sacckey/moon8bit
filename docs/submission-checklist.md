@@ -69,7 +69,7 @@ Based on:
 
 ## Sample Games
 
-- [x] driftbird (side-scroller: input / collision / scrolling / audio)
+- [x] flappy (side-scroller: input / collision / scrolling / audio)
 - [x] breakout (ball physics: subframe collision / entry-axis detection)
 - [x] snake (grid game: wrap / food spawn / growth)
 - [x] shooting (shooter: star parallax / enemy / sprites)
@@ -121,11 +121,11 @@ Open:
 
 - `http://localhost:8000/`
 - `http://localhost:8000/g/`
-- `http://localhost:8000/g/driftbird/`
+- `http://localhost:8000/g/flappy/`
 
 Expected:
 
-- [ ] Driftbird Game tab is playable (`Space` / `ArrowUp`, `R`)
+- [ ] Flappy Game tab is playable (`Space` / `ArrowUp`, `R`)
 - [ ] Status bar shows `renderer=webgpu` or `renderer=2d`
 - [ ] DSL tab `Apply` updates screen output
 - [ ] DSL `Import` loads local file and applies
@@ -147,6 +147,6 @@ Expected:
 
 ## Remaining Priorities (2026-04-19)
 
-1. Demo video/GIF recording (playable games: driftbird, platformer, shooting recommended).
+1. Demo video/GIF recording (playable games: flappy, platformer, shooting recommended).
 2. Final application text freeze (`docs/application-draft.md`).
 3. Final reproducibility pass (build → run → edit loop on clean env).

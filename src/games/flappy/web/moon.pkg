@@ -1,6 +1,6 @@
 import {
   "sacckey/moon8bit/cmd/web" @webui,
-  "sacckey/moon8bit/games/driftbird" @game,
+  "sacckey/moon8bit/games/flappy" @game,
 }
 
 options(

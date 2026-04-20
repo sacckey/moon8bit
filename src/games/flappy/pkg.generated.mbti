@@ -1,0 +1,47 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "sacckey/moon8bit/games/flappy"
+
+import {
+  "sacckey/moon8bit/engine",
+  "sacckey/moon8bit/model",
+}
+
+// Values
+pub fn init_game(@model.AssetBundle, @model.EngineConfig) -> @engine.EngineInstance[FlappyGame]
+
+pub fn new_flappy_game(@model.AssetBundle) -> FlappyGame
+
+pub fn run_flappy(@model.AssetBundle, Array[@model.InputState], config? : @model.EngineConfig) -> (FlappyGame, Array[@model.Frame])
+
+pub fn step_game(@engine.EngineInstance[FlappyGame], @model.InputState) -> (@engine.EngineInstance[FlappyGame], @model.Frame)
+
+// Errors
+
+// Types and methods
+pub struct FlappyGame {
+  bundle : @model.AssetBundle
+  mut bird_x : Int
+  mut bird_y : Double
+  mut bird_vy : Double
+  mut pipe_x : Int
+  mut pipe_gap_y : Int
+  mut pipe_width : Int
+  mut gap_height : Int
+  mut score : Int
+  mut terrain_offset : Int
+  mut is_started : Bool
+  mut is_over : Bool
+  mut last_hit_tag : String?
+  mut pipe_scored : Bool
+} derive(Eq, Show)
+pub fn FlappyGame::is_over(Self) -> Bool
+pub fn FlappyGame::is_started(Self) -> Bool
+pub fn FlappyGame::last_hit_tag(Self) -> String?
+pub fn FlappyGame::score(Self) -> Int
+pub impl @engine.Game for FlappyGame
+
+// Type aliases
+pub type FlappyRuntime = @engine.EngineInstance[FlappyGame]
+
+// Traits
+

@@ -52,8 +52,8 @@ fn test_inputs(frame_count : Int) -> Array[@model.InputState] {
 test "engine deterministic with identical inputs" {
   let bundle = test_bundle()
   let inputs = test_inputs(48)
-  let (state1, frames1) = run_driftbird(bundle, inputs)
-  let (state2, frames2) = run_driftbird(bundle, inputs)
+  let (state1, frames1) = run_flappy(bundle, inputs)
+  let (state2, frames2) = run_flappy(bundle, inputs)
 
   assert_eq(state1, state2)
   assert_eq(frames1, frames2)
@@ -69,7 +69,7 @@ test "reset input restores game state" {
     @model.input_none,
   ]
 
-  let (state, _) = run_driftbird(bundle, inputs)
+  let (state, _) = run_flappy(bundle, inputs)
   assert_true(!state.is_over())
   assert_eq(state.score(), 0)
 }
@@ -114,7 +114,7 @@ test "collider API ignores empty collider boxes" {
 ///|
 test "engine step records pipe collision hit tag" {
   let config = @model.default_engine_config()
-  let runtime = @engine.engine_init(new_driftbird_game(test_bundle()), config)
+  let runtime = @engine.engine_init(new_flappy_game(test_bundle()), config)
   let state = @engine.engine_game(runtime)
 
   state.is_started = true
@@ -138,7 +138,7 @@ test "engine step records pipe collision hit tag" {
 ///|
 test "engine step increments score when passing a pipe" {
   let config = @model.default_engine_config()
-  let runtime = @engine.engine_init(new_driftbird_game(test_bundle()), config)
+  let runtime = @engine.engine_init(new_flappy_game(test_bundle()), config)
   let state = @engine.engine_game(runtime)
 
   state.is_started = true
@@ -163,7 +163,7 @@ test "engine step increments score when passing a pipe" {
 ///|
 test "parity score baseline increments once per pipe pass" {
   let config = @model.default_engine_config()
-  let runtime = @engine.engine_init(new_driftbird_game(test_bundle()), config)
+  let runtime = @engine.engine_init(new_flappy_game(test_bundle()), config)
   let state = @engine.engine_game(runtime)
   state.is_started = true
   state.is_over = false
@@ -189,7 +189,7 @@ test "parity score baseline increments once per pipe pass" {
 ///|
 test "parity collision baseline reports ground hit" {
   let config = @model.default_engine_config()
-  let runtime = @engine.engine_init(new_driftbird_game(test_bundle()), config)
+  let runtime = @engine.engine_init(new_flappy_game(test_bundle()), config)
   let state = @engine.engine_game(runtime)
 
   state.is_started = true
@@ -214,7 +214,7 @@ test "parity reset baseline restores zeroed run state" {
     @model.input_none,
   ]
   let config = @model.default_engine_config()
-  let (state, _) = run_driftbird(test_bundle(), inputs, config~)
+  let (state, _) = run_flappy(test_bundle(), inputs, config~)
 
   assert_true(!state.is_started())
   assert_true(!state.is_over())

@@ -22,7 +22,7 @@ Build `moon8bit` as a retro 2D engine that is easy for both humans and AI to use
 - [x] Sound playback path (BGM + core SFX via Web Audio API).
 - [x] Minimal GUI editing path (sprite editor + sound editor tabs).
 - [x] Imperative game API (`ctx.sfx`, `ctx.set_timeout`, `ctx.bgm_stop` etc.).
-- [x] Multiple sample games (driftbird, breakout, snake, shooting).
+- [x] Multiple sample games (flappy, breakout, snake, shooting).
 
 ## Out of Scope (v1)
 

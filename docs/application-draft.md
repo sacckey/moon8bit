@@ -18,7 +18,7 @@ Current implementation includes six integrated parts:
 3. CLI flow for DSL conversion and validation (`assets`, `assets-file`).
 4. Web rendering path with WebGPU (full-screen triangle pipeline, nearest-neighbor sampling, palette RGBA cache) and automatic Canvas2D fallback. Renderer status is shown live in the page header.
 5. Web editor pages under `site/g/<game_id>/` with live DSL editing, sprite editor, sound editor, and local import/export.
-6. Four sample games: driftbird (side-scroller), breakout (ball physics with entry-axis collision), snake (grid wrap, food spawn), shooting (parallax background, sprite-based enemies).
+6. Four sample games: flappy (side-scroller), breakout (ball physics with entry-axis collision), snake (grid wrap, food spawn), shooting (parallax background, sprite-based enemies).
 
 This design maps directly to the SCC evaluation axes:
 

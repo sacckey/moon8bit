@@ -49,18 +49,18 @@ fn test_inputs(frame_count : Int) -> Array[@model.InputState] {
 }
 
 ///|
-test "run_driftbird returns requested frame count" {
+test "run_flappy returns requested frame count" {
   let bundle = test_bundle()
-  let (state, frames) = @driftbird.run_driftbird(bundle, test_inputs(24))
+  let (state, frames) = @flappy.run_flappy(bundle, test_inputs(24))
   assert_eq(frames.length(), 24)
   assert_true(state.score() >= 0)
   assert_true(frames[23].to_ascii().length() > 0)
 }
 
 ///|
-test "driftbird waits for flap input before start" {
+test "flappy waits for flap input before start" {
   let inputs = [@model.input_none, @model.input_none, @model.input_none]
-  let (state, _) = @driftbird.run_driftbird(test_bundle(), inputs)
+  let (state, _) = @flappy.run_flappy(test_bundle(), inputs)
 
   assert_true(!state.is_started())
   assert_true(!state.is_over())
@@ -68,7 +68,7 @@ test "driftbird waits for flap input before start" {
 }
 
 ///|
-test "driftbird restarts on flap after game over" {
+test "flappy restarts on flap after game over" {
   let inputs : Array[@model.InputState] = []
   inputs.push(@model.input_state(["Space"], ["Space"], []))
   for _ in 0..<64 {
@@ -76,7 +76,7 @@ test "driftbird restarts on flap after game over" {
   }
   inputs.push(@model.input_state(["Space"], ["Space"], []))
 
-  let (state, _) = @driftbird.run_driftbird(test_bundle(), inputs)
+  let (state, _) = @flappy.run_flappy(test_bundle(), inputs)
   assert_true(state.is_started())
   assert_true(!state.is_over())
 }

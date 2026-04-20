@@ -7,7 +7,7 @@ Show fast AI-friendly iteration with the current web workflow:
 
 ## Recording Setup
 
-- Open `http://localhost:8000/g/driftbird/`
+- Open `http://localhost:8000/g/flappy/`
 - Keep browser zoom at 100%
 - Keep all tabs visible (`Game`, `DSL`, `Sprite`, `Sound`)
 
