@@ -40,20 +40,20 @@ end
 bgm main
 wave square
 volume 0.04
-step_sec 0.125
+step_sec 0.15
 loop true
-notes C4 E4 G4 E4 C4 E4 G4 R
+notes A5 A5 G5 F5 F5 E5 D5 D5 E5 F5 F5 G5 A5 A#5 R A#5 D6 R D6 A5 ~ ~ R A5 A5 G5 F5 F5 E5 D5 C5 D5 E5 F5 G5 A5 C6 R A#5 G5 R C6 F5 ~ ~ F6 R R
 end
 
 sprite bird 8 8
-........
-..3334..
-.333334.
-333663..
-.333334.
-..33....
-...1....
-........
+...000..
+..03330.
+.0330340
+.0333300
+0033330.
+0333330.
+.03330..
+..0000..
 end
 
 # tile IDs are explicit (0..255)
