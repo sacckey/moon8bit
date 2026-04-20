@@ -5,23 +5,16 @@ extern "js" fn web_init_palette_editor() -> Unit =
   #|   const textarea = document.getElementById("moon8bit-dsl-input");
   #|   if (!editor || !textarea) return;
   #|
-  #|   const fallbackPalette = [
-  #|     "#101820", "#1f4068", "#2e8b57", "#f2aa4c",
-  #|     "#e94f37", "#8f6f4f", "#f6f7eb", "#7f5af0",
-  #|     "#264653", "#2a9d8f", "#e9c46a", "#f4a261",
-  #|     "#e76f51", "#577590", "#90be6d", "#ffffff",
-  #|   ];
-  #|
-  #|   const normalizeHex = (raw, fallback) => {
+  #|   const normalizeHex = (raw) => {
   #|     const v = String(raw || "").trim();
-  #|     if (v === "") return fallback;
+  #|     if (v === "") return null;
   #|     const s = v.startsWith("#") ? v.slice(1) : v;
   #|     if (/^[0-9a-fA-F]{6}$/.test(s)) return `#${s.toLowerCase()}`;
   #|     if (/^[0-9a-fA-F]{3}$/.test(s)) {
   #|       const [r, g, b] = s.toLowerCase().split("");
   #|       return `#${r}${r}${g}${g}${b}${b}`;
   #|     }
-  #|     return fallback;
+  #|     return null;
   #|   };
   #|
   #|   let panel = document.getElementById("moon8bit-palette-panel");
@@ -157,10 +150,11 @@ extern "js" fn web_init_palette_editor() -> Unit =
   #|   if (!globalThis.__moon8bit_palette_state) {
   #|     globalThis.__moon8bit_palette_state = {
   #|       lines: [],
-  #|       colors: fallbackPalette.slice(0, 16),
+  #|       colors: [],
   #|       selected: 0,
-  #|       paletteHeader: "palette default",
+  #|       paletteHeader: "",
   #|       paletteRange: null,
+  #|       parseError: null,
   #|     };
   #|   }
   #|   const state = globalThis.__moon8bit_palette_state;
@@ -175,8 +169,8 @@ extern "js" fn web_init_palette_editor() -> Unit =
   #|
   #|   const parsePaletteFromText = () => {
   #|     const lines = textarea.value.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
-  #|     const colors = fallbackPalette.slice(0, 16);
-  #|     let header = "palette default";
+  #|     const colors = [];
+  #|     let header = "";
   #|     let start = -1;
   #|     let end = -1;
   #|
@@ -192,27 +186,104 @@ extern "js" fn web_init_palette_editor() -> Unit =
   #|           end = i;
   #|           break;
   #|         }
-  #|         const m = trimmed.match(/^color\s+(\d+)\s+(\S+)$/i);
-  #|         if (m) {
-  #|           const idx = Number(m[1]);
-  #|           if (Number.isFinite(idx) && idx >= 0 && idx < 16) {
-  #|             colors[idx] = normalizeHex(m[2], colors[idx]);
-  #|           }
-  #|         }
   #|       }
   #|     }
   #|
+  #|     if (start < 0) {
+  #|       state.parseError = "Palette block not found in DSL.";
+  #|       state.lines = lines;
+  #|       state.colors = [];
+  #|       state.paletteHeader = "";
+  #|       state.paletteRange = null;
+  #|       state.selected = 0;
+  #|       return false;
+  #|     }
+  #|     if (end < start) {
+  #|       state.parseError = "Palette block is missing `end`.";
+  #|       state.lines = lines;
+  #|       state.colors = [];
+  #|       state.paletteHeader = header;
+  #|       state.paletteRange = null;
+  #|       state.selected = 0;
+  #|       return false;
+  #|     }
+  #|
+  #|     let expected = 0;
+  #|     for (let i = start + 1; i < end; i += 1) {
+  #|       const trimmed = lines[i].trim();
+  #|       if (trimmed === "" || trimmed.startsWith("#")) continue;
+  #|       const m = trimmed.match(/^color\s+(\d+)\s+(\S+)$/i);
+  #|       if (!m) {
+  #|         state.parseError = `Invalid palette row at line ${i + 1}: "${trimmed}"`;
+  #|         state.lines = lines;
+  #|         state.colors = [];
+  #|         state.paletteHeader = header;
+  #|         state.paletteRange = { start, end };
+  #|         state.selected = 0;
+  #|         return false;
+  #|       }
+  #|       const idx = Number(m[1]);
+  #|       if (!Number.isInteger(idx) || idx < 0 || idx > 15) {
+  #|         state.parseError = `Palette index out of range at line ${i + 1}: ${m[1]} (allowed: 0..15)`;
+  #|         state.lines = lines;
+  #|         state.colors = [];
+  #|         state.paletteHeader = header;
+  #|         state.paletteRange = { start, end };
+  #|         state.selected = 0;
+  #|         return false;
+  #|       }
+  #|       if (idx !== expected) {
+  #|         state.parseError = `Palette index must be sequential: expected ${expected}, got ${idx} (line ${i + 1})`;
+  #|         state.lines = lines;
+  #|         state.colors = [];
+  #|         state.paletteHeader = header;
+  #|         state.paletteRange = { start, end };
+  #|         state.selected = 0;
+  #|         return false;
+  #|       }
+  #|       const hex = normalizeHex(m[2]);
+  #|       if (!hex) {
+  #|         state.parseError = `Invalid HEX color at line ${i + 1}: ${m[2]}`;
+  #|         state.lines = lines;
+  #|         state.colors = [];
+  #|         state.paletteHeader = header;
+  #|         state.paletteRange = { start, end };
+  #|         state.selected = 0;
+  #|         return false;
+  #|       }
+  #|       colors.push(hex);
+  #|       expected += 1;
+  #|     }
+  #|     if (colors.length === 0) {
+  #|       state.parseError = "Palette block has no colors.";
+  #|       state.lines = lines;
+  #|       state.colors = [];
+  #|       state.paletteHeader = header;
+  #|       state.paletteRange = { start, end };
+  #|       state.selected = 0;
+  #|       return false;
+  #|     }
   #|     state.lines = lines;
   #|     state.colors = colors;
   #|     state.paletteHeader = header;
   #|     state.paletteRange = start >= 0 && end >= start ? { start, end } : null;
-  #|     state.selected = Math.max(0, Math.min(15, Number(state.selected) || 0));
+  #|     state.selected = Math.max(0, Math.min(colors.length - 1, Number(state.selected) || 0));
+  #|     state.parseError = null;
+  #|     return true;
   #|   };
   #|
   #|   const renderControls = () => {
+  #|     if (!Array.isArray(state.colors) || state.colors.length === 0) {
+  #|       indexLabel.textContent = "No valid palette";
+  #|       preview.style.background = "transparent";
+  #|       picker.value = "#000000";
+  #|       hexInput.value = "";
+  #|       hexInput.disabled = true;
+  #|       return;
+  #|     }
+  #|     hexInput.disabled = false;
   #|     const idx = state.selected;
-  #|     const color = normalizeHex(state.colors[idx], fallbackPalette[idx]);
-  #|     state.colors[idx] = color;
+  #|     const color = state.colors[idx];
   #|     indexLabel.textContent = `Selected color ${idx}`;
   #|     preview.style.background = color;
   #|     picker.value = color;
@@ -221,7 +292,8 @@ extern "js" fn web_init_palette_editor() -> Unit =
   #|
   #|   const renderSwatches = () => {
   #|     swatchPane.innerHTML = "";
-  #|     for (let i = 0; i < 16; i += 1) {
+  #|     if (!Array.isArray(state.colors) || state.colors.length === 0) return;
+  #|     for (let i = 0; i < state.colors.length; i += 1) {
   #|       const cell = document.createElement("div");
   #|       cell.style.display = "grid";
   #|       cell.style.gap = "4px";
@@ -242,7 +314,7 @@ extern "js" fn web_init_palette_editor() -> Unit =
   #|       btn.style.padding = "0";
   #|       btn.style.cursor = "pointer";
   #|       btn.style.border = i === state.selected ? "3px solid #4aa96c" : "1px solid #486581";
-  #|       btn.style.background = normalizeHex(state.colors[i], fallbackPalette[i]);
+  #|       btn.style.background = state.colors[i];
   #|       btn.title = `color ${i}`;
   #|       btn.addEventListener("click", () => {
   #|         state.selected = i;
@@ -255,25 +327,27 @@ extern "js" fn web_init_palette_editor() -> Unit =
   #|   };
   #|
   #|   const writePaletteToDsl = () => {
+  #|     if (!Array.isArray(state.colors) || state.colors.length === 0) {
+  #|       setFeedback("Cannot write palette: no valid palette in DSL.", true);
+  #|       return;
+  #|     }
+  #|     if (!state.paletteRange || !Number.isInteger(state.paletteRange.start) || !Number.isInteger(state.paletteRange.end)) {
+  #|       setFeedback("Cannot write palette: palette block range is invalid.", true);
+  #|       return;
+  #|     }
   #|     const block = [state.paletteHeader];
-  #|     for (let i = 0; i < 16; i += 1) {
-  #|       block.push(`color ${i} ${normalizeHex(state.colors[i], fallbackPalette[i])}`);
+  #|     for (let i = 0; i < state.colors.length; i += 1) {
+  #|       block.push(`color ${i} ${state.colors[i]}`);
   #|     }
   #|     block.push("end");
   #|
   #|     const lines = state.lines.slice();
-  #|     if (state.paletteRange && Number.isInteger(state.paletteRange.start) && Number.isInteger(state.paletteRange.end)) {
-  #|       const count = state.paletteRange.end - state.paletteRange.start + 1;
-  #|       lines.splice(state.paletteRange.start, count, ...block);
-  #|       state.paletteRange = {
-  #|         start: state.paletteRange.start,
-  #|         end: state.paletteRange.start + block.length - 1,
-  #|       };
-  #|     } else {
-  #|       const prefix = block.concat([""]);
-  #|       lines.splice(0, 0, ...prefix);
-  #|       state.paletteRange = { start: 0, end: block.length - 1 };
-  #|     }
+  #|     const count = state.paletteRange.end - state.paletteRange.start + 1;
+  #|     lines.splice(state.paletteRange.start, count, ...block);
+  #|     state.paletteRange = {
+  #|       start: state.paletteRange.start,
+  #|       end: state.paletteRange.start + block.length - 1,
+  #|     };
   #|
   #|     textarea.value = lines.join("\n");
   #|     state.lines = lines;
@@ -291,13 +365,17 @@ extern "js" fn web_init_palette_editor() -> Unit =
   #|   };
   #|
   #|   const refreshFromText = () => {
-  #|     parsePaletteFromText();
+  #|     const ok = parsePaletteFromText();
   #|     renderSwatches();
   #|     renderControls();
+  #|     if (!ok && state.parseError) {
+  #|       setFeedback(state.parseError, true);
+  #|     }
   #|   };
   #|
   #|   if (!globalThis.__moon8bit_palette_bound) {
   #|     preview.addEventListener("click", () => {
+  #|       if (!Array.isArray(state.colors) || state.colors.length === 0) return;
   #|       try {
   #|         if (typeof picker.showPicker === "function") {
   #|           picker.showPicker();
@@ -309,24 +387,32 @@ extern "js" fn web_init_palette_editor() -> Unit =
   #|       }
   #|     });
   #|     picker.addEventListener("input", () => {
+  #|       if (!Array.isArray(state.colors) || state.colors.length === 0) return;
   #|       const idx = state.selected;
-  #|       state.colors[idx] = normalizeHex(picker.value, state.colors[idx] || fallbackPalette[idx]);
+  #|       const normalized = normalizeHex(picker.value);
+  #|       if (!normalized) return;
+  #|       state.colors[idx] = normalized;
   #|       renderSwatches();
   #|       renderControls();
   #|       scheduleWrite();
   #|     });
   #|     hexInput.addEventListener("input", () => {
+  #|       if (!Array.isArray(state.colors) || state.colors.length === 0) return;
   #|       const raw = String(hexInput.value || "").trim();
   #|       if (!/^#?[0-9a-fA-F]{3}$/.test(raw) && !/^#?[0-9a-fA-F]{6}$/.test(raw)) return;
   #|       const idx = state.selected;
-  #|       state.colors[idx] = normalizeHex(raw, state.colors[idx] || fallbackPalette[idx]);
+  #|       const normalized = normalizeHex(raw);
+  #|       if (!normalized) return;
+  #|       state.colors[idx] = normalized;
   #|       renderSwatches();
   #|       renderControls();
   #|       scheduleWrite();
   #|     });
   #|     hexInput.addEventListener("change", () => {
+  #|       if (!Array.isArray(state.colors) || state.colors.length === 0) return;
   #|       const idx = state.selected;
-  #|       const normalized = normalizeHex(hexInput.value, state.colors[idx] || fallbackPalette[idx]);
+  #|       const normalized = normalizeHex(hexInput.value);
+  #|       if (!normalized) return;
   #|       state.colors[idx] = normalized;
   #|       renderSwatches();
   #|       renderControls();

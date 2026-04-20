@@ -124,8 +124,8 @@ fn parse_palette_block(
       Ok(v) => v
       Err(e) => return Err(e)
     }
-    if idx < 0 || idx > 255 {
-      return err(line_no, "palette index must be in 0..255")
+    if idx < 0 || idx > 15 {
+      return err(line_no, "palette index must be in 0..15")
     }
     if idx != colors.length() {
       return err(

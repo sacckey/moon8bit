@@ -21,6 +21,18 @@ test "parse assets dsl builds bundle with expected entries" {
 }
 
 ///|
+test "palette index over 15 is rejected" {
+  let dsl = ["palette p", "color 0 #000000", "color 16 #ffffff", "end"].join(
+    "\n",
+  )
+  let e = match @assets.parse_assets_dsl(dsl) {
+    Ok(_) => panic()
+    Err(e) => e
+  }
+  assert_true(e.message.find("palette index must be in 0..15") is Some(_))
+}
+
+///|
 test "json conversion and parse errors are reported" {
   let dsl = ["sprite s 8 8", "g.......", "end"].join("\n")
   let parse_err = match @assets.parse_assets_dsl(dsl) {

@@ -8,6 +8,14 @@ color 4 #f78154
 color 5 #87c38f
 color 6 #f7f7ff
 color 7 #7a5cff
+color 8 #264653
+color 9 #2a9d8f
+color 10 #e9c46a
+color 11 #f4a261
+color 12 #e76f51
+color 13 #577590
+color 14 #90be6d
+color 15 #ffffff
 end
 
 sound jump
