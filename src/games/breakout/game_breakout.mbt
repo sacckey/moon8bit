@@ -359,27 +359,38 @@ pub impl @engine.Game for BreakoutGame with draw(self, _ctx) {
     let mw = @engine.ui_text_width(msg)
     let pw = mw + 4
     let px = @engine.ui_center_x(screen_w, pw)
-    let py = @engine.ui_center_y(screen_h, 11)
-    @engine.ui_panel(frame, px, py, pw, 11, 6, border=0)
-    @engine.ui_text(frame, px + 2, py + 2, msg, 0)
+    let ph = 14
+    let py = @engine.ui_center_y(screen_h, ph)
+    @engine.ui_panel(frame, px, py, pw, ph, 6, border=0)
+    @engine.ui_text(frame, px + 2, py + 3, msg, 0)
   }
   if self.is_over {
-    let pw = 44
-    let ph = 19
+    let title = "GAME OVER"
+    let action = "SPACE:RETRY"
+    let tw = @engine.ui_text_width(title)
+    let aw = @engine.ui_text_width(action)
+    let mw = if tw > aw { tw } else { aw }
+    let pw = mw + 4
+    let ph = 26
     let px = @engine.ui_center_x(screen_w, pw)
     let py = @engine.ui_center_y(screen_h, ph)
     @engine.ui_panel(frame, px, py, pw, ph, 3, border=0)
-    @engine.ui_text(frame, px + 2, py + 2, "GAME OVER", 6)
-    @engine.ui_text(frame, px + 2, py + 11, "SPACE:retry", 6)
+    @engine.ui_text(frame, px + @engine.ui_center_x(pw, tw), py + 4, title, 6)
+    @engine.ui_text(frame, px + @engine.ui_center_x(pw, aw), py + 14, action, 6)
   }
   if self.is_clear {
-    let pw = 44
-    let ph = 19
+    let title = "CLEAR!"
+    let action = "SPACE:RETRY"
+    let tw = @engine.ui_text_width(title)
+    let aw = @engine.ui_text_width(action)
+    let mw = if tw > aw { tw } else { aw }
+    let pw = mw + 4
+    let ph = 26
     let px = @engine.ui_center_x(screen_w, pw)
     let py = @engine.ui_center_y(screen_h, ph)
     @engine.ui_panel(frame, px, py, pw, ph, 4, border=0)
-    @engine.ui_text(frame, px + 2, py + 2, "CLEAR!", 6)
-    @engine.ui_text(frame, px + 2, py + 11, "SPACE:retry", 6)
+    @engine.ui_text(frame, px + @engine.ui_center_x(pw, tw), py + 4, title, 6)
+    @engine.ui_text(frame, px + @engine.ui_center_x(pw, aw), py + 14, action, 6)
   }
 
   frame
