@@ -79,7 +79,7 @@ moon run src/cmd/main --target js -- assets-file assets.dsl assets.json
 - `Tile`: tile (8x8) editor, tile metadata (`name`, `solid`)
 - `Tilemap`: map paint/erase, map add/delete/resize, DSL write-back
 - `SFX`: per-sound synthesis editor (`wave`, `f0/f1`, `attack`, `decay`, `volume`)
-- `BGM`: multi-BGM editor (`wave`, `volume`, `step_sec`, `loop`, `notes`) + piano-roll-like editing
+- `BGM`: multi-BGM editor (`wave`, `volume`, `step_sec`, `loop`, `notes`) + piano-roll editing (Drag: note, `Shift+Drag`: tie `~`, Right-drag: rest `R`)
 
 ## Asset DSL Reference
 
@@ -182,13 +182,15 @@ wave square
 volume 0.04
 step_sec 0.125
 loop true
-notes C4 E4 G4 E4 R
+notes C4 ~ ~ G4 R
 end
 ```
 
 Notes:
-- Notes support `C D E F G A B`, optional `#`/`b`, octave (e.g. `C#4`, `Db4`), and `R` (rest)
-- Internally converted to MIDI numbers
+- Notes support `C D E F G A B`, optional `#`/`b`, octave (e.g. `C#4`, `Db4`), `R` (rest), and `~` (tie: extend previous note without re-attack)
+- Parser keeps note tokens as text (`Array[String]`) and validates note syntax
+- Runtime converts tokens to MIDI when rendering/playback needs pitch values
+- BGM piano roll currently shows `C3` to `C7`, auto-fills available width, and supports horizontal scroll for long sequences
 
 ## Engine Model
 
