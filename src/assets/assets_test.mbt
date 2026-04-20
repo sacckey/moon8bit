@@ -76,8 +76,20 @@ test "parse bgm block with notes into bundle" {
   assert_eq(b.name, "main")
   assert_eq(b.wave, "square")
   assert_eq(b.loop_, true)
-  // C4=60, E4=64, G4=67, R=-1
-  assert_eq(b.notes, [60, 64, 67, -1])
+  assert_eq(b.notes, ["C4", "E4", "G4", "R"])
+}
+
+///|
+test "parse bgm block with tie token into bundle" {
+  let dsl = [
+    "bgm main", "wave square", "volume 0.05", "step_sec 0.125", "loop false", "notes C4 ~ ~ G4 R",
+    "end",
+  ].join("\n")
+  let bundle = match @assets.parse_assets_dsl(dsl) {
+    Ok(v) => v
+    Err(_) => panic()
+  }
+  assert_eq(bundle.bgms[0].notes, ["C4", "~", "~", "G4", "R"])
 }
 
 ///|
@@ -97,17 +109,6 @@ fn encode_sound_and_bgm_blocks(
     lines.push("end")
     lines.push("")
   }
-  let note_name_from_midi = fn(midi : Int) -> String {
-    if midi < 0 {
-      return "R"
-    }
-    let names = [
-      "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
-    ]
-    let semitone = (midi % 12 + 12) % 12
-    let octave = midi / 12 - 1
-    "\{names[semitone]}\{octave.to_string()}"
-  }
   for b in bgms {
     let loop_text = if b.loop_ { "true" } else { "false" }
     lines.push("bgm \{b.name}")
@@ -115,7 +116,7 @@ fn encode_sound_and_bgm_blocks(
     lines.push("volume \{b.volume.to_string()}")
     lines.push("step_sec \{b.step_sec.to_string()}")
     lines.push("loop \{loop_text}")
-    let note_tokens = b.notes.map(note_name_from_midi)
+    let note_tokens = b.notes
     let notes_suffix = if note_tokens.length() > 0 {
       let joined = note_tokens.join(" ")
       " \{joined}"
@@ -249,7 +250,7 @@ fn encode_tile_and_tilemap_blocks(bundle : @model.AssetBundle) -> String {
 }
 
 ///|
-test "note name to midi: white keys" {
+test "parse bgm notes: white keys" {
   let dsl = [
     "bgm test", "wave square", "volume 0.1", "step_sec 0.1", "loop false", "notes C4 D4 E4 F4 G4 A4 B4 C5",
     "end",
@@ -258,11 +259,13 @@ test "note name to midi: white keys" {
     Ok(v) => v
     Err(_) => panic()
   }
-  assert_eq(bundle.bgms[0].notes, [60, 62, 64, 65, 67, 69, 71, 72])
+  assert_eq(bundle.bgms[0].notes, [
+    "C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5",
+  ])
 }
 
 ///|
-test "note name to midi: sharps and flats" {
+test "parse bgm notes: sharps and flats" {
   let dsl = [
     "bgm test", "wave square", "volume 0.1", "step_sec 0.1", "loop false", "notes C#4 Db4 F#3 Gb3 Bb2 A#2",
     "end",
@@ -271,8 +274,7 @@ test "note name to midi: sharps and flats" {
     Ok(v) => v
     Err(_) => panic()
   }
-  // C#4=61, Db4=61, F#3=54, Gb3=54, Bb2=46, A#2=46
-  assert_eq(bundle.bgms[0].notes, [61, 61, 54, 54, 46, 46])
+  assert_eq(bundle.bgms[0].notes, ["C#4", "Db4", "F#3", "Gb3", "Bb2", "A#2"])
 }
 
 ///|
@@ -326,7 +328,7 @@ test "sound and bgm blocks survive parse round-trip: fields match" {
   let dsl = [
     "sound zap", "wave sawtooth", "attack 0.005", "decay 0.15", "volume 0.09", "f0 440",
     "f1 220", "end", "", "bgm loop1", "wave triangle", "volume 0.04", "step_sec 0.2",
-    "loop false", "notes C3 E3 G3 R C4", "end",
+    "loop false", "notes C3 ~ E3 G3 R C4", "end",
   ].join("\n")
   let bundle1 = match @assets.parse_assets_dsl(dsl) {
     Ok(v) => v
@@ -343,7 +345,7 @@ test "sound and bgm blocks survive parse round-trip: fields match" {
   assert_eq(b.name, "loop1")
   assert_eq(b.wave, "triangle")
   assert_eq(b.loop_, false)
-  assert_eq(b.notes, [48, 52, 55, -1, 60])
+  assert_eq(b.notes, ["C3", "~", "E3", "G3", "R", "C4"])
   let redsl = encode_sound_and_bgm_blocks(bundle1.sounds, bundle1.bgms)
   let bundle2 = match @assets.parse_assets_dsl(redsl) {
     Ok(v) => v

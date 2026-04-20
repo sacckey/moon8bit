@@ -432,12 +432,16 @@ fn note_name_to_midi(name : String, line : Int) -> Result[Int, DslError] {
   // - White keys: C D E F G A B
   // - Accidentals: # / b (e.g. C#4, Db4)
   // - Rest: R
+  // - Tie: ~
   // MIDI: C4 = 60
   if name == "R" {
     return Ok(-1) // rest
   }
+  if name == "~" {
+    return Ok(-2) // tie (extend previous note without re-attack)
+  }
   if name.length() < 2 {
-    return err(line, "invalid note: \{name} (expected e.g. C4, C#4, Db4, R)")
+    return err(line, "invalid note: \{name} (expected e.g. C4, C#4, Db4, R, ~)")
   }
   let letter = name.unsafe_get(0)
   let mut semitone = match letter {
@@ -451,7 +455,7 @@ fn note_name_to_midi(name : String, line : Int) -> Result[Int, DslError] {
     _ =>
       return err(
         line,
-        "invalid note name: \{letter.to_string()} (use C D E F G A B with optional #/b, or R)",
+        "invalid note name: \{letter.to_string()} (use C D E F G A B with optional #/b, or R/~)",
       )
   }
   let mut octave_start = 1
@@ -468,7 +472,7 @@ fn note_name_to_midi(name : String, line : Int) -> Result[Int, DslError] {
   if octave_start >= name.length() {
     return err(
       line,
-      "invalid note: \{name} (missing octave, expected e.g. C4, C#4, Db4)",
+      "invalid note: \{name} (missing octave, expected e.g. C4, C#4, Db4, R, ~)",
     )
   }
   semitone = (semitone % 12 + 12) % 12
@@ -570,7 +574,7 @@ fn parse_bgm_block(
   let mut volume = 0.05
   let mut step_sec = 0.125
   let mut loop_ = true
-  let mut notes : Array[Int] = []
+  let mut notes : Array[String] = []
   let mut cursor = start_line_index + 1
   while cursor < lines.length() {
     let raw = normalize_line(lines[cursor])
@@ -612,10 +616,11 @@ fn parse_bgm_block(
         }
       "notes" => {
         let note_tokens = tokens[1:]
-        let parsed : Array[Int] = []
+        let parsed : Array[String] = []
         for token in note_tokens {
-          match note_name_to_midi(token.to_string(), line_no) {
-            Ok(midi) => parsed.push(midi)
+          let note_text = token.to_string()
+          match note_name_to_midi(note_text, line_no) {
+            Ok(_) => parsed.push(note_text)
             Err(e) => return Err(e)
           }
         }
