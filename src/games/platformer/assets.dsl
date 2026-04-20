@@ -50,7 +50,7 @@ wave square
 volume 0.03
 step_sec 0.125
 loop true
-notes C4 E4 G4 E4 A4 G4 E4 R
+notes A5 A5 G5 F5 F5 E5 D5 D5 E5 F5 F5 G5 A5 A#5 R A#5 D6 R D6 A5 ~ ~ R A5 A5 G5 F5 F5 E5 D5 C5 D5 E5 F5 G5 A5 C6 R A#5 G5 R C6 F5 ~ ~ F6 R R
 end
 
 sprite player 8 8
