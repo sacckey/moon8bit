@@ -4,7 +4,7 @@
 
 - Submission target: MoonBit SCC 2026
 - Deadline: 2026-04-21
-- Last updated: 2026-04-19
+- Last updated: 2026-04-21
 
 ## Final Submission Essentials (Official Summary)
 
@@ -77,7 +77,7 @@ Based on:
 
 ## Engineering Quality
 
-- [x] 92 tests passing (`moon test`)
+- [x] 94 tests passing (`moon test`)
 - [x] Deterministic runtime: same inputs → same frames
 - [x] Collision regression tests (pipe hit / ground hit / score increment)
 - [x] Timer/event ordering tests

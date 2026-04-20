@@ -1,5 +1,32 @@
 # Handoff
 
+## 2026-04-21 Current State
+
+- Build/Test status: pass (`moon check`, `moon test`, 94 tests)
+- Sample games: flappy, breakout, snake, shooting, platformer
+- Renderer: WebGPU + Canvas2D fallback, runtime status visible (`renderer=webgpu|2d`)
+- Audio: DSL-managed SFX/BGM, editor split into `SFX` and `BGM` tabs
+- Editor tabs: `Game / DSL / Palette / Sprite / Tile / Tilemap / SFX / BGM`
+
+### Notable updates since last handoff
+
+- Renamed game module/path and docs references from `driftbird` to `flappy`.
+- Palette DSL now enforces `color` indices in `0..15`; palette editor is DSL-driven (no fallback auto-fill).
+- `scripts/update_demo_bundle.sh` regenerates `site/g/<game_id>/` for games under `src/games/*`.
+
+### Reproducible local commands
+
+```bash
+moon check
+moon test
+./scripts/update_demo_bundle.sh
+python3 -m http.server 8000 --directory site
+```
+
+URLs: `/` top, `/g/` game list, `/g/<game_id>/` playable editor page.
+
+---
+
 ## 2026-04-18 Current State
 
 - Build/Test status: pass (`moon check`, `moon test`, 92 tests)

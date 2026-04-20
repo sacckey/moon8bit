@@ -29,7 +29,7 @@ Core ideas:
 - `src/cmd/main` — CLI (`assets`, `assets-file`)
 - `src/cmd/web` — shared browser runtime/editor shell and renderer/audio glue
 - `src/games/<game_id>` — per-game logic, tests, `assets.dsl`, `game_spec.json`, and `web` entry package
-- `scripts/update_demo_bundle.sh` — builds per-game web bundles and regenerates `site/g/*`
+- `scripts/update_demo_bundle.sh` — builds per-game web bundles from `src/games/*` and regenerates `site/g/<game_id>/*`
 
 ## Requirements
 
@@ -74,7 +74,7 @@ moon run src/cmd/main --target js -- assets-file assets.dsl assets.json
 
 - `Game`: playable runtime view
 - `DSL`: edit/apply/import/export `assets.dsl`
-- `Palette`: 0-15 palette color editor with DSL write-back
+- `Palette`: DSL-driven palette editor (`color 0..15`) with strict write-back (no fallback palette injection)
 - `Sprite`: sprite list + pixel editor (add/dup/delete, rename, resize 8/16/32)
 - `Tile`: tile (8x8) editor, tile metadata (`name`, `solid`)
 - `Tilemap`: map paint/erase, map add/delete/resize, DSL write-back
@@ -95,6 +95,8 @@ end
 Notes:
 - Parser accepts sequential `color <index> <hex>` rows
 - `index` must start at 0 and increase by 1
+- `index` range is `0..15`
+- Palette editor reads the palette block from DSL directly; if the DSL block is invalid, editor shows an error instead of auto-filling fallback colors
 
 ### Sprite
 
