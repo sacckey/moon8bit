@@ -17,6 +17,17 @@ Scope:
 
 **[Try the demo in your browser](https://sacckey.github.io/moon8bit/g/)**
 
+## Screenshots
+
+<div align="center">
+  <img src="/resource/screenshots/flappy.png" width="200px"/>
+  <img src="/resource/screenshots/sprite.png" width="220px"/>
+  <img src="/resource/screenshots/tilemap.png" width="240px"/>
+</div>
+<div align="center">
+  <img src="/resource/screenshots/bgm.png" width="400px"/>
+</div>
+
 ## What This Repository Includes
 
 - `src/model` — core data types (`AssetBundle`, `Frame`, `InputState`, tile/collision types)
