@@ -60,6 +60,6 @@
 - Updated README with a daily start/end routine for AI-assisted work.
 - Refined submission draft text to align directly with SCC evaluation axes.
 - Added evaluator quickstart steps in README for faster reproduction.
-- Added submission-ready operational docs (`submission-checklist`, `demo-script`) and concrete handoff notes.
+- Added submission-ready operational docs and concrete handoff notes.
 - Prepared GitHub Pages publishing layout (`root index + demo/ path`) and bundle sync script.
 - Refined gameplay loop to flappy naming and press-based controls (`Press Space` start/restart, edge-trigger jump, pass-through scoring) with additional regression tests.

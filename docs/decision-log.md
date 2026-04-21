@@ -149,7 +149,7 @@ Use one short entry per decision to prevent direction drift.
   - `AssetBundle` extended with `sounds` and `bgms` arrays.
   - BGM plays as a step sequencer from MIDI note array (C–B with optional #/b, R=rest).
   - SFX uses envelope synthesis (attack/decay/volume, frequency sweep f0→f1).
-  - Sound Editor GUI reads from and writes back to DSL via `Write to DSL` / `Write + Apply`.
+  - Sound Editor GUI reads from and writes back to DSL via apply-driven editor flow.
   - `peak` field renamed to `volume` for consistency.
   - Parser tests added for sound/bgm blocks and note name validation.
 
