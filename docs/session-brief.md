@@ -2,13 +2,13 @@
 
 ## Session
 
-- Date: 2026-04-18
-- Branch: `main`
+- Date: 2026-04-21
+- Branch: `feat/2026-04-20`
 - Deadline: 2026-04-21
 
 ## Current State
 
-- 92 tests passing
+- 94 tests passing
 - 5 sample games: flappy, breakout, snake, shooting, platformer
 - WebGPU rendering live (Canvas2D fallback) + renderer status in UI
 - Browser editor tabs: Game / DSL / Palette / Sprite / Tile / Tilemap / SFX / BGM

@@ -4,6 +4,12 @@
 - Goal: implement an MVP for an AI-friendly retro game engine in MoonBit.
 - Constraints: short timeline, deterministic behavior, easy evaluator reproduction.
 
+## References to existing OSS (if applicable)
+- pyxel
+- TIC-80
+- Reight (R8)
+- These were used as design/workflow references only; moon8bit implementation code was authored in this repository.
+
 ## AI-assisted tasks
 - Converted high-level project intent into concrete API boundaries.
 - Drafted DSL grammar and parser structure (`palette`, `sprite`, `tilemap`, `end`).

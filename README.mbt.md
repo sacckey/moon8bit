@@ -74,7 +74,7 @@ moon run src/cmd/main --target js -- assets-file assets.dsl assets.json
 
 - `Game`: playable runtime view
 - `DSL`: edit/apply/import/export `assets.dsl`
-- `Palette`: DSL-driven palette editor (`color 0..15`) with strict write-back (no fallback palette injection)
+- `Palette`: DSL-driven palette editor (`color 0..15`) with strict write-back
 - `Sprite`: sprite list + pixel editor (add/dup/delete, rename, resize 8/16/32)
 - `Tile`: tile (8x8) editor, tile metadata (`name`, `solid`)
 - `Tilemap`: map paint/erase, map add/delete/resize, DSL write-back
