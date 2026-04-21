@@ -32,12 +32,12 @@ Use one short entry per decision to prevent direction drift.
 - Impact: Users can keep edited assets between sessions without server-side components.
 
 - Date: 2026-03-28
-- Decision: Introduce engine-level `Collider` API and route driftbird collision checks through it.
+- Decision: Introduce engine-level `Collider` API and route flappy collision checks through it.
 - Why: Remove game-specific ad-hoc collision logic and provide reusable overlap primitives.
 - Impact: Future games can share one collision detection path while keeping collision response in game code.
 
 - Date: 2026-03-28
-- Decision: Adopt `driftbird` as the sample game naming for public-facing docs/demo text.
+- Decision: Adopt `flappy` as the sample game naming for public-facing docs/demo text.
 - Why: Avoid direct similarity to existing IP phrasing while keeping the gameplay concept clear.
 - Impact: Documentation and demo messaging are aligned with safer, original naming.
 
@@ -67,7 +67,7 @@ Use one short entry per decision to prevent direction drift.
 - Impact: Added root `index.html`, `demo/index.html`, and bundle sync script for Pages-ready deployment.
 
 - Date: 2026-03-28
-- Decision: Switch driftbird control flow to press-to-start/restart with edge-triggered jump input and pass-through scoring.
+- Decision: Switch flappy control flow to press-to-start/restart with edge-triggered jump input and pass-through scoring.
 - Why: Prevent hold-to-fly behavior, improve game feel, and match retro loop expectations.
 - Impact: Added `is_started` state, one-press jump semantics, pipe pass scoring, and new tests for start/restart/score behavior.
 
@@ -135,7 +135,7 @@ Use one short entry per decision to prevent direction drift.
 
 - Date: 2026-04-07
 - Decision: Add breakout, snake, and shooting as additional sample games.
-- Why: Single sample game (driftbird) does not demonstrate engine generality. Multiple games prove the `init/update/draw` contract works across different game patterns.
+- Why: Single sample game (flappy) does not demonstrate engine generality. Multiple games prove the `init/update/draw` contract works across different game patterns.
 - Impact:
   - breakout: subframe collision with entry-axis detection (prev_x/prev_y) for accurate single-bounce behavior.
   - snake: grid-based movement, wrap logic, food spawn via `rand`.

@@ -8,6 +8,14 @@ color 4 #f78154
 color 5 #87c38f
 color 6 #f7f7ff
 color 7 #7a5cff
+color 8 #264653
+color 9 #2a9d8f
+color 10 #e9c46a
+color 11 #f4a261
+color 12 #e76f51
+color 13 #577590
+color 14 #90be6d
+color 15 #ffffff
 end
 
 sound jump
@@ -42,7 +50,7 @@ wave square
 volume 0.03
 step_sec 0.125
 loop true
-notes C4 E4 G4 E4 A4 G4 E4 R
+notes A5 A5 G5 F5 F5 E5 D5 D5 E5 F5 F5 G5 A5 A#5 R A#5 D6 R D6 A5 ~ ~ R A5 A5 G5 F5 F5 E5 D5 C5 D5 E5 F5 G5 A5 C6 R A#5 G5 R C6 F5 ~ ~ F6 R R
 end
 
 sprite player 8 8

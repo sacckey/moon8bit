@@ -3,13 +3,13 @@
 ## Goal
 
 Show fast AI-friendly iteration with the current web workflow:
-`Open game page -> Edit DSL/Sprite/Sound -> Apply -> Immediate playable result`.
+`Open game page -> Edit DSL/Sprite/SFX/BGM -> Apply -> Immediate playable result`.
 
 ## Recording Setup
 
-- Open `http://localhost:8000/g/driftbird/`
+- Open `http://localhost:8000/g/flappy/`
 - Keep browser zoom at 100%
-- Keep all tabs visible (`Game`, `DSL`, `Sprite`, `Sound`)
+- Keep all tabs visible (`Game`, `DSL`, `Palette`, `Sprite`, `Tile`, `Tilemap`, `SFX`, `BGM`)
 
 ## Timeline
 
@@ -20,26 +20,26 @@ Show fast AI-friendly iteration with the current web workflow:
 2. 8s-18s: DSL edit + apply
    - Switch to `DSL` tab.
    - Change a `tilemap` or `sprite` row.
-   - Click `Apply DSL`.
+   - Click `Apply`.
    - Return to `Game` tab and show visual change.
 
 3. 18s-30s: Sprite GUI editing
    - Switch to `Sprite` tab.
    - Modify a few pixels.
-   - Click `Write + Apply`.
+   - Click `Apply`.
    - Return to `Game` tab and show updated sprite.
 
-4. 30s-40s: Sound GUI editing
-   - Switch to `Sound` tab.
-   - Press SFX test buttons and adjust one parameter.
+4. 30s-40s: Audio GUI editing
+   - Switch to `SFX` tab, press test buttons and adjust one parameter.
+   - Switch to `BGM` tab and start/stop playback once.
    - Return to `Game` tab and show sound still works during play.
 
 5. 40s-45s: Import/Export loop
    - In `DSL` tab, click `Export DSL`.
-   - Click `Import DSL` and re-apply.
+   - Click `Import DSL`, then `Apply`.
 
 ## Optional Voiceover
 
 - "Assets are text-first DSL and editable in-browser."
 - "The runtime is deterministic and update/apply is immediate."
-- "Sprite and sound authoring are integrated into the same per-game page."
+- "Sprite and SFX/BGM authoring are integrated into the same per-game page."

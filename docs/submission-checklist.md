@@ -4,7 +4,7 @@
 
 - Submission target: MoonBit SCC 2026
 - Deadline: 2026-04-21
-- Last updated: 2026-04-19
+- Last updated: 2026-04-21
 
 ## Final Submission Essentials (Official Summary)
 
@@ -17,6 +17,8 @@ Based on:
   - tests/validation for core and edge cases
   - optional: demo video/screenshots/deployment links
 
+Required (regulations + reproducibility baseline):
+
 - [x] Public GitHub repository is confirmed public and commit history preserved
 - [x] README covers goals, scope, usage, and environment requirements
 - [x] Reproducible build/run path for core workflow is documented
@@ -24,9 +26,12 @@ Based on:
 - [x] OSI-approved license is present (`LICENSE`: Apache-2.0)
 - [x] Supporting artifacts/scripts are open-sourced in repository
 - [x] Development retrospective materials are present (`docs/decision-log.md`, `docs/ai-usage-log.md`)
-- [ ] Demo video/GIF is finalized and shareable
-- [ ] Screenshots are finalized and shareable
-- [x] Deployment links are documented (`README.mbt.md` GitHub Pages section)
+
+Recommended (suggested materials):
+
+- [ ] Demo video/GIF is finalized and shareable (optional)
+- [ ] Screenshots are finalized and shareable (optional)
+- [x] Deployment links are documented (`README.mbt.md` GitHub Pages section, optional)
 
 ## Stage 1 Gates
 
@@ -64,12 +69,12 @@ Based on:
 - [x] Sprite editor GUI tab
 - [x] Tile editor GUI tab: 8×8 pixel editor, tile name/solid metadata
 - [x] Tilemap editor GUI tab: tilemap paint/erase, `+ Map`/`Del Map`/`Resize`, tile `name`/`solid`, tile 8×8 pixel edit, dirty/feedback
-- [x] Sound editor GUI tab: SFX cards (wave/f0/f1/ATK/DEC/VOL + Test/Dup/Del), `+ SFX`, multi-BGM selector, `+ BGM`/`Dup`/`Del`, dirty indicator
+- [x] SFX/BGM editor GUI tabs: SFX cards (wave/f0/f1/ATK/DEC/VOL + Test/Dup/Del), `+ SFX`, multi-BGM selector, `+ BGM`/`Dup`/`Del`, dirty indicator
 - [x] Per-game web pages under `site/g/<game_id>/`
 
 ## Sample Games
 
-- [x] driftbird (side-scroller: input / collision / scrolling / audio)
+- [x] flappy (side-scroller: input / collision / scrolling / audio)
 - [x] breakout (ball physics: subframe collision / entry-axis detection)
 - [x] snake (grid game: wrap / food spawn / growth)
 - [x] shooting (shooter: star parallax / enemy / sprites)
@@ -77,7 +82,7 @@ Based on:
 
 ## Engineering Quality
 
-- [x] 92 tests passing (`moon test`)
+- [x] 94 tests passing (`moon test`)
 - [x] Deterministic runtime: same inputs → same frames
 - [x] Collision regression tests (pipe hit / ground hit / score increment)
 - [x] Timer/event ordering tests
@@ -94,7 +99,6 @@ Based on:
 - [ ] Final application text (300+ words) freeze
 - [ ] AI usage / retrospective finalization
 - [x] README reproducible run steps
-- [ ] Demo video/GIF ready and viewable
 
 ## Repository Docs
 
@@ -121,11 +125,11 @@ Open:
 
 - `http://localhost:8000/`
 - `http://localhost:8000/g/`
-- `http://localhost:8000/g/driftbird/`
+- `http://localhost:8000/g/flappy/`
 
 Expected:
 
-- [ ] Driftbird Game tab is playable (`Space` / `ArrowUp`, `R`)
+- [ ] Flappy Game tab is playable (`Space` / `ArrowUp`, `R`)
 - [ ] Status bar shows `renderer=webgpu` or `renderer=2d`
 - [ ] DSL tab `Apply` updates screen output
 - [ ] DSL `Import` loads local file and applies
@@ -145,8 +149,8 @@ Expected:
 - [ ] Ensure commit history is clean/readable
 - [ ] Submit final application text + demo link
 
-## Remaining Priorities (2026-04-19)
+## Remaining Priorities (2026-04-21)
 
-1. Demo video/GIF recording (playable games: driftbird, platformer, shooting recommended).
+1. Screenshots finalization for README/checklist evidence.
 2. Final application text freeze (`docs/application-draft.md`).
 3. Final reproducibility pass (build → run → edit loop on clean env).

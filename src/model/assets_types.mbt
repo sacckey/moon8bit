@@ -62,7 +62,7 @@ pub(all) struct BgmDef {
   volume : Double
   step_sec : Double
   loop_ : Bool
-  notes : Array[Int]
+  notes : Array[String]
 } derive(Eq, Show)
 
 ///|

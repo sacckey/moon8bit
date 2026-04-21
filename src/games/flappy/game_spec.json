@@ -1,6 +1,6 @@
 {
-  "id": "driftbird",
-  "title": "Driftbird",
+  "id": "flappy",
+  "title": "Flappy",
   "status_text": "HUD is in-canvas (S/F/H). Audio events are configurable in Sound tab.",
-  "export_filename": "driftbird_assets.dsl"
+  "export_filename": "flappy_assets.dsl"
 }

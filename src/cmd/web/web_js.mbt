@@ -611,6 +611,17 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     bgmRollWrap.appendChild(bgmRollTitle);
   #|   }
   #|
+  #|   let bgmRollHint = document.getElementById("moon8bit-bgm-roll-hint");
+  #|   if (!bgmRollHint) {
+  #|     bgmRollHint = document.createElement("div");
+  #|     bgmRollHint.id = "moon8bit-bgm-roll-hint";
+  #|     bgmRollHint.textContent = "Drag: paint notes / Shift+Drag: paint tie(~) / Right-drag: erase to R";
+  #|     bgmRollHint.style.fontFamily = "monospace";
+  #|     bgmRollHint.style.fontSize = "12px";
+  #|     bgmRollHint.style.color = "#9fb3c8";
+  #|     bgmRollWrap.appendChild(bgmRollHint);
+  #|   }
+  #|
   #|   let bgmRollPanel = document.getElementById("moon8bit-bgm-roll-panel");
   #|   if (!bgmRollPanel) {
   #|     bgmRollPanel = document.createElement("div");
@@ -622,6 +633,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     bgmRollPanel.style.alignItems = "start";
   #|     bgmRollPanel.style.justifyItems = "start";
   #|     bgmRollPanel.style.overflow = "auto";
+  #|     bgmRollPanel.style.width = "100%";
   #|     bgmRollWrap.appendChild(bgmRollPanel);
   #|   }
   #|
@@ -764,9 +776,9 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|         errors.push(`BGM "${bgm.name}": notes must be an array`);
   #|       } else {
   #|         for (let i = 0; i < bgm.notes.length; i += 1) {
-  #|           const midi = Number(bgm.notes[i]);
-  #|           if (!Number.isInteger(midi) || (midi !== -1 && (midi < 0 || midi > 127))) {
-  #|             errors.push(`BGM "${bgm.name}": notes[${i}] must be -1 or MIDI 0..127`);
+  #|           const token = normalizeNoteToken(bgm.notes[i]);
+  #|           if (token === null) {
+  #|             errors.push(`BGM "${bgm.name}": notes[${i}] must be note token (e.g. C4, R, ~)`);
   #|             break;
   #|           }
   #|         }
@@ -816,20 +828,33 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   };
   #|
   #|   const noteNameFromMidi = (midi) => {
-  #|     if (midi < 0) return "R";
+  #|     if (midi === -2) return "~";
+  #|     if (midi === -1) return "R";
+  #|     if (!Number.isInteger(Number(midi)) || midi < 0 || midi > 127) return "R";
   #|     const names = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
   #|     const semitone = ((midi % 12) + 12) % 12;
   #|     const octave = Math.floor(midi / 12) - 1;
   #|     return `${names[semitone]}${octave}`;
   #|   };
   #|
-  #|   const parseNoteToken = (raw) => {
+  #|   const normalizeNoteToken = (raw) => {
   #|     const token = String(raw || "").trim();
   #|     if (!token) return null;
-  #|     if (token.toUpperCase() === "R") return -1;
+  #|     if (token === "~") return "~";
+  #|     if (token.toUpperCase() === "R") return "R";
   #|     const m = token.match(/^([A-Ga-g])([#b]?)([0-9])$/);
   #|     if (!m) return null;
-  #|     const base = m[1].toUpperCase();
+  #|     return `${m[1].toUpperCase()}${m[2]}${m[3]}`;
+  #|   };
+  #|
+  #|   const parseNoteToken = (raw) => {
+  #|     const token = normalizeNoteToken(raw);
+  #|     if (!token) return null;
+  #|     if (token === "~") return -2;
+  #|     if (token === "R") return -1;
+  #|     const m = token.match(/^([A-G])([#b]?)([0-9])$/);
+  #|     if (!m) return null;
+  #|     const base = m[1];
   #|     const accidental = m[2];
   #|     const octave = Number(m[3]);
   #|     if (!Number.isFinite(octave) || octave < 0 || octave > 9) return null;
@@ -847,9 +872,9 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     const tokens = raw.split(/[\s,]+/).filter(Boolean);
   #|     const notes = [];
   #|     for (const token of tokens) {
-  #|       const midi = parseNoteToken(token);
-  #|       if (midi === null) return null;
-  #|       notes.push(midi);
+  #|       const normalized = normalizeNoteToken(token);
+  #|       if (normalized === null) return null;
+  #|       notes.push(normalized);
   #|     }
   #|     return notes;
   #|   };
@@ -858,7 +883,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     if (raw.length === 0) return null;
   #|     const tokens = raw.split(/[\s,]+/).filter(Boolean);
   #|     for (const token of tokens) {
-  #|       if (parseNoteToken(token) === null) return token;
+  #|       if (normalizeNoteToken(token) === null) return token;
   #|     }
   #|     return null;
   #|   };
@@ -979,19 +1004,13 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|                 errors.push(`bgm ${bgm.name}: invalid loop "${tokens[1]}"`);
   #|               }
   #|             } else if (key === "notes") {
-  #|               const noteTokens = tokens.slice(1);
-  #|               const parsedNotes = [];
-  #|               let ok = true;
-  #|               for (const token of noteTokens) {
-  #|                 const midi = parseNoteToken(token);
-  #|                 if (midi === null) {
-  #|                   errors.push(`bgm ${bgm.name}: invalid note "${token}"`);
-  #|                   ok = false;
-  #|                   break;
-  #|                 }
-  #|                 parsedNotes.push(midi);
+  #|               const parsedNotes = parseNotesText(tokens.slice(1).join(" "));
+  #|               if (parsedNotes === null) {
+  #|                 const bad = firstInvalidNoteToken(tokens.slice(1).join(" "));
+  #|                 errors.push(`bgm ${bgm.name}: invalid note${bad ? ` "${bad}"` : ""}`);
+  #|               } else {
+  #|                 bgm.notes = parsedNotes;
   #|               }
-  #|               if (ok) bgm.notes = parsedNotes;
   #|             } else {
   #|               errors.push(`bgm ${bgm.name}: unknown field "${key}"`);
   #|             }
@@ -1029,7 +1048,9 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       volume: Number.isFinite(Number(b.volume)) ? Number(b.volume) : 0.05,
   #|       step_sec: Number.isFinite(Number(b.step_sec)) ? Number(b.step_sec) : 0.125,
   #|       loop_: !!b.loop_,
-  #|       notes: Array.isArray(b.notes) ? b.notes.slice() : [],
+  #|       notes: Array.isArray(b.notes)
+  #|         ? b.notes.map((token) => normalizeNoteToken(token)).filter((token) => token !== null)
+  #|         : [],
   #|     }));
   #|     // Auto-select BGM: preserve existing selection if still valid, else "main" or first
   #|     const names = audioState.bgms.map((b) => b.name);
@@ -1098,7 +1119,9 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       lines.push(`  volume ${fmt(clamp(Number(bgm.volume ?? 0.05), 0.0, 0.3))}`);
   #|       lines.push(`  step_sec ${fmt(clamp(Number(bgm.step_sec ?? 0.125), 0.05, 1.5))}`);
   #|       lines.push(`  loop ${bgm.loop_ ? "true" : "false"}`);
-  #|       const noteTokens = (Array.isArray(bgm.notes) ? bgm.notes : []).map(noteNameFromMidi);
+  #|       const noteTokens = (Array.isArray(bgm.notes) ? bgm.notes : [])
+  #|         .map((token) => normalizeNoteToken(token))
+  #|         .filter((token) => token !== null);
   #|       lines.push(`  notes${noteTokens.length > 0 ? " " + noteTokens.join(" ") : ""}`);
   #|       lines.push("end");
   #|       lines.push("");
@@ -1111,7 +1134,9 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       lines.push(`  volume ${fmt(clamp(Number(audioState.bgmVolume ?? 0.05), 0.0, 0.3))}`);
   #|       lines.push(`  step_sec ${fmt(clamp(Number(audioState.bgmStepSec ?? 0.125), 0.05, 1.5))}`);
   #|       lines.push(`  loop ${audioState.bgmLoop ? "true" : "false"}`);
-  #|       const noteTokens = (Array.isArray(audioState.bgmNotes) ? audioState.bgmNotes : []).map(noteNameFromMidi);
+  #|       const noteTokens = (Array.isArray(audioState.bgmNotes) ? audioState.bgmNotes : [])
+  #|         .map((token) => normalizeNoteToken(token))
+  #|         .filter((token) => token !== null);
   #|       lines.push(`  notes${noteTokens.length > 0 ? " " + noteTokens.join(" ") : ""}`);
   #|       lines.push("end");
   #|       lines.push("");
@@ -1238,6 +1263,20 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|       let stepIdx = 0;
   #|       let nextTime = ctx.currentTime;
   #|       const activeOscs = [];
+  #|       let heldOsc = null;
+  #|
+  #|       const stopHeldOscAt = (when) => {
+  #|         if (!heldOsc) return;
+  #|         try { heldOsc.stop(Math.max(when, ctx.currentTime)); } catch (_) {}
+  #|         heldOsc = null;
+  #|       };
+  #|
+  #|       const stopAllOscs = (when) => {
+  #|         stopHeldOscAt(when);
+  #|         for (const osc of activeOscs) {
+  #|           try { osc.stop(Math.max(when, ctx.currentTime)); } catch (_) {}
+  #|         }
+  #|       };
   #|
   #|       const scheduleStep = () => {
   #|         if (stopped) return;
@@ -1248,25 +1287,44 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|           const ns = Array.isArray(st.bgmNotes) && st.bgmNotes.length > 0
   #|             ? st.bgmNotes : notes;
   #|           if (!ns || ns.length === 0) {
-  #|             if (!loopEnabled) { stopped = true; break; }
+  #|             if (!loopEnabled) {
+  #|               stopHeldOscAt(nextTime);
+  #|               stopped = true;
+  #|               break;
+  #|             }
   #|             nextTime += stepSec;
   #|             continue;
   #|           }
   #|           if (!loopEnabled && stepIdx >= ns.length) {
+  #|             stopHeldOscAt(nextTime);
   #|             stopped = true;
   #|             break;
   #|           }
-  #|           const midi = loopEnabled ? ns[stepIdx % ns.length] : ns[stepIdx];
+  #|           const noteToken = loopEnabled ? ns[stepIdx % ns.length] : ns[stepIdx];
+  #|           const midi = parseNoteToken(noteToken);
   #|           stepIdx++;
-  #|           if (midi >= 0) {
-  #|             const osc = ctx.createOscillator();
-  #|             osc.type = st.bgmWave || wave;
-  #|             osc.frequency.value = midiToHz(midi);
-  #|             osc.connect(gain);
-  #|             osc.start(nextTime);
-  #|             osc.stop(nextTime + stepSec * 0.9);
-  #|             activeOscs.push(osc);
+  #|
+  #|           if (midi === -2) {
+  #|             // Tie: continue previous note without re-attack.
+  #|             nextTime += stepSec;
+  #|             continue;
   #|           }
+  #|
+  #|           if (midi === null || midi === -1) {
+  #|             stopHeldOscAt(nextTime);
+  #|             nextTime += stepSec;
+  #|             continue;
+  #|           }
+  #|
+  #|           // Re-attack on explicit note steps; ties are represented by -2.
+  #|           stopHeldOscAt(nextTime);
+  #|           const osc = ctx.createOscillator();
+  #|           osc.type = st.bgmWave || wave;
+  #|           osc.frequency.value = midiToHz(midi);
+  #|           osc.connect(gain);
+  #|           osc.start(nextTime);
+  #|           heldOsc = osc;
+  #|           activeOscs.push(osc);
   #|           nextTime += stepSec;
   #|         }
   #|         if (!stopped) setTimeout(scheduleStep, 50);
@@ -1274,7 +1332,14 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|
   #|       scheduleStep();
   #|
-  #|       globalThis.__moon8bit_bgm_nodes = { gain, activeOscs, stopFn: () => { stopped = true; } };
+  #|       globalThis.__moon8bit_bgm_nodes = {
+  #|         gain,
+  #|         activeOscs,
+  #|         stopFn: () => {
+  #|           stopped = true;
+  #|           stopAllOscs(ctx.currentTime + 0.2);
+  #|         },
+  #|       };
   #|       globalThis.__moon8bit_audio_apply_bgm = () => {
   #|         const nodes = globalThis.__moon8bit_bgm_nodes;
   #|         if (!nodes) return;
@@ -1862,7 +1927,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   const bgmNotesField = ensureBgmRow(
   #|     "moon8bit-sound-bgm-notes-row",
   #|     "BGM Notes",
-  #|     "space-separated notes (C4 E4 G4 R)",
+  #|     "space-separated notes (C4 E4 G4 ~ R)",
   #|   );
   #|   let bgmNotesInput = document.getElementById("moon8bit-sound-bgm-notes");
   #|   if (!bgmNotesInput) {
@@ -1883,7 +1948,7 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|         bgmNotesInput.style.border = "1px solid #ef6f6c";
   #|         setTransientError(
   #|           "bgm:notes",
-  #|           `BGM: invalid note token${bad ? ` "${bad}"` : ""} (use C4 C#4 Db4 R)`,
+  #|           `BGM: invalid note token${bad ? ` "${bad}"` : ""} (use C4 C#4 Db4 ~ R)`,
   #|         );
   #|         renderSoundValidation();
   #|         return;
@@ -2259,10 +2324,23 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   };
   #|
   #|   const BGM_PITCH_MIN = 48; // C3
-  #|   const BGM_PITCH_MAX = 84; // C6
+  #|   const BGM_PITCH_MAX = 96; // C7
   #|   const BGM_ROLL_ROW = 16;
   #|   const BGM_ROLL_COL = 20;
   #|   const BGM_ROLL_MIN_STEPS = 16;
+  #|   const BGM_ROLL_KEY_WIDTH = 52;
+  #|   const BGM_ROLL_PANEL_GAP = 6;
+  #|
+  #|   const calcVisibleRollSteps = () => {
+  #|     const panelW = Math.max(0, Number(bgmRollPanel && bgmRollPanel.clientWidth || 0));
+  #|     const usableW = Math.max(0, panelW - BGM_ROLL_KEY_WIDTH - BGM_ROLL_PANEL_GAP - 2);
+  #|     return Math.max(BGM_ROLL_MIN_STEPS, Math.floor(usableW / BGM_ROLL_COL));
+  #|   };
+  #|
+  #|   const calcRollSteps = (bgm) => {
+  #|     const noteSteps = Array.isArray(bgm?.notes) ? bgm.notes.length : 0;
+  #|     return Math.max(BGM_ROLL_MIN_STEPS, noteSteps, calcVisibleRollSteps());
+  #|   };
   #|
   #|   const renderBgmList = () => {
   #|     bgmList.innerHTML = "";
@@ -2298,17 +2376,17 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|   const renderBgmPianoRoll = () => {
   #|     const bgm = getSelectedBgm();
   #|     const rows = BGM_PITCH_MAX - BGM_PITCH_MIN + 1;
-  #|     const steps = Math.max(BGM_ROLL_MIN_STEPS, Array.isArray(bgm?.notes) ? bgm.notes.length : 0);
+  #|     const steps = calcRollSteps(bgm);
   #|     const rollW = steps * BGM_ROLL_COL;
   #|     const rollH = rows * BGM_ROLL_ROW;
   #|
   #|     bgmRoll.width = rollW;
   #|     bgmRoll.height = rollH;
-  #|     bgmRollKeys.width = 52;
+  #|     bgmRollKeys.width = BGM_ROLL_KEY_WIDTH;
   #|     bgmRollKeys.height = rollH;
   #|     bgmRoll.style.width = `${rollW}px`;
   #|     bgmRoll.style.height = `${rollH}px`;
-  #|     bgmRollKeys.style.width = "52px";
+  #|     bgmRollKeys.style.width = `${BGM_ROLL_KEY_WIDTH}px`;
   #|     bgmRollKeys.style.height = `${rollH}px`;
   #|
   #|     const ctx = bgmRoll.getContext("2d");
@@ -2337,23 +2415,39 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     }
   #|
   #|     if (bgm && Array.isArray(bgm.notes)) {
-  #|       ctx.fillStyle = "#7f5af0";
+  #|       let prevMidi = null;
   #|       for (let step = 0; step < bgm.notes.length; step += 1) {
-  #|         const midi = Number(bgm.notes[step]);
-  #|         if (!Number.isInteger(midi) || midi < BGM_PITCH_MIN || midi > BGM_PITCH_MAX) continue;
+  #|         const midi = parseNoteToken(bgm.notes[step]);
+  #|         if (midi === -2 && Number.isInteger(prevMidi) && prevMidi >= BGM_PITCH_MIN && prevMidi <= BGM_PITCH_MAX) {
+  #|           const rowTie = BGM_PITCH_MAX - prevMidi;
+  #|           ctx.fillStyle = "#4c3a8a";
+  #|           ctx.fillRect(
+  #|             step * BGM_ROLL_COL + 1,
+  #|             rowTie * BGM_ROLL_ROW + 4,
+  #|             BGM_ROLL_COL - 2,
+  #|             Math.max(2, BGM_ROLL_ROW - 8),
+  #|           );
+  #|           continue;
+  #|         }
+  #|         if (midi === null || midi < BGM_PITCH_MIN || midi > BGM_PITCH_MAX) {
+  #|           prevMidi = null;
+  #|           continue;
+  #|         }
   #|         const row = BGM_PITCH_MAX - midi;
+  #|         ctx.fillStyle = "#7f5af0";
   #|         ctx.fillRect(
   #|           step * BGM_ROLL_COL + 1,
   #|           row * BGM_ROLL_ROW + 1,
   #|           BGM_ROLL_COL - 2,
   #|           BGM_ROLL_ROW - 2,
   #|         );
+  #|         prevMidi = midi;
   #|       }
   #|     }
   #|
-  #|     keyCtx.clearRect(0, 0, 52, rollH);
+  #|     keyCtx.clearRect(0, 0, BGM_ROLL_KEY_WIDTH, rollH);
   #|     keyCtx.fillStyle = "#0f1720";
-  #|     keyCtx.fillRect(0, 0, 52, rollH);
+  #|     keyCtx.fillRect(0, 0, BGM_ROLL_KEY_WIDTH, rollH);
   #|     keyCtx.font = "11px ui-monospace, SFMono-Regular, Menlo, monospace";
   #|     keyCtx.textBaseline = "middle";
   #|     keyCtx.fillStyle = "#9fb3c8";
@@ -2365,42 +2459,153 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     }
   #|   };
   #|
-  #|   const writeRollCell = (evt, forceRest) => {
-  #|     const bgm = getSelectedBgm();
-  #|     if (!bgm) return;
+  #|   const rollCellFromPointer = (evt, steps, rows) => {
   #|     const rect = bgmRoll.getBoundingClientRect();
   #|     const fx = (evt.clientX - rect.left) / Math.max(1, rect.width);
   #|     const fy = (evt.clientY - rect.top) / Math.max(1, rect.height);
-  #|     const steps = Math.max(BGM_ROLL_MIN_STEPS, Array.isArray(bgm.notes) ? bgm.notes.length : 0);
-  #|     const rows = BGM_PITCH_MAX - BGM_PITCH_MIN + 1;
   #|     const step = Math.max(0, Math.min(steps - 1, Math.floor(fx * steps)));
   #|     const row = Math.max(0, Math.min(rows - 1, Math.floor(fy * rows)));
   #|     const midi = BGM_PITCH_MAX - row;
-  #|     const notes = Array.isArray(bgm.notes) ? bgm.notes.slice() : [];
-  #|     while (notes.length <= step) notes.push(-1);
-  #|     if (forceRest) {
-  #|       notes[step] = -1;
-  #|     } else {
-  #|       notes[step] = notes[step] === midi ? -1 : midi;
+  #|     return { step, row, midi };
+  #|   };
+  #|
+  #|   const canPlaceTieAt = (notes, step) => {
+  #|     if (step <= 0) return false;
+  #|     let i = step - 1;
+  #|     while (i >= 0) {
+  #|       const midi = parseNoteToken(notes[i]);
+  #|       if (midi === -2) {
+  #|         i -= 1;
+  #|         continue;
+  #|       }
+  #|       return midi !== null && midi >= 0;
   #|     }
+  #|     return false;
+  #|   };
+  #|
+  #|   const applyRollPaint = (evt, mode, dragState) => {
+  #|     const bgm = getSelectedBgm();
+  #|     if (!bgm) return;
+  #|     const steps = calcRollSteps(bgm);
+  #|     const rows = BGM_PITCH_MAX - BGM_PITCH_MIN + 1;
+  #|     const cell = rollCellFromPointer(evt, steps, rows);
+  #|     if (
+  #|       dragState &&
+  #|       dragState.lastStep === cell.step &&
+  #|       (mode !== "note" || dragState.lastRow === cell.row)
+  #|     ) {
+  #|       return;
+  #|     }
+  #|
+  #|     const noteToken = noteNameFromMidi(cell.midi);
+  #|     const notes = Array.isArray(bgm.notes) ? bgm.notes.slice() : [];
+  #|     while (notes.length <= cell.step) notes.push("R");
+  #|
+  #|     let nextToken = "R";
+  #|     if (mode === "note") {
+  #|       nextToken = noteToken;
+  #|     } else if (mode === "tie") {
+  #|       nextToken = canPlaceTieAt(notes, cell.step) ? "~" : "R";
+  #|     }
+  #|
+  #|     const current = normalizeNoteToken(notes[cell.step]) || "R";
+  #|     if (current === nextToken) {
+  #|       if (dragState) {
+  #|         dragState.lastStep = cell.step;
+  #|         dragState.lastRow = cell.row;
+  #|       }
+  #|       return;
+  #|     }
+  #|
+  #|     notes[cell.step] = nextToken;
   #|     bgm.notes = notes;
   #|     audioState.bgmNotes = notes.slice();
   #|     if (bgmNotesInput) {
-  #|       bgmNotesInput.value = notes.map(noteNameFromMidi).join(" ");
+  #|       bgmNotesInput.value = notes
+  #|         .map((token) => normalizeNoteToken(token))
+  #|         .filter((token) => token !== null)
+  #|         .join(" ");
+  #|     }
+  #|     if (dragState) {
+  #|       dragState.lastStep = cell.step;
+  #|       dragState.lastRow = cell.row;
   #|     }
   #|     markDirty();
   #|     renderBgmPianoRoll();
   #|   };
+  #|
+  #|   const rollDrag = {
+  #|     active: false,
+  #|     pointerId: null,
+  #|     mode: "note",
+  #|     lastStep: -1,
+  #|     lastRow: -1,
+  #|   };
+  #|
+  #|   const rollModeFromPointer = (evt) => {
+  #|     if (evt.button === 2 || evt.buttons === 2) return "rest";
+  #|     if (evt.shiftKey) return "tie";
+  #|     return "note";
+  #|   };
+  #|
+  #|   const stopRollDrag = (evt) => {
+  #|     if (!rollDrag.active) return;
+  #|     if (rollDrag.pointerId !== null && evt && evt.pointerId !== rollDrag.pointerId) return;
+  #|     try { bgmRoll.releasePointerCapture(rollDrag.pointerId); } catch (_) {}
+  #|     rollDrag.active = false;
+  #|     rollDrag.pointerId = null;
+  #|     rollDrag.mode = "note";
+  #|     rollDrag.lastStep = -1;
+  #|     rollDrag.lastRow = -1;
+  #|   };
+  #|
   #|   if (bgmRoll.dataset.bound !== "1") {
   #|     bgmRoll.dataset.bound = "1";
   #|     bgmRoll.addEventListener("pointerdown", (evt) => {
-  #|       if (evt.button === 2) return;
-  #|       writeRollCell(evt, false);
+  #|       if (evt.button !== 0 && evt.button !== 2) return;
+  #|       evt.preventDefault();
+  #|       rollDrag.active = true;
+  #|       rollDrag.pointerId = evt.pointerId;
+  #|       rollDrag.mode = rollModeFromPointer(evt);
+  #|       rollDrag.lastStep = -1;
+  #|       rollDrag.lastRow = -1;
+  #|       try { bgmRoll.setPointerCapture(evt.pointerId); } catch (_) {}
+  #|       applyRollPaint(evt, rollDrag.mode, rollDrag);
+  #|     });
+  #|     bgmRoll.addEventListener("pointermove", (evt) => {
+  #|       if (!rollDrag.active) return;
+  #|       if (rollDrag.pointerId !== null && evt.pointerId !== rollDrag.pointerId) return;
+  #|       applyRollPaint(evt, rollDrag.mode, rollDrag);
+  #|     });
+  #|     bgmRoll.addEventListener("pointerup", (evt) => stopRollDrag(evt));
+  #|     bgmRoll.addEventListener("pointercancel", (evt) => stopRollDrag(evt));
+  #|     bgmRoll.addEventListener("lostpointercapture", () => {
+  #|       rollDrag.active = false;
+  #|       rollDrag.pointerId = null;
+  #|       rollDrag.mode = "note";
+  #|       rollDrag.lastStep = -1;
+  #|       rollDrag.lastRow = -1;
   #|     });
   #|     bgmRoll.addEventListener("contextmenu", (evt) => {
   #|       evt.preventDefault();
-  #|       writeRollCell(evt, true);
   #|     });
+  #|   }
+  #|
+  #|   const bgmTabBtn = document.getElementById("moon8bit-tab-btn-sound");
+  #|   if (bgmTabBtn && bgmTabBtn.dataset.rollRefreshBound !== "1") {
+  #|     bgmTabBtn.dataset.rollRefreshBound = "1";
+  #|     bgmTabBtn.addEventListener("click", () => {
+  #|       setTimeout(() => renderBgmPianoRoll(), 0);
+  #|     });
+  #|   }
+  #|
+  #|   if (!globalThis.__moon8bit_bgm_roll_resize_bound) {
+  #|     window.addEventListener("resize", () => {
+  #|       if (globalThis.__moon8bit_active_tab === "sound") {
+  #|         renderBgmPianoRoll();
+  #|       }
+  #|     });
+  #|     globalThis.__moon8bit_bgm_roll_resize_bound = true;
   #|   }
   #|
   #|   const syncBgmControlsFromState = () => {
@@ -2456,7 +2661,10 @@ extern "js" fn web_init_canvas(width : Int, height : Int, scale : Int) -> Unit =
   #|     }
   #|     if (bgmNotesInput) {
   #|       const notes = Array.isArray(bgm ? bgm.notes : audioState.bgmNotes) ? (bgm ? bgm.notes : audioState.bgmNotes) : [];
-  #|       bgmNotesInput.value = notes.map(noteNameFromMidi).join(" ");
+  #|       bgmNotesInput.value = notes
+  #|         .map((token) => normalizeNoteToken(token))
+  #|         .filter((token) => token !== null)
+  #|         .join(" ");
   #|       bgmNotesInput.disabled = !defined;
   #|       bgmNotesInput.style.border = "";
   #|     }

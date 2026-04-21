@@ -1,5 +1,5 @@
 ///|
-pub type DriftbirdRuntime = @engine.EngineInstance[DriftbirdGame]
+pub type FlappyRuntime = @engine.EngineInstance[FlappyGame]
 
 ///|
 let hud_h = 9
@@ -23,7 +23,7 @@ let ground_y : Int = game_h - ground_rows
 let bg_color : Int = 1
 
 ///|
-pub struct DriftbirdGame {
+pub struct FlappyGame {
   bundle : @model.AssetBundle
   mut bird_x : Int
   mut bird_y : Double
@@ -41,28 +41,28 @@ pub struct DriftbirdGame {
 } derive(Eq, Show)
 
 ///|
-pub fn DriftbirdGame::score(self : DriftbirdGame) -> Int {
+pub fn FlappyGame::score(self : FlappyGame) -> Int {
   self.score
 }
 
 ///|
-pub fn DriftbirdGame::is_over(self : DriftbirdGame) -> Bool {
+pub fn FlappyGame::is_over(self : FlappyGame) -> Bool {
   self.is_over
 }
 
 ///|
-pub fn DriftbirdGame::is_started(self : DriftbirdGame) -> Bool {
+pub fn FlappyGame::is_started(self : FlappyGame) -> Bool {
   self.is_started
 }
 
 ///|
-pub fn DriftbirdGame::last_hit_tag(self : DriftbirdGame) -> String? {
+pub fn FlappyGame::last_hit_tag(self : FlappyGame) -> String? {
   self.last_hit_tag
 }
 
 ///|
-pub fn new_driftbird_game(bundle : @model.AssetBundle) -> DriftbirdGame {
-  DriftbirdGame::{
+pub fn new_flappy_game(bundle : @model.AssetBundle) -> FlappyGame {
+  FlappyGame::{
     bundle,
     bird_x: 8,
     bird_y: 0.0,
@@ -81,7 +81,7 @@ pub fn new_driftbird_game(bundle : @model.AssetBundle) -> DriftbirdGame {
 }
 
 ///|
-fn reset(game : DriftbirdGame, _config : @model.EngineConfig) -> DriftbirdGame {
+fn reset(game : FlappyGame, _config : @model.EngineConfig) -> FlappyGame {
   game.bird_x = 8
   game.bird_y = Double::from_int((play_y + ground_y) / 2)
   game.bird_vy = 0.0
@@ -100,7 +100,7 @@ fn reset(game : DriftbirdGame, _config : @model.EngineConfig) -> DriftbirdGame {
 
 ///|
 fn pipe_colliders(
-  game : DriftbirdGame,
+  game : FlappyGame,
   _config : @model.EngineConfig,
 ) -> Array[@model.Collider] {
   let bottom_y = game.pipe_gap_y + game.gap_height
@@ -129,7 +129,7 @@ fn pipe_colliders(
 }
 
 ///|
-fn detect_hit(game : DriftbirdGame, config : @model.EngineConfig) -> String? {
+fn detect_hit(game : FlappyGame, config : @model.EngineConfig) -> String? {
   let by = game.bird_y.to_int()
   if game.bird_y < Double::from_int(play_y) {
     return Some("ceiling")
@@ -150,10 +150,10 @@ fn detect_hit(game : DriftbirdGame, config : @model.EngineConfig) -> String? {
 
 ///|
 fn step_physics(
-  game : DriftbirdGame,
+  game : FlappyGame,
   ctx : @engine.UpdateContext,
   flap : Bool,
-) -> DriftbirdGame {
+) -> FlappyGame {
   let flap_impulse = -3.1
   let gravity_up = 0.26
   let gravity_down_base = 0.12
@@ -211,12 +211,12 @@ fn step_physics(
 }
 
 ///|
-pub impl @engine.Game for DriftbirdGame with init(self, config) {
+pub impl @engine.Game for FlappyGame with init(self, config) {
   reset(self, config)
 }
 
 ///|
-pub impl @engine.Game for DriftbirdGame with update(self, ctx) {
+pub impl @engine.Game for FlappyGame with update(self, ctx) {
   let flap = @engine.key_pressed_any(ctx.input, ["Space", "ArrowUp"])
   let r = @engine.key_pressed(ctx.input, "KeyR")
 
@@ -269,7 +269,7 @@ pub impl @engine.Game for DriftbirdGame with update(self, ctx) {
 }
 
 ///|
-pub impl @engine.Game for DriftbirdGame with draw(self, _ctx) {
+pub impl @engine.Game for FlappyGame with draw(self, _ctx) {
   let w = game_w
   let h = game_h
   let frame = @model.Frame::new(w, h, fill=bg_color)
@@ -328,28 +328,24 @@ pub impl @engine.Game for DriftbirdGame with draw(self, _ctx) {
 pub fn init_game(
   bundle : @model.AssetBundle,
   config : @model.EngineConfig,
-) -> DriftbirdRuntime {
-  @engine.engine_init(new_driftbird_game(bundle), config)
+) -> FlappyRuntime {
+  @engine.engine_init(new_flappy_game(bundle), config)
 }
 
 ///|
 pub fn step_game(
-  game : DriftbirdRuntime,
+  game : FlappyRuntime,
   input : @model.InputState,
-) -> (DriftbirdRuntime, @model.Frame) {
+) -> (FlappyRuntime, @model.Frame) {
   @engine.engine_step(game, input)
 }
 
 ///|
-pub fn run_driftbird(
+pub fn run_flappy(
   bundle : @model.AssetBundle,
   inputs : Array[@model.InputState],
   config? : @model.EngineConfig = @model.default_engine_config(),
-) -> (DriftbirdGame, Array[@model.Frame]) {
-  let (runtime, frames) = @engine.run(
-    new_driftbird_game(bundle),
-    config,
-    inputs,
-  )
+) -> (FlappyGame, Array[@model.Frame]) {
+  let (runtime, frames) = @engine.run(new_flappy_game(bundle), config, inputs)
   (@engine.engine_game(runtime), frames)
 }

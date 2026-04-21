@@ -9,21 +9,21 @@ Concrete scope for this submission:
 - Engineering goal: deliver a compact MoonBit retro 2D engine that keeps AI-assisted iteration practical and reproducible.
 - Target users: solo developers and small teams building pixel-style prototypes with AI assistance, plus learners who want an inspectable MoonBit game-engine codebase.
 - Architecture: a layered flow of `assets DSL -> parser/validation -> runtime state transition -> renderer -> per-game web runtime/editor`, with CLI and tests sharing the same core package.
-- Feasibility: the repository includes four playable web game demos, CLI conversion commands, parser diagnostics, deterministic runtime tests, and reproducible local run steps.
+- Feasibility: the repository includes five playable web game demos, CLI conversion commands, parser diagnostics, deterministic runtime tests, and reproducible local run steps.
 
 Current implementation includes six integrated parts:
 
 1. Engine core with explicit `init/update/draw` phases, fixed-step runtime, and an imperative `UpdateContext` API (`ctx.sfx()`, `ctx.set_timeout()`, `ctx.bgm_stop()` etc.).
-2. DSL v1 (`palette`, `sprite`, `tilemap`, `end`) with strict validation and clear parser errors.
+2. DSL v1 (`palette`, `sprite`, `tile`, `tilemap`, `place`, `sound`, `bgm`, `end`) with strict validation and clear parser errors.
 3. CLI flow for DSL conversion and validation (`assets`, `assets-file`).
 4. Web rendering path with WebGPU (full-screen triangle pipeline, nearest-neighbor sampling, palette RGBA cache) and automatic Canvas2D fallback. Renderer status is shown live in the page header.
-5. Web editor pages under `site/g/<game_id>/` with live DSL editing, sprite editor, sound editor, and local import/export.
-6. Four sample games: driftbird (side-scroller), breakout (ball physics with entry-axis collision), snake (grid wrap, food spawn), shooting (parallax background, sprite-based enemies).
+5. Web editor pages under `site/g/<game_id>/` with live DSL editing, palette/sprite/tile/tilemap editors, SFX/BGM editors, and local import/export.
+6. Five sample games: flappy (side-scroller), breakout (ball physics with entry-axis collision), snake (grid wrap, food spawn), shooting (parallax background, sprite-based enemies), platformer (camera + swept collision + placement spawns).
 
 This design maps directly to the SCC evaluation axes:
 
 - Functional Completeness: the repository ships playable web pages, CLI tooling, and a full parse → runtime → render pipeline. WebGPU and Canvas2D rendering are both functional.
-- Engineering Quality: deterministic fixed-step execution, reusable collision primitives, command-based engine events/timers, 42 passing tests covering parser errors, deterministic replay, collision behavior, timer ordering, and integration paths.
+- Engineering Quality: deterministic fixed-step execution, reusable collision primitives, command-based engine events/timers, 94 passing tests covering parser errors, deterministic replay, collision behavior, timer ordering, and integration paths.
 - Explainability: small module boundaries (`model/assets/engine/games/web`), explicit decision logs, reproducible commands in README, and line-numbered parser diagnostics that feed naturally into AI coding loops.
 - User Experience: immediate edit/apply loop in browser, live renderer status display, sprite/sound GUI tabs, and import/export for local asset persistence.
 

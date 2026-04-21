@@ -4,6 +4,12 @@
 - Goal: implement an MVP for an AI-friendly retro game engine in MoonBit.
 - Constraints: short timeline, deterministic behavior, easy evaluator reproduction.
 
+## References to existing OSS (if applicable)
+- pyxel
+- TIC-80
+- Reight (R8)
+- These were used as design/workflow references only; moon8bit implementation code was authored in this repository.
+
 ## AI-assisted tasks
 - Converted high-level project intent into concrete API boundaries.
 - Drafted DSL grammar and parser structure (`palette`, `sprite`, `tilemap`, `end`).
@@ -12,7 +18,7 @@
 
 ## Human decisions
 - Chose to keep v1 asset format text-first and avoid external LLM API coupling.
-- Chose driftbird side-scroller as sample to cover input/collision/scrolling in one scene.
+- Chose flappy side-scroller as sample to cover input/collision/scrolling in one scene.
 - Prioritized deterministic runtime and parser diagnostics over graphics complexity.
 
 ## Verification steps
@@ -36,7 +42,7 @@
   - Snake food-spawn bug (negative rand index) identified and fixed.
   - Shooting bundle preservation bug (`init` using empty bundle) identified and fixed.
 - `rand(seed, min, max)` LCG implementation: overflow bug (`Int.min_value()` on sign flip) caught and fixed with `.land(0x7FFFFFFF)`.
-- Driftbird code was reduced significantly by removing per-game type alias boilerplate and simplifying helper boundaries.
+- Flappy code was reduced significantly by removing per-game type alias boilerplate and simplifying helper boundaries.
 
 ## Human decisions (2026-04-09 period)
 
@@ -56,4 +62,4 @@
 - Added evaluator quickstart steps in README for faster reproduction.
 - Added submission-ready operational docs (`submission-checklist`, `demo-script`) and concrete handoff notes.
 - Prepared GitHub Pages publishing layout (`root index + demo/ path`) and bundle sync script.
-- Refined gameplay loop to driftbird naming and press-based controls (`Press Space` start/restart, edge-trigger jump, pass-through scoring) with additional regression tests.
+- Refined gameplay loop to flappy naming and press-based controls (`Press Space` start/restart, edge-trigger jump, pass-through scoring) with additional regression tests.
