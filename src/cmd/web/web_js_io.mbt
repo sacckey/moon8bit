@@ -144,9 +144,9 @@ extern "js" fn web_download_text(filename : String, text : String) -> Unit =
   #| }
 
 ///|
-extern "js" fn web_apply_sound_bundle(
-  sounds : Array[@lib.SoundDef],
-  bgms : Array[@lib.BgmDef],
+extern "js" fn web_apply_sound_bundle_ffi(
+  sounds : FixedArray[@lib.SoundDef],
+  bgms : FixedArray[@lib.BgmDef],
 ) -> Unit =
   #| (sounds, bgms) => {
   #|   const state = globalThis.__moon8bit_audio_state;
@@ -212,5 +212,12 @@ extern "js" fn web_apply_sound_bundle(
   #|     globalThis.__moon8bit_sound_refresh();
   #|   }
   #| }
+
+fn web_apply_sound_bundle(
+  sounds : Array[@lib.SoundDef],
+  bgms : Array[@lib.BgmDef],
+) -> Unit {
+  web_apply_sound_bundle_ffi(FixedArray::from_array(sounds), FixedArray::from_array(bgms))
+}
 
 ///|
