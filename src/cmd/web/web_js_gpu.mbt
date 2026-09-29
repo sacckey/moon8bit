@@ -1,9 +1,9 @@
 ///|
-extern "js" fn web_render_frame(
-  pixels : Array[Int],
+extern "js" fn web_render_frame_ffi(
+  pixels : FixedArray[Int],
   width : Int,
   height : Int,
-  colors : Array[String],
+  colors : FixedArray[String],
 ) -> Unit =
   #| (pixels, width, height, colors) => {
   #|   // --- palette cache ---
@@ -50,6 +50,15 @@ extern "js" fn web_render_frame(
   #|     globalThis.__moon8bit_render_fn(buf, width, height);
   #|   }
   #| }
+
+fn web_render_frame(
+  pixels : Array[Int],
+  width : Int,
+  height : Int,
+  colors : Array[String],
+) -> Unit {
+  web_render_frame_ffi(FixedArray::from_array(pixels), width, height, FixedArray::from_array(colors))
+}
 
 ///|
 extern "js" fn web_init_gpu(width : Int, height : Int) -> Unit =

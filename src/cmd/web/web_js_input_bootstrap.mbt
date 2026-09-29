@@ -1,9 +1,13 @@
 ///|
-extern "js" fn web_keys_down() -> Array[String] =
+extern "js" fn web_keys_down_ffi() -> FixedArray[String] =
   #| () => {
   #|   if (!globalThis.__moon8bit_keys) return [];
   #|   return Array.from(globalThis.__moon8bit_keys);
   #| }
+
+fn web_keys_down() -> Array[String] {
+  Array::from_fixed_array(web_keys_down_ffi())
+}
 
 ///|
 extern "js" fn web_pointer_x() -> Int =
